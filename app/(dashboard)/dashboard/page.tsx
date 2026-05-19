@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
+import { DashboardContainer } from "@/features/dashboard";
 import { createClient } from "@/lib/supabase/server";
-import DashboardContainer from "@/features/dashboard/components/DashboardContainer";
 
 export const metadata: Metadata = {
   title: "Dashboard — SMK Portal",

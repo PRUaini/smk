@@ -1,5 +1,9 @@
-import React, { useState, useEffect } from "react";
-import { Activity, ActivityType, ActivityStatus } from "../types";
+import React from "react";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm, useWatch } from "react-hook-form";
+import { ACTIVITY_DESCRIPTIONS, ACTIVITY_POINTS, DASHBOARD_TIME_SLOTS } from "../constants";
+import { activityFormSchema, buildActivityPayload, type ActivityFormData } from "../schemas/activity.schema";
+import { Activity, ActivityStatus, ActivityType } from "../types";
 
 interface ActivitySidebarProps {
   selectedActivity: Activity | null;
@@ -10,26 +14,6 @@ interface ActivitySidebarProps {
   onClose: () => void;
 }
 
-const activityPointsMap: Record<ActivityType, number> = {
-  "Pendekatan": 1,
-  "Pertemuan": 2,
-  "Pencarian Fakta": 2,
-  "Mendapatkan 3 Referensi": 4,
-  "Wawancara Penutupan": 4,
-  "Penjualan": 1,
-  "Penyerahan Polis/Layanan": 1,
-};
-
-const activityDescriptions: Record<ActivityType, string> = {
-  "Pendekatan": "Melakukan pendekatan awal dengan calon nasabah",
-  "Pertemuan": "Melakukan pertemuan atau janji temu dengan nasabah",
-  "Pencarian Fakta": "Menggali kebutuhan dan potensi nasabah",
-  "Mendapatkan 3 Referensi": "Meminta referensi dari nasabah atau kontak terkait",
-  "Wawancara Penutupan": "Melakukan wawancara untuk penutupan polis",
-  "Penjualan": "Melakukan penjualan atau presentasi produk",
-  "Penyerahan Polis/Layanan": "Menyerahkan polis atau memberikan layanan kepada nasabah",
-};
-
 export default function ActivitySidebar({
   selectedActivity,
   selectedDate,
@@ -38,54 +22,31 @@ export default function ActivitySidebar({
   onDelete,
   onClose,
 }: ActivitySidebarProps) {
-  const [date, setDate] = useState("");
-  const [time, setTime] = useState("");
-  const [kegiatan, setKegiatan] = useState<ActivityType>("Pendekatan");
-  const [status, setStatus] = useState<ActivityStatus>("Belum");
-  const [catatan, setCatatan] = useState("");
-  const [nasabah, setNasabah] = useState("");
+  const form = useForm<ActivityFormData>({
+    resolver: zodResolver(activityFormSchema),
+    values: {
+      tanggal: selectedActivity?.tanggal ?? selectedDate ?? "",
+      waktu: selectedActivity?.waktu ?? selectedTime ?? "08:00",
+      kegiatan: selectedActivity?.kegiatan ?? "Pendekatan",
+      status: selectedActivity?.status ?? "Belum",
+      catatan: selectedActivity?.catatan ?? "",
+      nasabah: selectedActivity?.nasabah ?? "",
+    },
+  });
 
-  // Sync state with selected props
-  useEffect(() => {
-    if (selectedActivity) {
-      setDate(selectedActivity.tanggal);
-      setTime(selectedActivity.waktu);
-      setKegiatan(selectedActivity.kegiatan);
-      setStatus(selectedActivity.status);
-      setCatatan(selectedActivity.catatan);
-      setNasabah(selectedActivity.nasabah);
-    } else {
-      setDate(selectedDate || "");
-      setTime(selectedTime || "");
-      setKegiatan("Pendekatan");
-      setStatus("Belum");
-      setCatatan("");
-      setNasabah("");
-    }
-  }, [selectedActivity, selectedDate, selectedTime]);
+  const kegiatan = useWatch({ control: form.control, name: "kegiatan" });
+  const status = useWatch({ control: form.control, name: "status" });
+  const catatan = useWatch({ control: form.control, name: "catatan" });
 
   const handleKegiatanChange = (value: ActivityType) => {
-    setKegiatan(value);
-    // Populate default description if note is empty
-    if (!catatan || Object.values(activityDescriptions).includes(catatan)) {
-      setCatatan(activityDescriptions[value]);
+    form.setValue("kegiatan", value, { shouldValidate: true });
+    if (!catatan || Object.values(ACTIVITY_DESCRIPTIONS).includes(catatan)) {
+      form.setValue("catatan", ACTIVITY_DESCRIPTIONS[value], { shouldValidate: true });
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!date || !time) return;
-
-    onSave({
-      id: selectedActivity?.id,
-      tanggal: date,
-      waktu: time,
-      kegiatan,
-      poin: activityPointsMap[kegiatan],
-      status,
-      catatan: catatan || activityDescriptions[kegiatan],
-      nasabah,
-    });
+  const handleSubmit = (data: ActivityFormData) => {
+    onSave(buildActivityPayload(data, selectedActivity?.id));
   };
 
   return (
@@ -101,36 +62,29 @@ export default function ActivitySidebar({
         </button>
       </div>
 
-      <form onSubmit={handleSubmit} className="sidebar-form">
-        {/* Tanggal */}
+      <form onSubmit={form.handleSubmit(handleSubmit)} className="sidebar-form">
         <div className="form-group">
           <label className="form-label">Tanggal</label>
           <input
             type="date"
             className="form-input"
-            value={date}
-            onChange={(e) => setDate(e.target.value)}
-            required
+            {...form.register("tanggal")}
           />
         </div>
 
-        {/* Waktu */}
         <div className="form-group">
           <label className="form-label">Waktu</label>
           <select
             className="form-input"
-            value={time}
-            onChange={(e) => setTime(e.target.value)}
-            required
+            {...form.register("waktu")}
           >
             <option value="" disabled>Pilih Waktu</option>
-            {["08:00", "09:00", "10:00", "11:00", "13:00", "14:00", "15:00", "16:00", "17:00"].map((t) => (
+            {DASHBOARD_TIME_SLOTS.map((t) => (
               <option key={t} value={t}>{t}</option>
             ))}
           </select>
         </div>
 
-        {/* Kegiatan */}
         <div className="form-group">
           <label className="form-label">Kegiatan</label>
           <select
@@ -148,15 +102,13 @@ export default function ActivitySidebar({
           </select>
         </div>
 
-        {/* Poin Indicator */}
         <div className="form-group">
           <label className="form-label">Poin Didapat</label>
           <div className="point-badge-display">
-            {activityPointsMap[kegiatan]} poin
+            {ACTIVITY_POINTS[kegiatan]} poin
           </div>
         </div>
 
-        {/* Status */}
         <div className="form-group">
           <label className="form-label">Status</label>
           <div className="status-radio-group">
@@ -165,7 +117,7 @@ export default function ActivitySidebar({
                 key={s}
                 type="button"
                 className={`status-select-btn ${s.toLowerCase()} ${status === s ? "active" : ""}`}
-                onClick={() => setStatus(s)}
+                onClick={() => form.setValue("status", s, { shouldValidate: true })}
               >
                 <span className="dot" />
                 {s}
@@ -174,33 +126,28 @@ export default function ActivitySidebar({
           </div>
         </div>
 
-        {/* Catatan */}
         <div className="form-group">
           <label className="form-label">Catatan</label>
           <textarea
             className="form-textarea"
             maxLength={200}
             rows={3}
-            value={catatan}
-            onChange={(e) => setCatatan(e.target.value)}
             placeholder="Tulis detail kegiatan..."
+            {...form.register("catatan")}
           />
           <span className="char-counter">{catatan.length}/200</span>
         </div>
 
-        {/* Nasabah */}
         <div className="form-group">
           <label className="form-label">Nasabah (Opsional)</label>
           <input
             type="text"
             className="form-input"
-            value={nasabah}
-            onChange={(e) => setNasabah(e.target.value)}
             placeholder="Nama calon nasabah..."
+            {...form.register("nasabah")}
           />
         </div>
 
-        {/* Action Buttons */}
         <div className="sidebar-actions">
           <button type="submit" className="save-activity-btn">
             Simpan Aktivitas

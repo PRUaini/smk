@@ -1,20 +1,19 @@
 import React from "react";
 import { DashboardTargets } from "../types";
+import { calculatePercentage } from "../utils/percentage";
 
 interface KPIGridProps {
   targets: DashboardTargets;
 }
 
 export default function KPIGrid({ targets }: KPIGridProps) {
-  // Percentage calculations
-  const pointPct = Math.min(100, Math.round((targets.totalPoints / targets.targetPoints) * 100)) || 0;
-  const meetingPct = Math.min(100, Math.round((targets.totalMeetings / targets.targetMeetings) * 100)) || 0;
-  const salesPct = Math.min(100, Math.round((targets.totalSales / targets.targetSales) * 100)) || 0;
-
-  // Weekly percentages
-  const weeklyPointPct = Math.min(100, Math.round((targets.totalWeeklyPoints / targets.targetWeeklyPoints) * 100)) || 0;
-  const weeklyMeetingPct = Math.min(100, Math.round((targets.totalWeeklyMeetings / targets.targetWeeklyMeetings) * 100)) || 0;
-  const weeklySalesPct = Math.min(100, Math.round((targets.totalWeeklySales / targets.targetWeeklySales) * 100)) || 0;
+  const pointPct = calculatePercentage(targets.totalPoints, targets.targetPoints);
+  const meetingPct = calculatePercentage(targets.totalMeetings, targets.targetMeetings);
+  const salesPct = calculatePercentage(targets.totalSales, targets.targetSales);
+  const activeDaysPct = calculatePercentage(targets.activeDays, targets.totalDays);
+  const weeklyPointPct = calculatePercentage(targets.totalWeeklyPoints, targets.targetWeeklyPoints);
+  const weeklyMeetingPct = calculatePercentage(targets.totalWeeklyMeetings, targets.targetWeeklyMeetings);
+  const weeklySalesPct = calculatePercentage(targets.totalWeeklySales, targets.targetWeeklySales);
 
   return (
     <div className="kpi-grid">
@@ -108,13 +107,13 @@ export default function KPIGrid({ targets }: KPIGridProps) {
           <div className="kpi-meta">
             <span className="kpi-label">Penyelesaian Aktivitas</span>
             <div className="kpi-value-row">
-              <span className="kpi-value">{targets.activeDays ? Math.round((targets.activeDays / targets.totalDays) * 100) : 0}%</span>
+              <span className="kpi-value">{activeDaysPct}%</span>
               <span className="kpi-target">rata-rata bulan ini</span>
             </div>
           </div>
         </div>
         <div className="kpi-progress-bar-wrapper">
-          <div className="kpi-progress-bar bg-orange" style={{ width: `${targets.activeDays ? Math.round((targets.activeDays / targets.totalDays) * 100) : 0}%` }} />
+          <div className="kpi-progress-bar bg-orange" style={{ width: `${activeDaysPct}%` }} />
         </div>
         <div className="kpi-card-footer">
           <span>{targets.activeDays} dari {targets.totalDays} Hari Aktif</span>

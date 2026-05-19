@@ -1,12 +1,13 @@
 import React from "react";
 import { DashboardTargets } from "../types";
+import { calculatePercentage } from "../utils/percentage";
 
 interface FooterSummaryProps {
   targets: DashboardTargets;
 }
 
 export default function FooterSummary({ targets }: FooterSummaryProps) {
-  const percentage = Math.min(100, Math.round((targets.totalPoints / targets.targetPoints) * 100)) || 0;
+  const percentage = calculatePercentage(targets.totalPoints, targets.targetPoints);
   
   // Calculate average points per day based on totalPoints divided by activeDays (or default to 0 if 0 active days)
   const averagePoints = targets.activeDays 
@@ -36,7 +37,9 @@ export default function FooterSummary({ targets }: FooterSummaryProps) {
               <span className="val highlight-red">{targets.totalPoints}</span>
             </div>
             <div className="summary-progress-wrapper">
-              <div className="summary-progress-bar" style={{ width: `${percentage}%` }} />
+              <div className="summary-progress-bar-bg">
+                <div className="summary-progress-bar" style={{ width: `${percentage}%` }} />
+              </div>
               <span className="summary-pct-label">{percentage}%</span>
             </div>
           </div>

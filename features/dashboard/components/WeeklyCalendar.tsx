@@ -1,5 +1,6 @@
 import React from "react";
-import { Activity, ActivityStatus } from "../types";
+import { Activity } from "../types";
+import { DASHBOARD_TIME_SLOTS, DAYS_OF_WEEK } from "../constants";
 
 interface WeeklyCalendarProps {
   selectedMonth: number;
@@ -18,15 +19,8 @@ export default function WeeklyCalendar({
   onSelectTimeSlot,
   onToggleComplete,
 }: WeeklyCalendarProps) {
-  const daysOfWeek = ["Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
-  const timeSlots = ["08:00", "09:00", "10:00", "11:00", "13:00", "14:00", "15:00", "16:00", "17:00"];
-
-  const [selectedWeek, setSelectedWeek] = React.useState(0);
-
-  // Reset selected week when month changes
-  React.useEffect(() => {
-    setSelectedWeek(0);
-  }, [selectedMonth]);
+  const [weekSelection, setWeekSelection] = React.useState({ month: selectedMonth, week: 0 });
+  const selectedWeek = weekSelection.month === selectedMonth ? weekSelection.week : 0;
 
   const getWeeksInMonth = () => {
     const today = new Date();
@@ -65,7 +59,7 @@ export default function WeeklyCalendar({
       const tempDate = new Date(startDate);
       tempDate.setDate(startDate.getDate() + i);
       weekDates.push({
-        dayName: daysOfWeek[i],
+        dayName: DAYS_OF_WEEK[i],
         dayOfMonth: tempDate.getDate(),
         monthNum: tempDate.getMonth() + 1,
         formatted: `${tempDate.getFullYear()}-${String(tempDate.getMonth() + 1).padStart(2, "0")}-${String(tempDate.getDate()).padStart(2, "0")}`,
@@ -76,6 +70,9 @@ export default function WeeklyCalendar({
   };
 
   const weekDates = getWeekDates();
+  const weeklyActivities = activities.filter((activity) =>
+    weekDates.some((date) => date.formatted === activity.tanggal)
+  );
 
   // Helper: Find activity for a given date and time slot
   const getActivityForSlot = (dateStr: string, timeStr: string) => {
@@ -100,13 +97,13 @@ export default function WeeklyCalendar({
   return (
     <div className="weekly-calendar-card">
       {/* Week Selector Tabs */}
-      <div className="month-tabs-container" style={{ width: "fit-content", marginBottom: "1rem" }}>
+      <div className="month-tabs-container week-tabs-container">
         <div className="month-tabs-scroll">
           {weeks.map((_, index) => (
             <button
               key={index}
               className={`month-tab-btn ${selectedWeek === index ? "active" : ""}`}
-              onClick={() => setSelectedWeek(index)}
+              onClick={() => setWeekSelection({ month: selectedMonth, week: index })}
             >
               Minggu {index + 1}
             </button>
@@ -115,6 +112,20 @@ export default function WeeklyCalendar({
       </div>
 
       <div className="weekly-grid-container">
+        {weeklyActivities.length === 0 && (
+          <div className="weekly-empty-state">
+            <div className="weekly-empty-state-icon" aria-hidden="true">
+              +
+            </div>
+            <div>
+              <p className="weekly-empty-state-title">Belum ada aktivitas minggu ini</p>
+              <p className="weekly-empty-state-description">
+                Pilih slot waktu untuk menambahkan aktivitas baru.
+              </p>
+            </div>
+          </div>
+        )}
+
         {/* Grid Header */}
         <div className="calendar-grid-header">
           <div className="time-col-header" />
@@ -131,7 +142,7 @@ export default function WeeklyCalendar({
 
         {/* Time Grid Rows */}
         <div className="calendar-grid-body">
-          {timeSlots.map((time) => (
+          {DASHBOARD_TIME_SLOTS.map((time) => (
             <div key={time} className="calendar-grid-row">
               {/* Time Label */}
               <div className="time-cell">{time}</div>
