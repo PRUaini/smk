@@ -1,11 +1,30 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useState, useRef } from "react";
 import { login } from "../actions/login";
 
 export default function LoginForm() {
   const [state, formAction, isPending] = useActionState(login, undefined);
   const [showPassword, setShowPassword] = useState(false);
+  const illustrationRef = useRef<HTMLDivElement>(null);
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!illustrationRef.current) return;
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = (e.clientX - rect.left) / rect.width - 0.5;
+    const y = (e.clientY - rect.top) / rect.height - 0.5;
+
+    illustrationRef.current.style.setProperty("--tilt-x", `${y * -35}deg`);
+    illustrationRef.current.style.setProperty("--tilt-y", `${x * 35}deg`);
+    illustrationRef.current.style.setProperty("--scale", "1.08");
+  };
+
+  const handleMouseLeave = () => {
+    if (!illustrationRef.current) return;
+    illustrationRef.current.style.setProperty("--tilt-x", "0deg");
+    illustrationRef.current.style.setProperty("--tilt-y", "0deg");
+    illustrationRef.current.style.setProperty("--scale", "1");
+  };
 
   return (
     <div className="login-container">
@@ -13,14 +32,21 @@ export default function LoginForm() {
 
       <div className="login-card-split">
         {/* Left Banner */}
-        <div className="login-banner">
+        <div 
+          className="login-banner"
+          onMouseMove={handleMouseMove}
+          onMouseLeave={handleMouseLeave}
+        >
           <h1 className="banner-title">Sistem Manajemen Kegiatan</h1>
           <p className="banner-subtitle">
             Kelola kegiatan harian, sasaran mingguan, dan capaian Anda dengan lebih terstruktur.
           </p>
 
           {/* Animated Glassmorphism Illustration */}
-          <div className="banner-illustration-glass">
+          <div 
+            ref={illustrationRef}
+            className="banner-illustration-glass"
+          >
             {/* Floating Checklist Board */}
             <div className="glass-board floating-slow">
               <div className="glass-board-header" />

@@ -5,13 +5,14 @@ export async function updateSession(request: NextRequest) {
   // Guard: if Supabase is not configured, allow the request through
   // but redirect protected routes to login (no auth possible)
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
 
   if (
     !supabaseUrl ||
     !supabaseKey ||
     supabaseUrl === "your_supabase_project_url" ||
-    supabaseKey === "your_supabase_anon_key"
+    supabaseKey === "your_supabase_anon_key" ||
+    supabaseKey === "your_supabase_publishable_key"
   ) {
     const isLoginPage = request.nextUrl.pathname === "/login";
     const isPublicRoute = isLoginPage || request.nextUrl.pathname === "/";
