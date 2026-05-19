@@ -2,8 +2,8 @@ export interface Agent {
   id: string;
   kode_agent: string;
   nama: string;
-  jabatan: string | null;
-  unit_kerja: string | null;
+  jabatan: string;
+  unit: string;
   created_at: string;
   updated_at: string;
 }
