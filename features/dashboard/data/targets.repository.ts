@@ -39,16 +39,19 @@ export async function saveAgentTargets(kodeAgent: string, targets: Omit<AgentTar
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("agent_targets")
-    .upsert({
-      kode_agent: kodeAgent,
-      target_points: targets.targetPoints,
-      target_meetings: targets.targetMeetings,
-      target_sales: targets.targetSales,
-      target_weekly_points: targets.targetWeeklyPoints,
-      target_weekly_meetings: targets.targetWeeklyMeetings,
-      target_weekly_sales: targets.targetWeeklySales,
-      updated_at: new Date().toISOString(),
-    })
+    .upsert(
+      {
+        kode_agent: kodeAgent,
+        target_points: targets.targetPoints,
+        target_meetings: targets.targetMeetings,
+        target_sales: targets.targetSales,
+        target_weekly_points: targets.targetWeeklyPoints,
+        target_weekly_meetings: targets.targetWeeklyMeetings,
+        target_weekly_sales: targets.targetWeeklySales,
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: "kode_agent" }
+    )
     .select()
     .single();
 

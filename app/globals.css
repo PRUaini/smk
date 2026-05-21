@@ -2848,3 +2848,32 @@ body {
 .flex-1 {
   flex: 1;
 }
+
+/* =============================================
+   Skeleton Loader Components
+   ============================================= */
+.skeleton-pulse {
+  background: var(--color-border);
+  position: relative;
+  overflow: hidden;
+}
+
+.skeleton-pulse::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.4) 50%,
+    transparent 100%
+  );
+  animation: shimmer 1.6s infinite;
+}
+
+@keyframes shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}

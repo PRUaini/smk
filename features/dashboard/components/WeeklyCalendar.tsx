@@ -9,6 +9,7 @@ interface WeeklyCalendarProps {
   onSelectActivity: (activity: Activity) => void;
   onSelectTimeSlot: (dayStr: string, timeStr: string) => void;
   onToggleComplete: (id: string) => void;
+  autoFocusToday?: boolean;
 }
 
 export default function WeeklyCalendar({
@@ -18,9 +19,33 @@ export default function WeeklyCalendar({
   onSelectActivity,
   onSelectTimeSlot,
   onToggleComplete,
+  autoFocusToday,
 }: WeeklyCalendarProps) {
   const [weekSelection, setWeekSelection] = React.useState({ month: selectedMonth, week: 0 });
   const selectedWeek = weekSelection.month === selectedMonth ? weekSelection.week : 0;
+
+  React.useEffect(() => {
+    if (autoFocusToday) {
+      const today = new Date();
+      if (selectedMonth === today.getMonth()) {
+        const weeksList = getWeeksInMonth();
+        today.setHours(0, 0, 0, 0);
+        let todayWeekIdx = 0;
+        for (let i = 0; i < weeksList.length; i++) {
+          const start = new Date(weeksList[i]);
+          start.setHours(0, 0, 0, 0);
+          const end = new Date(start);
+          end.setDate(end.getDate() + 6);
+          end.setHours(23, 59, 59, 999);
+          if (today >= start && today <= end) {
+            todayWeekIdx = i;
+            break;
+          }
+        }
+        setWeekSelection({ month: selectedMonth, week: todayWeekIdx });
+      }
+    }
+  }, [selectedMonth, autoFocusToday]);
 
   const getWeeksInMonth = () => {
     const today = new Date();

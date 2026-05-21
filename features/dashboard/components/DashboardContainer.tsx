@@ -12,7 +12,6 @@ import LaporanAktivitas from "./LaporanAktivitas";
 import DashboardWidgetBoundary from "./DashboardWidgetBoundary";
 import type { AgentTargets } from "../data/targets.repository";
 import TargetsSidebar from "./TargetsSidebar";
-
 const SIDEBAR_TRANSITION_MS = 250;
 
 interface DashboardContainerProps {
@@ -24,7 +23,8 @@ interface DashboardContainerProps {
 export default function DashboardContainer({ initialKodeAgent, initialActivities, initialTargets }: DashboardContainerProps) {
   const [activities, setActivities] = useState<Activity[]>(initialActivities);
   const [targetsData, setTargetsData] = useState<AgentTargets | null>(initialTargets ?? null);
-  const [selectedMonth, setSelectedMonth] = useState<number>(0);
+  const [selectedMonth, setSelectedMonth] = useState<number>(() => new Date().getMonth());
+  const [autoFocusToday, setAutoFocusToday] = useState(false);
   const [selectedActivity, setSelectedActivity] = useState<Activity | null>(null);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
@@ -58,6 +58,15 @@ export default function DashboardContainer({ initialKodeAgent, initialActivities
   useEffect(() => {
     setTargetsData(initialTargets ?? null);
   }, [initialTargets]);
+
+  useEffect(() => {
+    const todayStr = new Date().toISOString().split("T")[0];
+    const lastVisited = localStorage.getItem("smk_last_visited_date");
+    if (lastVisited !== todayStr) {
+      localStorage.setItem("smk_last_visited_date", todayStr);
+      setAutoFocusToday(true);
+    }
+  }, []);
 
   useEffect(() => {
     return () => {
@@ -296,6 +305,7 @@ export default function DashboardContainer({ initialKodeAgent, initialActivities
               onSelectActivity={handleSelectActivity}
               onSelectTimeSlot={handleSelectTimeSlot}
               onToggleComplete={handleToggleComplete}
+              autoFocusToday={autoFocusToday}
             />
           </DashboardWidgetBoundary>
         ) : (

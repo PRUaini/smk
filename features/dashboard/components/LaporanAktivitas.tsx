@@ -822,12 +822,7 @@ export default function LaporanAktivitas({ targets, activities, selectedMonth }:
             <span className="side-value">{targets.activeDays} / {targets.totalDays} <span className="unit">hari</span></span>
           </div>
 
-          <button className="monthly-report-trigger-btn" onClick={() => alert("Membuka laporan bulanan detail...")}>
-            <span>Lihat Laporan Bulanan</span>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M9 5L15 12L9 19" />
-            </svg>
-          </button>
+
         </div>
       </div>
 
