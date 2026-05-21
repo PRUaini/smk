@@ -6,10 +6,9 @@ import { calculateDashboardTargets } from "../services/targets.service";
 import { saveActivityAction, toggleActivityStatusAction, removeActivityAction } from "../actions";
 import DashboardHeader from "./DashboardHeader";
 import MonthTabs from "./MonthTabs";
-import KPIGrid from "./KPIGrid";
 import WeeklyCalendar from "./WeeklyCalendar";
 import ActivitySidebar from "./ActivitySidebar";
-import FooterSummary from "./FooterSummary";
+import LaporanAktivitas from "./LaporanAktivitas";
 import DashboardWidgetBoundary from "./DashboardWidgetBoundary";
 
 interface DashboardContainerProps {
@@ -140,28 +139,49 @@ export default function DashboardContainer({ initialKodeAgent, initialActivities
       <main className="dashboard-main-new">
         <DashboardHeader kodeAgent={initialKodeAgent} />
 
-        {/* Luxury Segmented Tab Menu */}
-        <div className="dashboard-tab-navigation">
-          <div className="segmented-control">
-            <button
-              className={`segmented-tab ${activeTab === "agenda" ? "active" : ""}`}
-              onClick={() => handleTabChange("agenda")}
-            >
-              <svg className="tab-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M8 7V3M16 7V3M7 11H17M5 21H19C20.1046 21 21 20.1046 21 19V7C21 5.89543 20.1046 5 19 5H5C3.89543 5 3 5.89543 3 7V19C3 20.1046 3.89543 21 5 21Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
-              <span>Agenda Aktivitas</span>
-            </button>
-            <button
-              className={`segmented-tab ${activeTab === "laporan" ? "active" : ""}`}
-              onClick={() => handleTabChange("laporan")}
-            >
-              <svg className="tab-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M18 20V10M12 20V4M6 20V14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
-              <span>Laporan Aktivitas</span>
-            </button>
+        {/* Tab Selection Row (Segmented tab + Actions) */}
+        <div className="dashboard-tab-row">
+          <div className="dashboard-tab-navigation">
+            <div className="segmented-control">
+              <button
+                className={`segmented-tab ${activeTab === "agenda" ? "active" : ""}`}
+                onClick={() => handleTabChange("agenda")}
+              >
+                <svg className="tab-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M8 7V3M16 7V3M7 11H17M5 21H19C20.1046 21 21 20.1046 21 19V7C21 5.89543 20.1046 5 19 5H5C3.89543 5 3 5.89543 3 7V19C3 20.1046 3.89543 21 5 21Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+                <span>Agenda Aktivitas</span>
+              </button>
+              <button
+                className={`segmented-tab ${activeTab === "laporan" ? "active" : ""}`}
+                onClick={() => handleTabChange("laporan")}
+              >
+                <svg className="tab-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M18 20V10M12 20V4M6 20V14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+                <span>Laporan Aktivitas</span>
+              </button>
+            </div>
           </div>
+
+          {activeTab === "laporan" && (
+            <div className="dashboard-tab-actions">
+              <div className="report-dropdown-selector" onClick={() => alert("Buka pemilih bulan/tahun...")}>
+                <svg className="calendar-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                  <line x1="16" y1="2" x2="16" y2="6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  <line x1="8" y1="2" x2="8" y2="6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  <line x1="3" y1="10" x2="21" y2="10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+                <span>
+                  {new Date().getFullYear()}
+                </span>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M6 9l6 6 6-6" />
+                </svg>
+              </div>
+            </div>
+          )}
         </div>
 
         <MonthTabs selectedMonth={selectedMonth} onMonthChange={handleMonthChange} />
@@ -178,15 +198,7 @@ export default function DashboardContainer({ initialKodeAgent, initialActivities
             />
           </DashboardWidgetBoundary>
         ) : (
-          <>
-            <DashboardWidgetBoundary label="Ringkasan KPI">
-              <KPIGrid targets={targets} />
-            </DashboardWidgetBoundary>
-
-            <DashboardWidgetBoundary label="Ringkasan sasaran">
-              <FooterSummary targets={targets} />
-            </DashboardWidgetBoundary>
-          </>
+          <LaporanAktivitas targets={targets} activities={activities} selectedMonth={selectedMonth} />
         )}
       </main>
 
