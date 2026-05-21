@@ -47,7 +47,7 @@ function countMeetings(activities: Activity[]) {
 }
 
 function countSales(activities: Activity[]) {
-  return activities.filter((activity) => activity.kegiatan === "Penjualan").length;
+  return activities.filter((activity) => activity.kegiatan === "Penjualan / Closing").length;
 }
 
 function getDaysInMonth(year: number, monthIndex: number) {

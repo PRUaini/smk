@@ -1,9 +1,9 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useTransition, useEffect } from "react";
 import { Activity } from "../types";
-import { getSeedActivities } from "../data/activities.repository";
 import { calculateDashboardTargets } from "../services/targets.service";
+import { saveActivityAction, toggleActivityStatusAction, removeActivityAction } from "../actions";
 import DashboardHeader from "./DashboardHeader";
 import MonthTabs from "./MonthTabs";
 import KPIGrid from "./KPIGrid";
@@ -14,15 +14,21 @@ import DashboardWidgetBoundary from "./DashboardWidgetBoundary";
 
 interface DashboardContainerProps {
   initialKodeAgent: string;
+  initialActivities: Activity[];
 }
 
-export default function DashboardContainer({ initialKodeAgent }: DashboardContainerProps) {
-  const [activities, setActivities] = useState<Activity[]>(() => getSeedActivities());
+export default function DashboardContainer({ initialKodeAgent, initialActivities }: DashboardContainerProps) {
+  const [activities, setActivities] = useState<Activity[]>(initialActivities);
   const [selectedMonth, setSelectedMonth] = useState<number>(0);
   const [selectedActivity, setSelectedActivity] = useState<Activity | null>(null);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isPending, startTransition] = useTransition();
+
+  useEffect(() => {
+    setActivities(initialActivities);
+  }, [initialActivities]);
 
   const targets = useMemo(
     () => calculateDashboardTargets(activities, selectedMonth),
@@ -50,6 +56,9 @@ export default function DashboardContainer({ initialKodeAgent }: DashboardContai
   };
 
   const handleToggleComplete = (id: string) => {
+    const activity = activities.find((a) => a.id === id);
+    if (!activity) return;
+
     setActivities((prev) =>
       prev.map((act) =>
         act.id === id
@@ -57,28 +66,65 @@ export default function DashboardContainer({ initialKodeAgent }: DashboardContai
           : act
       )
     );
+
+    startTransition(async () => {
+      try {
+        await toggleActivityStatusAction(id, activity.status);
+      } catch (err) {
+        setActivities((prev) =>
+          prev.map((act) =>
+            act.id === id ? { ...act, status: activity.status } : act
+          )
+        );
+        alert("Gagal memperbarui status aktivitas");
+      }
+    });
   };
 
   const handleSaveActivity = (activityData: Omit<Activity, "id"> & { id?: string }) => {
-    if (activityData.id) {
+    const isEdit = !!activityData.id;
+    const tempId = activityData.id || `temp-${Date.now()}`;
+    const prevActivities = [...activities];
+
+    if (isEdit) {
       setActivities((prev) =>
         prev.map((act) => (act.id === activityData.id ? (activityData as Activity) : act))
       );
     } else {
       const newActivity: Activity = {
         ...activityData,
-        id: `act-${Date.now()}`,
+        id: tempId,
       };
       setActivities((prev) => [...prev, newActivity]);
     }
     setIsSidebarOpen(false);
     setSelectedActivity(null);
+
+    startTransition(async () => {
+      try {
+        await saveActivityAction(activityData);
+      } catch (err) {
+        setActivities(prevActivities);
+        alert("Gagal menyimpan aktivitas");
+      }
+    });
   };
 
   const handleDeleteActivity = (id: string) => {
+    const prevActivities = [...activities];
+
     setActivities((prev) => prev.filter((act) => act.id !== id));
     setIsSidebarOpen(false);
     setSelectedActivity(null);
+
+    startTransition(async () => {
+      try {
+        await removeActivityAction(id);
+      } catch (err) {
+        setActivities(prevActivities);
+        alert("Gagal menghapus aktivitas");
+      }
+    });
   };
 
   return (
@@ -116,6 +162,7 @@ export default function DashboardContainer({ initialKodeAgent }: DashboardContai
           selectedTime={selectedTime}
           onSave={handleSaveActivity}
           onDelete={handleDeleteActivity}
+          isPending={isPending}
           onClose={() => {
             setIsSidebarOpen(false);
             setSelectedActivity(null);

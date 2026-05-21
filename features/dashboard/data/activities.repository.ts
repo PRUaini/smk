@@ -1,168 +1,110 @@
+import { createClient } from "@/lib/supabase/server";
 import type { Activity } from "../types";
 
-export function getSeedActivities(): Activity[] {
-  return SEED_ACTIVITIES.map((activity) => ({ ...activity }));
+export async function getActivitiesByAgent(agentId: string): Promise<Activity[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("activities")
+    .select("*")
+    .eq("agent_id", agentId)
+    .order("tanggal", { ascending: true })
+    .order("waktu", { ascending: true });
+
+  if (error) {
+    throw new Error(`Failed to fetch activities: ${error.message}`);
+  }
+
+  return (data || []).map((row) => ({
+    id: row.id,
+    tanggal: row.tanggal,
+    waktu: row.waktu,
+    kegiatan: row.kegiatan,
+    poin: row.poin,
+    status: row.status,
+    catatan: row.catatan,
+    nasabah: row.nasabah,
+    produk: row.produk,
+  }));
 }
 
-const SEED_ACTIVITIES: Activity[] = [
-  {
-    id: "act-1",
-    tanggal: "2024-01-06",
-    waktu: "08:00",
-    kegiatan: "Pendekatan",
-    poin: 1,
-    status: "Selesai",
-    catatan: "Melakukan pendekatan dengan calon nasabah",
-    nasabah: "",
-  },
-  {
-    id: "act-2",
-    tanggal: "2024-01-06",
-    waktu: "09:00",
-    kegiatan: "Pertemuan",
-    poin: 2,
-    status: "Selesai",
-    catatan: "Melakukan pertemuan / janji dengan nasabah",
-    nasabah: "Bapak Andi",
-  },
-  {
-    id: "act-3",
-    tanggal: "2024-01-06",
-    waktu: "10:00",
-    kegiatan: "Pencarian Fakta",
-    poin: 2,
-    status: "Selesai",
-    catatan: "Menggali kebutuhan dan potensi nasabah",
-    nasabah: "",
-  },
-  {
-    id: "act-4",
-    tanggal: "2024-01-06",
-    waktu: "11:00",
-    kegiatan: "Mendapatkan 3 Referensi",
-    poin: 4,
-    status: "Selesai",
-    catatan: "Meminta referensi dari nasabah atau kontak terkait",
-    nasabah: "",
-  },
-  {
-    id: "act-5",
-    tanggal: "2024-01-06",
-    waktu: "13:00",
-    kegiatan: "Wawancara Penutupan",
-    poin: 4,
-    status: "Belum",
-    catatan: "Melakukan wawancara penutupan",
-    nasabah: "",
-  },
-  {
-    id: "act-6",
-    tanggal: "2024-01-06",
-    waktu: "14:00",
-    kegiatan: "Penjualan",
-    poin: 1,
-    status: "Belum",
-    catatan: "Melakukan penjualan / presentasi produk",
-    nasabah: "",
-  },
-  {
-    id: "act-7",
-    tanggal: "2024-01-06",
-    waktu: "15:00",
-    kegiatan: "Penyerahan Polis/Layanan",
-    poin: 1,
-    status: "Belum",
-    catatan: "Menyerahkan polis / layanan kepada nasabah",
-    nasabah: "",
-  },
-  {
-    id: "act-8",
-    tanggal: "2024-01-07",
-    waktu: "08:00",
-    kegiatan: "Pendekatan",
-    poin: 1,
-    status: "Selesai",
-    catatan: "Melakukan pendekatan dengan calon nasabah",
-    nasabah: "",
-  },
-  {
-    id: "act-9",
-    tanggal: "2024-01-07",
-    waktu: "09:00",
-    kegiatan: "Pertemuan",
-    poin: 2,
-    status: "Selesai",
-    catatan: "Melakukan pertemuan / janji dengan nasabah",
-    nasabah: "",
-  },
-  {
-    id: "act-10",
-    tanggal: "2024-01-07",
-    waktu: "10:00",
-    kegiatan: "Pencarian Fakta",
-    poin: 2,
-    status: "Belum",
-    catatan: "Menggali kebutuhan dan potensi nasabah",
-    nasabah: "",
-  },
-  {
-    id: "act-11",
-    tanggal: "2024-01-07",
-    waktu: "11:00",
-    kegiatan: "Mendapatkan 3 Referensi",
-    poin: 4,
-    status: "Belum",
-    catatan: "Meminta referensi dari nasabah atau kontak terkait",
-    nasabah: "",
-  },
-  {
-    id: "act-12",
-    tanggal: "2024-01-08",
-    waktu: "08:00",
-    kegiatan: "Pendekatan",
-    poin: 1,
-    status: "Selesai",
-    catatan: "Melakukan pendekatan dengan calon nasabah",
-    nasabah: "",
-  },
-  {
-    id: "act-13",
-    tanggal: "2024-01-08",
-    waktu: "09:00",
-    kegiatan: "Pertemuan",
-    poin: 2,
-    status: "Belum",
-    catatan: "Melakukan pertemuan / janji dengan nasabah",
-    nasabah: "",
-  },
-  {
-    id: "act-14",
-    tanggal: "2024-01-08",
-    waktu: "10:00",
-    kegiatan: "Pencarian Fakta",
-    poin: 2,
-    status: "Selesai",
-    catatan: "Menggali kebutuhan dan potensi nasabah",
-    nasabah: "",
-  },
-  {
-    id: "act-15",
-    tanggal: "2024-01-08",
-    waktu: "11:00",
-    kegiatan: "Mendapatkan 3 Referensi",
-    poin: 4,
-    status: "Belum",
-    catatan: "Meminta referensi dari nasabah atau kontak terkait",
-    nasabah: "",
-  },
-  {
-    id: "act-16",
-    tanggal: "2024-01-08",
-    waktu: "13:00",
-    kegiatan: "Wawancara Penutupan",
-    poin: 4,
-    status: "Proses",
-    catatan: "Wawancara Penutupan",
-    nasabah: "",
-  },
-];
+export async function createActivity(
+  agentId: string,
+  activity: Omit<Activity, "id">
+): Promise<Activity> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("activities")
+    .insert({
+      agent_id: agentId,
+      tanggal: activity.tanggal,
+      waktu: activity.waktu,
+      kegiatan: activity.kegiatan,
+      poin: activity.poin,
+      status: activity.status,
+      catatan: activity.catatan,
+      nasabah: activity.nasabah,
+      produk: activity.produk,
+    })
+    .select()
+    .single();
+
+  if (error) {
+    throw new Error(`Failed to create activity: ${error.message}`);
+  }
+
+  return {
+    id: data.id,
+    tanggal: data.tanggal,
+    waktu: data.waktu,
+    kegiatan: data.kegiatan,
+    poin: data.poin,
+    status: data.status,
+    catatan: data.catatan,
+    nasabah: data.nasabah,
+    produk: data.produk,
+  };
+}
+
+export async function updateActivity(
+  id: string,
+  agentId: string,
+  activity: Partial<Omit<Activity, "id">>
+): Promise<Activity> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("activities")
+    .update(activity)
+    .eq("id", id)
+    .eq("agent_id", agentId)
+    .select()
+    .single();
+
+  if (error) {
+    throw new Error(`Failed to update activity: ${error.message}`);
+  }
+
+  return {
+    id: data.id,
+    tanggal: data.tanggal,
+    waktu: data.waktu,
+    kegiatan: data.kegiatan,
+    poin: data.poin,
+    status: data.status,
+    catatan: data.catatan,
+    nasabah: data.nasabah,
+    produk: data.produk,
+  };
+}
+
+export async function deleteActivity(id: string, agentId: string): Promise<void> {
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("activities")
+    .delete()
+    .eq("id", id)
+    .eq("agent_id", agentId);
+
+  if (error) {
+    throw new Error(`Failed to delete activity: ${error.message}`);
+  }
+}

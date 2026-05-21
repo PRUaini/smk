@@ -1,11 +1,11 @@
 export type ActivityType =
   | "Pendekatan"
   | "Pertemuan"
-  | "Pencarian Fakta"
+  | "Fact Finding"
   | "Mendapatkan 3 Referensi"
   | "Wawancara Penutupan"
-  | "Penjualan"
-  | "Penyerahan Polis/Layanan";
+  | "Penjualan / Closing"
+  | "Penyerahan Polis / Servicing";
 
 export type ActivityStatus = "Selesai" | "Proses" | "Belum";
 
@@ -19,7 +19,6 @@ export interface Activity {
   catatan: string;
   nasabah: string;
   produk: string;
-  lampiran?: string;
 }
 
 export interface DashboardTargets {

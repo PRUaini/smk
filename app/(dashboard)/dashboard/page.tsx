@@ -7,13 +7,20 @@ export const metadata: Metadata = {
   description: "Dashboard utama SMK Portal.",
 };
 
+import { getActivitiesByAgent } from "@/features/dashboard/data/activities.repository";
+
 export default async function DashboardPage() {
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const kodeAgent = user?.email?.replace("@smk.internal", "") ?? "Agent";
+  if (!user) {
+    throw new Error("User session not found");
+  }
 
-  return <DashboardContainer initialKodeAgent={kodeAgent} />;
+  const kodeAgent = user.email?.replace("@smk.internal", "") ?? "Agent";
+  const activities = await getActivitiesByAgent(user.id);
+
+  return <DashboardContainer initialKodeAgent={kodeAgent} initialActivities={activities} />;
 }

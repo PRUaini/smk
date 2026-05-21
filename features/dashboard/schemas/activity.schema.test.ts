@@ -10,6 +10,7 @@ describe("activityFormSchema", () => {
       status: "Selesai",
       catatan: "Meeting",
       nasabah: "Bapak Andi",
+      produk: "PRULink",
     });
 
     expect(result.success).toBe(true);
@@ -23,6 +24,7 @@ describe("activityFormSchema", () => {
       status: "Selesai",
       catatan: "",
       nasabah: "",
+      produk: "",
     });
 
     expect(result.success).toBe(false);
@@ -36,6 +38,7 @@ describe("activityFormSchema", () => {
       status: "Belum",
       catatan: "",
       nasabah: "",
+      produk: "",
     });
 
     expect(payload.poin).toBe(1);

@@ -11,6 +11,7 @@ interface ActivitySidebarProps {
   selectedTime: string | null;
   onSave: (activity: Omit<Activity, "id"> & { id?: string }) => void;
   onDelete: (id: string) => void;
+  isPending: boolean;
   onClose: () => void;
 }
 
@@ -20,6 +21,7 @@ export default function ActivitySidebar({
   selectedTime,
   onSave,
   onDelete,
+  isPending,
   onClose,
 }: ActivitySidebarProps) {
   const form = useForm<ActivityFormData>({
@@ -95,11 +97,11 @@ export default function ActivitySidebar({
           >
             <option value="Pendekatan">Pendekatan (1 poin)</option>
             <option value="Pertemuan">Pertemuan (2 poin)</option>
-            <option value="Pencarian Fakta">Pencarian Fakta (2 poin)</option>
+            <option value="Fact Finding">Fact Finding (2 poin)</option>
             <option value="Mendapatkan 3 Referensi">Mendapatkan 3 Referensi (4 poin)</option>
             <option value="Wawancara Penutupan">Wawancara Penutupan (4 poin)</option>
-            <option value="Penjualan">Penjualan (1 poin)</option>
-            <option value="Penyerahan Polis/Layanan">Penyerahan Polis/Layanan (1 poin)</option>
+            <option value="Penjualan / Closing">Penjualan / Closing (1 poin)</option>
+            <option value="Penyerahan Polis / Servicing">Penyerahan Polis / Servicing (1 poin)</option>
           </select>
         </div>
 
@@ -160,17 +162,18 @@ export default function ActivitySidebar({
         </div>
 
         <div className="sidebar-actions">
-          <button type="submit" className="save-activity-btn">
-            Simpan Aktivitas
+          <button type="submit" className="save-activity-btn" disabled={isPending}>
+            {isPending ? "Menyimpan..." : "Simpan Aktivitas"}
           </button>
           
           {selectedActivity && (
             <button
               type="button"
               className="delete-activity-btn"
+              disabled={isPending}
               onClick={() => onDelete(selectedActivity.id)}
             >
-              Hapus
+              {isPending ? "Menghapus..." : "Hapus"}
             </button>
           )}
         </div>

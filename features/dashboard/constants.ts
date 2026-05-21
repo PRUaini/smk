@@ -17,21 +17,21 @@ export const DAYS_OF_WEEK = ["Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu
 export const ACTIVITY_POINTS: Record<ActivityType, number> = {
   Pendekatan: 1,
   Pertemuan: 2,
-  "Pencarian Fakta": 2,
+  "Fact Finding": 2,
   "Mendapatkan 3 Referensi": 4,
   "Wawancara Penutupan": 4,
-  Penjualan: 1,
-  "Penyerahan Polis/Layanan": 1,
+  "Penjualan / Closing": 1,
+  "Penyerahan Polis / Servicing": 1,
 };
 
 export const ACTIVITY_DESCRIPTIONS: Record<ActivityType, string> = {
   Pendekatan: "Melakukan pendekatan awal dengan calon nasabah",
   Pertemuan: "Melakukan pertemuan atau janji temu dengan nasabah",
-  "Pencarian Fakta": "Menggali kebutuhan dan potensi nasabah",
+  "Fact Finding": "Menggali kebutuhan dan potensi nasabah",
   "Mendapatkan 3 Referensi": "Meminta referensi dari nasabah atau kontak terkait",
   "Wawancara Penutupan": "Melakukan wawancara untuk penutupan polis",
-  Penjualan: "Melakukan penjualan atau presentasi produk",
-  "Penyerahan Polis/Layanan": "Menyerahkan polis atau memberikan layanan kepada nasabah",
+  "Penjualan / Closing": "Melakukan penjualan atau presentasi produk",
+  "Penyerahan Polis / Servicing": "Menyerahkan polis atau memberikan layanan kepada nasabah",
 };
 
 export const DEFAULT_TARGETS: Pick<
