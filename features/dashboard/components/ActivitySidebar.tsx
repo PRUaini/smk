@@ -29,8 +29,9 @@ export default function ActivitySidebar({
       waktu: selectedActivity?.waktu ?? selectedTime ?? "08:00",
       kegiatan: selectedActivity?.kegiatan ?? "Pendekatan",
       status: selectedActivity?.status ?? "Belum",
-      catatan: selectedActivity?.catatan ?? "",
-      nasabah: selectedActivity?.nasabah ?? "",
+      catatan: selectedActivity?.catatan ?? "...",
+      nasabah: selectedActivity?.nasabah ?? "...",
+      produk: selectedActivity?.produk ?? "...",
     },
   });
 
@@ -145,6 +146,16 @@ export default function ActivitySidebar({
             className="form-input"
             placeholder="Nama calon nasabah..."
             {...form.register("nasabah")}
+          />
+        </div>
+
+        <div className="form-group">
+          <label className="form-label">Produk (Opsional)</label>
+          <input
+            type="text"
+            className="form-input"
+            placeholder="Nama calon nasabah..."
+            {...form.register("produk")}
           />
         </div>
 

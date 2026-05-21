@@ -17,6 +17,7 @@ export const activityFormSchema = z.object({
   status: z.enum(activityStatuses),
   catatan: z.string().max(200, "Catatan maksimal 200 karakter"),
   nasabah: z.string(),
+  produk: z.string()
 });
 
 export type ActivityFormData = z.infer<typeof activityFormSchema>;
@@ -34,5 +35,6 @@ export function buildActivityPayload(
     status: formData.status,
     catatan: formData.catatan || ACTIVITY_DESCRIPTIONS[formData.kegiatan],
     nasabah: formData.nasabah,
+    produk: formData.produk
   };
 }
