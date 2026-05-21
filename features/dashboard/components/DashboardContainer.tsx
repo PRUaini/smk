@@ -1,58 +1,142 @@
 "use client";
 
-import React, { useState, useMemo, useTransition, useEffect } from "react";
+import React, { useState, useMemo, useTransition, useEffect, useRef } from "react";
 import { Activity } from "../types";
 import { calculateDashboardTargets } from "../services/targets.service";
-import { saveActivityAction, toggleActivityStatusAction, removeActivityAction } from "../actions";
+import { saveActivityAction, toggleActivityStatusAction, removeActivityAction, saveAgentTargetsAction } from "../actions";
 import DashboardHeader from "./DashboardHeader";
 import MonthTabs from "./MonthTabs";
 import WeeklyCalendar from "./WeeklyCalendar";
 import ActivitySidebar from "./ActivitySidebar";
 import LaporanAktivitas from "./LaporanAktivitas";
 import DashboardWidgetBoundary from "./DashboardWidgetBoundary";
+import type { AgentTargets } from "../data/targets.repository";
+import TargetsSidebar from "./TargetsSidebar";
+
+const SIDEBAR_TRANSITION_MS = 250;
 
 interface DashboardContainerProps {
   initialKodeAgent: string;
   initialActivities: Activity[];
+  initialTargets?: AgentTargets | null;
 }
 
-export default function DashboardContainer({ initialKodeAgent, initialActivities }: DashboardContainerProps) {
+export default function DashboardContainer({ initialKodeAgent, initialActivities, initialTargets }: DashboardContainerProps) {
   const [activities, setActivities] = useState<Activity[]>(initialActivities);
+  const [targetsData, setTargetsData] = useState<AgentTargets | null>(initialTargets ?? null);
   const [selectedMonth, setSelectedMonth] = useState<number>(0);
   const [selectedActivity, setSelectedActivity] = useState<Activity | null>(null);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isTargetsSidebarOpen, setIsTargetsSidebarOpen] = useState(false);
+  const [isSidebarClosing, setIsSidebarClosing] = useState(false);
+  const [isTargetsSidebarClosing, setIsTargetsSidebarClosing] = useState(false);
   const [isPending, startTransition] = useTransition();
   const [activeTab, setActiveTab] = useState<"agenda" | "laporan">("agenda");
+  const sidebarCloseTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const targetsSidebarCloseTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const clearSidebarCloseTimer = () => {
+    if (sidebarCloseTimer.current) {
+      clearTimeout(sidebarCloseTimer.current);
+      sidebarCloseTimer.current = null;
+    }
+  };
+
+  const clearTargetsSidebarCloseTimer = () => {
+    if (targetsSidebarCloseTimer.current) {
+      clearTimeout(targetsSidebarCloseTimer.current);
+      targetsSidebarCloseTimer.current = null;
+    }
+  };
 
   useEffect(() => {
     setActivities(initialActivities);
   }, [initialActivities]);
 
-  const targets = useMemo(
-    () => calculateDashboardTargets(activities, selectedMonth),
-    [activities, selectedMonth]
-  );
+  useEffect(() => {
+    setTargetsData(initialTargets ?? null);
+  }, [initialTargets]);
+
+  useEffect(() => {
+    return () => {
+      clearSidebarCloseTimer();
+      clearTargetsSidebarCloseTimer();
+    };
+  }, []);
+
+  const openActivitySidebar = () => {
+    clearSidebarCloseTimer();
+    setIsSidebarClosing(false);
+    setIsSidebarOpen(true);
+  };
+
+  const closeActivitySidebar = () => {
+    clearSidebarCloseTimer();
+    if (!isSidebarOpen) {
+      setSelectedActivity(null);
+      setIsSidebarClosing(false);
+      return;
+    }
+    setIsSidebarOpen(false);
+    setIsSidebarClosing(true);
+    sidebarCloseTimer.current = setTimeout(() => {
+      setIsSidebarClosing(false);
+      setSelectedActivity(null);
+      sidebarCloseTimer.current = null;
+    }, SIDEBAR_TRANSITION_MS);
+  };
+
+  const openTargetsSidebar = () => {
+    clearTargetsSidebarCloseTimer();
+    setIsTargetsSidebarClosing(false);
+    setIsTargetsSidebarOpen(true);
+  };
+
+  const closeTargetsSidebar = () => {
+    clearTargetsSidebarCloseTimer();
+    if (!isTargetsSidebarOpen) {
+      setIsTargetsSidebarClosing(false);
+      return;
+    }
+    setIsTargetsSidebarOpen(false);
+    setIsTargetsSidebarClosing(true);
+    targetsSidebarCloseTimer.current = setTimeout(() => {
+      setIsTargetsSidebarClosing(false);
+      targetsSidebarCloseTimer.current = null;
+    }, SIDEBAR_TRANSITION_MS);
+  };
+
+  const targets = useMemo(() => {
+    const customTargets = targetsData ? {
+      targetPoints: targetsData.targetPoints,
+      targetMeetings: targetsData.targetMeetings,
+      targetSales: targetsData.targetSales,
+      targetWeeklyPoints: targetsData.targetWeeklyPoints,
+      targetWeeklyMeetings: targetsData.targetWeeklyMeetings,
+      targetWeeklySales: targetsData.targetWeeklySales,
+    } : undefined;
+    return calculateDashboardTargets(activities, selectedMonth, customTargets);
+  }, [activities, selectedMonth, targetsData]);
 
   const handleMonthChange = (monthIdx: number) => {
     setSelectedMonth(monthIdx);
-    setIsSidebarOpen(false);
-    setSelectedActivity(null);
+    closeActivitySidebar();
   };
 
   const handleSelectActivity = (activity: Activity) => {
     setSelectedActivity(activity);
     setSelectedDate(null);
     setSelectedTime(null);
-    setIsSidebarOpen(true);
+    openActivitySidebar();
   };
 
   const handleSelectTimeSlot = (dateStr: string, timeStr: string) => {
     setSelectedActivity(null);
     setSelectedDate(dateStr);
     setSelectedTime(timeStr);
-    setIsSidebarOpen(true);
+    openActivitySidebar();
   };
 
   const handleToggleComplete = (id: string) => {
@@ -97,8 +181,7 @@ export default function DashboardContainer({ initialKodeAgent, initialActivities
       };
       setActivities((prev) => [...prev, newActivity]);
     }
-    setIsSidebarOpen(false);
-    setSelectedActivity(null);
+    closeActivitySidebar();
 
     startTransition(async () => {
       try {
@@ -114,8 +197,7 @@ export default function DashboardContainer({ initialKodeAgent, initialActivities
     const prevActivities = [...activities];
 
     setActivities((prev) => prev.filter((act) => act.id !== id));
-    setIsSidebarOpen(false);
-    setSelectedActivity(null);
+    closeActivitySidebar();
 
     startTransition(async () => {
       try {
@@ -127,10 +209,22 @@ export default function DashboardContainer({ initialKodeAgent, initialActivities
     });
   };
 
+  const handleSaveTargets = (newTargets: Omit<AgentTargets, "kodeAgent">) => {
+    startTransition(async () => {
+      try {
+        const saved = await saveAgentTargetsAction(newTargets);
+        setTargetsData(saved);
+        closeTargetsSidebar();
+      } catch (err) {
+        alert(err instanceof Error ? err.message : "Gagal menyimpan target");
+      }
+    });
+  };
+
   const handleTabChange = (tab: "agenda" | "laporan") => {
     setActiveTab(tab);
-    setIsSidebarOpen(false);
-    setSelectedActivity(null);
+    closeActivitySidebar();
+    closeTargetsSidebar();
   };
 
   return (
@@ -180,6 +274,13 @@ export default function DashboardContainer({ initialKodeAgent, initialActivities
                   <path d="M6 9l6 6 6-6" />
                 </svg>
               </div>
+              <button className="edit-targets-trigger-btn" onClick={openTargetsSidebar}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="12" cy="12" r="3" />
+                  <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+                </svg>
+                <span>Edit Target</span>
+              </button>
             </div>
           )}
         </div>
@@ -202,7 +303,7 @@ export default function DashboardContainer({ initialKodeAgent, initialActivities
         )}
       </main>
 
-      {isSidebarOpen && (
+      {(isSidebarOpen || isSidebarClosing) && (
         <ActivitySidebar
           selectedActivity={selectedActivity}
           selectedDate={selectedDate}
@@ -210,10 +311,18 @@ export default function DashboardContainer({ initialKodeAgent, initialActivities
           onSave={handleSaveActivity}
           onDelete={handleDeleteActivity}
           isPending={isPending}
-          onClose={() => {
-            setIsSidebarOpen(false);
-            setSelectedActivity(null);
-          }}
+          onClose={closeActivitySidebar}
+          className={isSidebarClosing ? "closing" : "opening"}
+        />
+      )}
+
+      {(isTargetsSidebarOpen || isTargetsSidebarClosing) && (
+        <TargetsSidebar
+          initialTargets={targetsData}
+          onSave={handleSaveTargets}
+          isPending={isPending}
+          onClose={closeTargetsSidebar}
+          className={isTargetsSidebarClosing ? "closing" : "opening"}
         />
       )}
 
@@ -226,7 +335,7 @@ export default function DashboardContainer({ initialKodeAgent, initialActivities
             const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
             setSelectedDate(todayStr);
             setSelectedTime("08:00");
-            setIsSidebarOpen(true);
+            openActivitySidebar();
           }}
           aria-label="Add Activity"
         >

@@ -13,6 +13,7 @@ interface ActivitySidebarProps {
   onDelete: (id: string) => void;
   isPending: boolean;
   onClose: () => void;
+  className?: string;
 }
 
 export default function ActivitySidebar({
@@ -23,6 +24,7 @@ export default function ActivitySidebar({
   onDelete,
   isPending,
   onClose,
+  className = "",
 }: ActivitySidebarProps) {
   const form = useForm<ActivityFormData>({
     resolver: zodResolver(activityFormSchema),
@@ -53,7 +55,7 @@ export default function ActivitySidebar({
   };
 
   return (
-    <aside className="activity-sidebar-card">
+    <aside className={`activity-sidebar-card ${className}`.trim()}>
       <div className="sidebar-header">
         <h2 className="sidebar-title">
           {selectedActivity ? "Edit Aktivitas" : "Tambah Aktivitas"}

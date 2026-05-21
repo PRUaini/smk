@@ -8,6 +8,7 @@ export const metadata: Metadata = {
 };
 
 import { getActivitiesByAgent } from "@/features/dashboard/data/activities.repository";
+import { getAgentTargets } from "@/features/dashboard/data/targets.repository";
 
 export default async function DashboardPage() {
   const supabase = await createClient();
@@ -21,6 +22,13 @@ export default async function DashboardPage() {
 
   const kodeAgent = user.email?.replace("@smk.internal", "") ?? "Agent";
   const activities = await getActivitiesByAgent(user.id);
+  const initialTargets = await getAgentTargets(kodeAgent);
 
-  return <DashboardContainer initialKodeAgent={kodeAgent} initialActivities={activities} />;
+  return (
+    <DashboardContainer
+      initialKodeAgent={kodeAgent}
+      initialActivities={activities}
+      initialTargets={initialTargets}
+    />
+  );
 }

@@ -56,3 +56,24 @@ export async function removeActivityAction(id: string): Promise<void> {
   await deleteActivity(id, agentId);
   revalidatePath("/dashboard");
 }
+
+import { saveAgentTargets, type AgentTargets } from "../data/targets.repository";
+
+export async function saveAgentTargetsAction(
+  targetsData: Omit<AgentTargets, "kodeAgent">
+): Promise<AgentTargets> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+    error,
+  } = await supabase.auth.getUser();
+
+  if (error || !user) {
+    throw new Error("Unauthorized access");
+  }
+
+  const kodeAgent = user.email?.replace("@smk.internal", "") ?? "Agent";
+  const result = await saveAgentTargets(kodeAgent, targetsData);
+  revalidatePath("/dashboard");
+  return result;
+}

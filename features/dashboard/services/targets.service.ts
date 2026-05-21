@@ -5,7 +5,18 @@ const MEETING_TYPES = new Set(["Pertemuan", "Wawancara Penutupan"]);
 
 export function calculateDashboardTargets(
   activities: Activity[],
-  selectedMonth: number
+  selectedMonth: number,
+  customTargets?: Partial<
+    Pick<
+      DashboardTargets,
+      | "targetPoints"
+      | "targetMeetings"
+      | "targetSales"
+      | "targetWeeklyPoints"
+      | "targetWeeklyMeetings"
+      | "targetWeeklySales"
+    >
+  >
 ): DashboardTargets {
   const monthNumber = selectedMonth + 1;
   const monthlyActivities = activities.filter((activity) => {
@@ -27,6 +38,7 @@ export function calculateDashboardTargets(
 
   return {
     ...DEFAULT_TARGETS,
+    ...customTargets,
     totalPoints: sumPoints(completedMonthlyActivities),
     totalMeetings: countMeetings(completedMonthlyActivities),
     totalSales: countSales(completedMonthlyActivities),
