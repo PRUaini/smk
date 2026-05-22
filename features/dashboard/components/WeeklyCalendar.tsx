@@ -119,17 +119,20 @@ export default function WeeklyCalendar({
     return dateStr === formattedToday;
   };
 
+const getActivityTypeClass = (kegiatan: string) => {
+  if (kegiatan.includes("Pendekatan")) return "act-type-pendekatan";
+  if (kegiatan.includes("Pertemuan")) return "act-type-pertemuan";
+  if (kegiatan.includes("Wawancara")) return "act-type-wawancara";
+  if (kegiatan.includes("Penjualan")) return "act-type-penjualan";
+  if (kegiatan.includes("Meeting")) return "act-type-meeting";
+  return "act-type-admin";
+};
+
   const renderActivityCard = (activity: Activity) => {
     return (
       <div
         key={activity.id}
-        className={`activity-card-item ${
-          activity.status === "Selesai"
-            ? "border-green"
-            : activity.status === "Proses"
-            ? "border-orange"
-            : "border-gray"
-        } ${selectedActivityId === activity.id ? "selected-activity" : ""}`}
+        className={`activity-card-item ${getActivityTypeClass(activity.kegiatan)} ${selectedActivityId === activity.id ? "selected-activity" : ""}`}
         onClick={(e) => {
           e.stopPropagation();
           onSelectActivity(activity);

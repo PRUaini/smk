@@ -87,6 +87,13 @@ export default function LaporanAktivitas({ targets, activities, selectedMonth }:
 
   // Selected report metrics based on view mode (monthly vs weekly)
   const isWeekly = reportView === "weekly";
+  const barFilterLabel = useMemo(() => {
+    if (isWeekly) {
+      return barFilter === "bulan" ? "Minggu Ini" : "Bulan Ini";
+    } else {
+      return barFilter === "bulan" ? "Bulan Ini" : "Tahun Ini";
+    }
+  }, [isWeekly, barFilter]);
   const currentPoints = isWeekly ? weeklyMetrics.points : targets.totalPoints;
   const targetPoints = isWeekly ? targets.targetWeeklyPoints : targets.targetPoints;
   const pointPct = calculatePercentage(currentPoints, targetPoints);
@@ -176,11 +183,20 @@ export default function LaporanAktivitas({ targets, activities, selectedMonth }:
   }, [activities, currentYear, targets]);
 
   // Select dynamic display metrics for the target comparisons chart
-  const activePointPct = isWeekly ? pointPct : (barFilter === "bulan" ? pointPct : yearlyTargetData.pointPct);
-  const activeMeetingPct = isWeekly ? meetingPct : (barFilter === "bulan" ? meetingPct : yearlyTargetData.meetingPct);
-  const activeSalesPct = isWeekly ? salesPct : (barFilter === "bulan" ? salesPct : yearlyTargetData.salesPct);
+  const activePointPct = isWeekly
+    ? (barFilter === "bulan" ? pointPct : calculatePercentage(targets.totalPoints, targets.targetPoints))
+    : (barFilter === "bulan" ? pointPct : yearlyTargetData.pointPct);
+
+  const activeMeetingPct = isWeekly
+    ? (barFilter === "bulan" ? meetingPct : calculatePercentage(targets.totalMeetings, targets.targetMeetings))
+    : (barFilter === "bulan" ? meetingPct : yearlyTargetData.meetingPct);
+
+  const activeSalesPct = isWeekly
+    ? (barFilter === "bulan" ? salesPct : calculatePercentage(targets.totalSales, targets.targetSales))
+    : (barFilter === "bulan" ? salesPct : yearlyTargetData.salesPct);
+
   const activeDaysPctForBar = isWeekly
-    ? calculatePercentage(weeklyMetrics.activeDays || 0, 5)
+    ? (barFilter === "bulan" ? calculatePercentage(weeklyMetrics.activeDays || 0, 5) : activeDaysPct)
     : (barFilter === "bulan" ? activeDaysPct : yearlyTargetData.activeDaysPct);
 
   // Compute cumulative points (monthly or weekly cumulative)
@@ -652,23 +668,25 @@ export default function LaporanAktivitas({ targets, activities, selectedMonth }:
         {/* Grouped Bar Chart Card */}
         <div className="report-chart-card">
           <div className="chart-card-header">
-            <h3 className="chart-title">{isWeekly ? "Pencapaian vs Target (Mingguan)" : "Pencapaian vs Target"}</h3>
-            {!isWeekly && (
-              <div className="chart-filter-select-wrapper">
-                <div className="chart-filter-select" onClick={(e) => { e.stopPropagation(); setIsBarMenuOpen(!isBarMenuOpen); }}>
-                  <span>{barFilter === "bulan" ? "Bulan Ini" : "Tahun Ini"}</span>
-                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M6 9l6 6 6-6" />
-                  </svg>
-                </div>
-                {isBarMenuOpen && (
-                  <div className="filter-dropdown-menu">
-                    <div className={`filter-option ${barFilter === "bulan" ? "active" : ""}`} onClick={() => { setBarFilter("bulan"); setIsBarMenuOpen(false); }}>Bulan Ini</div>
-                    <div className={`filter-option ${barFilter === "tahun" ? "active" : ""}`} onClick={() => { setBarFilter("tahun"); setIsBarMenuOpen(false); }}>Tahun Ini</div>
-                  </div>
-                )}
+            <h3 className="chart-title">Pencapaian vs Target</h3>
+            <div className="chart-filter-select-wrapper">
+              <div className="chart-filter-select" onClick={(e) => { e.stopPropagation(); setIsBarMenuOpen(!isBarMenuOpen); }}>
+                <span>{barFilterLabel}</span>
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M6 9l6 6 6-6" />
+                </svg>
               </div>
-            )}
+              {isBarMenuOpen && (
+                <div className="filter-dropdown-menu">
+                  <div className={`filter-option ${barFilter === "bulan" ? "active" : ""}`} onClick={() => { setBarFilter("bulan"); setIsBarMenuOpen(false); }}>
+                    {isWeekly ? "Minggu Ini" : "Bulan Ini"}
+                  </div>
+                  <div className={`filter-option ${barFilter === "tahun" ? "active" : ""}`} onClick={() => { setBarFilter("tahun"); setIsBarMenuOpen(false); }}>
+                    {isWeekly ? "Bulan Ini" : "Tahun Ini"}
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
 
           <div className="chart-body flex-col">

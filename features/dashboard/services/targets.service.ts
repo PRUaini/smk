@@ -27,11 +27,38 @@ export function calculateDashboardTargets(
     (activity) => activity.status === "Selesai"
   );
 
-  const weeklyActivities = activities.filter((activity) => {
-    const activityDate = new Date(`${activity.tanggal}T00:00:00`);
-    const dayOfMonth = activityDate.getDate();
-    return activityDate.getMonth() + 1 === monthNumber && dayOfMonth >= 1 && dayOfMonth <= 12;
-  });
+  const weeks = getWeeksInMonth(selectedMonth);
+  const today = new Date();
+  const todayString = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+  
+  let currentWeekStart = weeks[0];
+  let foundTodayWeek = false;
+  for (const wStart of weeks) {
+    const dates = getWeekDates(wStart);
+    if (dates.includes(todayString)) {
+      currentWeekStart = wStart;
+      foundTodayWeek = true;
+      break;
+    }
+  }
+
+  if (!foundTodayWeek && completedMonthlyActivities.length > 0) {
+    const sortedActs = [...completedMonthlyActivities].sort((a, b) => a.tanggal.localeCompare(b.tanggal));
+    const firstActDate = sortedActs[0].tanggal;
+    for (const wStart of weeks) {
+      const dates = getWeekDates(wStart);
+      if (dates.includes(firstActDate)) {
+        currentWeekStart = wStart;
+        break;
+      }
+    }
+  }
+
+  const currentWeekDates = currentWeekStart ? getWeekDates(currentWeekStart) : [];
+
+  const weeklyActivities = activities.filter((activity) =>
+    currentWeekDates.includes(activity.tanggal)
+  );
   const completedWeeklyActivities = weeklyActivities.filter(
     (activity) => activity.status === "Selesai"
   );
@@ -70,4 +97,39 @@ function countSales(activities: Activity[]) {
 
 function getDaysInMonth(year: number, monthIndex: number) {
   return new Date(year, monthIndex + 1, 0).getDate();
+}
+
+function getWeeksInMonth(selectedMonth: number) {
+  const today = new Date();
+  const currentYear = today.getFullYear();
+  const weeks: Date[] = [];
+  
+  let d = new Date(currentYear, selectedMonth, 1);
+  const day = d.getDay();
+  const diff = day === 0 ? -6 : 1 - day;
+  d.setDate(d.getDate() + diff);
+
+  while (true) {
+    weeks.push(new Date(d));
+    const nextMonday = new Date(d);
+    nextMonday.setDate(nextMonday.getDate() + 7);
+    
+    if (nextMonday.getFullYear() > currentYear || (nextMonday.getFullYear() === currentYear && nextMonday.getMonth() > selectedMonth)) {
+      break;
+    }
+    d = nextMonday;
+  }
+  return weeks;
+}
+
+function getWeekDates(startDate: Date) {
+  const dates = [];
+  for (let i = 0; i < 6; i++) {
+    const tempDate = new Date(startDate);
+    tempDate.setDate(startDate.getDate() + i);
+    dates.push(
+      `${tempDate.getFullYear()}-${String(tempDate.getMonth() + 1).padStart(2, "0")}-${String(tempDate.getDate()).padStart(2, "0")}`
+    );
+  }
+  return dates;
 }

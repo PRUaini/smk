@@ -2936,3 +2936,102 @@ body {
     transform: translateX(100%);
   }
 }
+
+/* =============================================
+   Activity Type Custom Colors
+   ============================================= */
+.activity-card-item.act-type-pendekatan {
+  background: #fff5f5 !important;
+  border-left: 4px solid #ef4444 !important;
+  color: #c53030 !important;
+}
+.activity-card-item.act-type-pendekatan .activity-card-title {
+  color: #991b1b !important;
+}
+
+.activity-card-item.act-type-pertemuan {
+  background: #fbf7ff !important;
+  border-left: 4px solid #a855f7 !important;
+  color: #7e22ce !important;
+}
+.activity-card-item.act-type-pertemuan .activity-card-title {
+  color: #6b21a8 !important;
+}
+
+.activity-card-item.act-type-wawancara {
+  background: #f0f7ff !important;
+  border-left: 4px solid #3b82f6 !important;
+  color: #1d4ed8 !important;
+}
+.activity-card-item.act-type-wawancara .activity-card-title {
+  color: #1e40af !important;
+}
+
+.activity-card-item.act-type-penjualan {
+  background: #f0fdf4 !important;
+  border-left: 4px solid #22c55e !important;
+  color: #15803d !important;
+}
+.activity-card-item.act-type-penjualan .activity-card-title {
+  color: #166534 !important;
+}
+
+.activity-card-item.act-type-meeting {
+  background: #f5f3ff !important;
+  border-left: 4px solid #6366f1 !important;
+  color: #4338ca !important;
+}
+.activity-card-item.act-type-meeting .activity-card-title {
+  color: #3730a3 !important;
+}
+
+.activity-card-item.act-type-admin {
+  background: #f8fafc !important;
+  border-left: 4px solid #64748b !important;
+  color: #475569 !important;
+}
+.activity-card-item.act-type-admin .activity-card-title {
+  color: #334155 !important;
+}
+
+/* =============================================
+   Bar Chart Color Utility Classes
+   ============================================= */
+.bg-red {
+  background-color: var(--color-primary) !important;
+}
+.bg-purple {
+  background-color: var(--color-dashboard-purple) !important;
+}
+.bg-green {
+  background-color: var(--color-dashboard-green) !important;
+}
+.bg-orange {
+  background-color: var(--color-dashboard-orange) !important;
+}
+
+.border-red {
+  border-color: var(--color-primary) !important;
+}
+.border-purple {
+  border-color: var(--color-dashboard-purple) !important;
+}
+.border-green {
+  border-color: var(--color-dashboard-green) !important;
+}
+.border-orange {
+  border-color: var(--color-dashboard-orange) !important;
+}
+
+.val-red {
+  color: var(--color-primary) !important;
+}
+.val-purple {
+  color: var(--color-dashboard-purple) !important;
+}
+.val-green {
+  color: var(--color-dashboard-green) !important;
+}
+.val-orange {
+  color: var(--color-dashboard-orange) !important;
+}

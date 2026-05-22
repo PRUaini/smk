@@ -42,6 +42,6 @@ describe("activityFormSchema", () => {
     });
 
     expect(payload.poin).toBe(1);
-    expect(payload.catatan).toBe("Melakukan pendekatan awal dengan calon nasabah");
+    expect(payload.catatan).toBe("");
   });
 });
