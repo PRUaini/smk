@@ -1,6 +1,41 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { Activity, DashboardTargets } from "../types";
 import { calculatePercentage } from "../utils/percentage";
+
+const getWeeksInMonth = (selectedMonth: number) => {
+  const today = new Date();
+  const currentYear = today.getFullYear();
+  const weeks: Date[] = [];
+  
+  let d = new Date(currentYear, selectedMonth, 1);
+  const day = d.getDay();
+  const diff = day === 0 ? -6 : 1 - day;
+  d.setDate(d.getDate() + diff);
+
+  while (true) {
+    weeks.push(new Date(d));
+    const nextMonday = new Date(d);
+    nextMonday.setDate(nextMonday.getDate() + 7);
+    
+    if (nextMonday.getFullYear() > currentYear || (nextMonday.getFullYear() === currentYear && nextMonday.getMonth() > selectedMonth)) {
+      break;
+    }
+    d = nextMonday;
+  }
+  return weeks;
+};
+
+const getWeekDates = (startDate: Date) => {
+  const dates = [];
+  for (let i = 0; i < 6; i++) {
+    const tempDate = new Date(startDate);
+    tempDate.setDate(startDate.getDate() + i);
+    dates.push(
+      `${tempDate.getFullYear()}-${String(tempDate.getMonth() + 1).padStart(2, "0")}-${String(tempDate.getDate()).padStart(2, "0")}`
+    );
+  }
+  return dates;
+};
 
 interface LaporanAktivitasProps {
   targets: DashboardTargets;
@@ -21,11 +56,50 @@ export default function LaporanAktivitas({ targets, activities, selectedMonth }:
   const [barFilter, setBarFilter] = useState<"bulan" | "tahun">("bulan");
   const [isDailyMenuOpen, setIsDailyMenuOpen] = useState(false);
   const [isBarMenuOpen, setIsBarMenuOpen] = useState(false);
+  const [reportView, setReportView] = useState<"monthly" | "weekly">("monthly");
+  const [selectedWeek, setSelectedWeek] = useState(0);
 
-  // Calculate percentages (monthly)
-  const pointPct = calculatePercentage(targets.totalPoints, targets.targetPoints);
-  const meetingPct = calculatePercentage(targets.totalMeetings, targets.targetMeetings);
-  const salesPct = calculatePercentage(targets.totalSales, targets.targetSales);
+  useEffect(() => {
+    setSelectedWeek(0);
+  }, [selectedMonth]);
+
+  const weeks = useMemo(() => getWeeksInMonth(selectedMonth), [selectedMonth]);
+  const activeWeekIdx = Math.min(selectedWeek, weeks.length - 1);
+
+  const weeklyMetrics = useMemo(() => {
+    const weekStartDate = weeks[activeWeekIdx];
+    if (!weekStartDate) {
+      return { points: 0, meetings: 0, sales: 0, api: 0, activeDays: 0 };
+    }
+    const dates = getWeekDates(weekStartDate);
+    const completedWeeklyActivities = activities.filter(
+      (act) => act.status === "Selesai" && dates.includes(act.tanggal)
+    );
+    const points = completedWeeklyActivities.reduce((sum, act) => sum + act.poin, 0);
+    const meetings = completedWeeklyActivities.filter((act) => act.kegiatan === "Pertemuan" || act.kegiatan === "Wawancara Penutupan").length;
+    const sales = completedWeeklyActivities.filter((act) => act.kegiatan === "Penjualan / Closing").length;
+    const api = completedWeeklyActivities
+      .filter((act) => act.kegiatan === "Penjualan / Closing")
+      .reduce((sum, act) => sum + (act.api || 0), 0);
+    const activeDays = new Set(completedWeeklyActivities.map((act) => act.tanggal)).size;
+    return { points, meetings, sales, api, activeDays };
+  }, [activities, weeks, activeWeekIdx]);
+
+  // Selected report metrics based on view mode (monthly vs weekly)
+  const isWeekly = reportView === "weekly";
+  const currentPoints = isWeekly ? weeklyMetrics.points : targets.totalPoints;
+  const targetPoints = isWeekly ? targets.targetWeeklyPoints : targets.targetPoints;
+  const pointPct = calculatePercentage(currentPoints, targetPoints);
+
+  const currentMeetings = isWeekly ? weeklyMetrics.meetings : targets.totalMeetings;
+  const targetMeetings = isWeekly ? targets.targetWeeklyMeetings : targets.targetMeetings;
+  const meetingPct = calculatePercentage(currentMeetings, targetMeetings);
+
+  const currentSales = isWeekly ? weeklyMetrics.sales : targets.totalSales;
+  const targetSales = isWeekly ? targets.targetWeeklySales : targets.targetSales;
+  const salesPct = calculatePercentage(currentSales, targetSales);
+
+  const currentApi = isWeekly ? weeklyMetrics.api : targets.totalApi;
   const activeDaysPct = calculatePercentage(targets.activeDays, targets.totalDays);
   
   const weeklyPointPct = calculatePercentage(targets.totalWeeklyPoints, targets.targetWeeklyPoints);
@@ -102,19 +176,39 @@ export default function LaporanAktivitas({ targets, activities, selectedMonth }:
   }, [activities, currentYear, targets]);
 
   // Select dynamic display metrics for the target comparisons chart
-  const activePointPct = barFilter === "bulan" ? pointPct : yearlyTargetData.pointPct;
-  const activeMeetingPct = barFilter === "bulan" ? meetingPct : yearlyTargetData.meetingPct;
-  const activeSalesPct = barFilter === "bulan" ? salesPct : yearlyTargetData.salesPct;
-  const activeDaysPctForBar = barFilter === "bulan" ? activeDaysPct : yearlyTargetData.activeDaysPct;
+  const activePointPct = isWeekly ? pointPct : (barFilter === "bulan" ? pointPct : yearlyTargetData.pointPct);
+  const activeMeetingPct = isWeekly ? meetingPct : (barFilter === "bulan" ? meetingPct : yearlyTargetData.meetingPct);
+  const activeSalesPct = isWeekly ? salesPct : (barFilter === "bulan" ? salesPct : yearlyTargetData.salesPct);
+  const activeDaysPctForBar = isWeekly
+    ? calculatePercentage(weeklyMetrics.activeDays || 0, 5)
+    : (barFilter === "bulan" ? activeDaysPct : yearlyTargetData.activeDaysPct);
 
-  // Compute cumulative points (monthly cumulative)
+  // Compute cumulative points (monthly or weekly cumulative)
   const cumulativeData = useMemo(() => {
-    let runningSum = 0;
-    return dailyData.map((d) => {
-      runningSum += d.points;
-      return { day: d.day, points: runningSum };
-    });
-  }, [dailyData]);
+    if (isWeekly) {
+      const weekStartDate = weeks[activeWeekIdx];
+      if (weekStartDate) {
+        const dates = getWeekDates(weekStartDate);
+        let runningSum = 0;
+        const dayNames = ["Sen", "Sel", "Rab", "Kam", "Jum", "Sab"];
+        return dates.map((dateStr, idx) => {
+          const dayActivities = activities.filter(
+            (act) => act.tanggal === dateStr && act.status === "Selesai"
+          );
+          const points = dayActivities.reduce((sum, act) => sum + act.poin, 0);
+          runningSum += points;
+          return { day: dayNames[idx], points: runningSum };
+        });
+      }
+      return [];
+    } else {
+      let runningSum = 0;
+      return dailyData.map((d) => {
+        runningSum += d.points;
+        return { day: String(d.day), points: runningSum };
+      });
+    }
+  }, [isWeekly, weeks, activeWeekIdx, activities, dailyData]);
 
   // SVG dimensions & scales for Tren Poin Harian
   const dailyChartSvg = useMemo(() => {
@@ -126,7 +220,23 @@ export default function LaporanAktivitas({ targets, activities, selectedMonth }:
     const chartHeight = height - padding.top - padding.bottom;
     
     let dataset: { label: string; points: number }[] = [];
-    if (dailyFilter === "harian") {
+    if (isWeekly) {
+      const weekStartDate = weeks[activeWeekIdx];
+      if (weekStartDate) {
+        const dates = getWeekDates(weekStartDate);
+        const dayNames = ["Sen", "Sel", "Rab", "Kam", "Jum", "Sab"];
+        dataset = dates.map((dateStr, idx) => {
+          const dayActivities = activities.filter(
+            (act) => act.tanggal === dateStr && act.status === "Selesai"
+          );
+          const points = dayActivities.reduce((sum, act) => sum + act.poin, 0);
+          return {
+            label: dayNames[idx] || "",
+            points
+          };
+        });
+      }
+    } else if (dailyFilter === "harian") {
       dataset = dailyData.map((d) => ({
         label: `${d.day} ${monthLabel}`,
         points: d.points
@@ -169,7 +279,11 @@ export default function LaporanAktivitas({ targets, activities, selectedMonth }:
 
     // X axis labels
     const xLabels = [];
-    if (dailyFilter === "harian") {
+    if (isWeekly) {
+      for (let i = 0; i < dataset.length; i++) {
+        xLabels.push({ x: points[i].x, label: dataset[i].label });
+      }
+    } else if (dailyFilter === "harian") {
       const interval = 5;
       for (let i = 0; i < dataset.length; i += interval) {
         xLabels.push({ x: points[i].x, label: points[i].label });
@@ -191,7 +305,7 @@ export default function LaporanAktivitas({ targets, activities, selectedMonth }:
     }
 
     return { width, height, points, linePath, areaPath, gridLines, xLabels };
-  }, [dailyFilter, dailyData, monthlyData, yearlyData, monthLabel, monthsAbbr]);
+  }, [isWeekly, weeks, activeWeekIdx, activities, dailyFilter, dailyData, monthlyData, yearlyData, monthLabel, monthsAbbr]);
 
   // SVG dimensions & scales for Akumulasi Poin
   const cumulativeChartSvg = useMemo(() => {
@@ -202,11 +316,12 @@ export default function LaporanAktivitas({ targets, activities, selectedMonth }:
     const chartWidth = width - padding.left - padding.right;
     const chartHeight = height - padding.top - padding.bottom;
     
-    const maxVal = Math.max(targets.targetPoints, 100, ...cumulativeData.map((d) => d.points));
+    const activeTarget = isWeekly ? targets.targetWeeklyPoints : targets.targetPoints;
+    const maxVal = Math.max(activeTarget, 100, ...cumulativeData.map((d) => d.points));
     
     // Points coordinates
     const points = cumulativeData.map((d, index) => {
-      const x = padding.left + (index / (cumulativeData.length - 1)) * chartWidth;
+      const x = padding.left + (index / Math.max(1, cumulativeData.length - 1)) * chartWidth;
       const y = padding.top + chartHeight - (d.points / maxVal) * chartHeight;
       return { x, y, day: d.day, val: d.points };
     });
@@ -220,7 +335,7 @@ export default function LaporanAktivitas({ targets, activities, selectedMonth }:
     }
 
     // Target Line Y Coordinate
-    const targetY = padding.top + chartHeight - (targets.targetPoints / maxVal) * chartHeight;
+    const targetY = padding.top + chartHeight - (activeTarget / maxVal) * chartHeight;
 
     // Grid lines (y values)
     const gridLines = [0, 0.25, 0.5, 0.75, 1].map((ratio) => {
@@ -229,30 +344,39 @@ export default function LaporanAktivitas({ targets, activities, selectedMonth }:
       return { y, label: val };
     });
 
-    // X axis labels (1st, 6th, 11th, 16th, 21st, 26th, 31st)
+    // X axis labels
     const xLabels = [];
-    const interval = 5;
-    for (let i = 0; i < cumulativeData.length; i += interval) {
-      xLabels.push({
-        x: points[i].x,
-        label: `${cumulativeData[i].day} ${monthLabel}`
-      });
-    }
-    if ((cumulativeData.length - 1) % interval !== 0) {
-      const lastIndex = cumulativeData.length - 1;
-      xLabels.push({
-        x: points[lastIndex].x,
-        label: `${cumulativeData[lastIndex].day} ${monthLabel}`
-      });
+    if (isWeekly) {
+      for (let i = 0; i < cumulativeData.length; i++) {
+        xLabels.push({
+          x: points[i].x,
+          label: cumulativeData[i].day
+        });
+      }
+    } else {
+      const interval = 5;
+      for (let i = 0; i < cumulativeData.length; i += interval) {
+        xLabels.push({
+          x: points[i].x,
+          label: `${cumulativeData[i].day} ${monthLabel}`
+        });
+      }
+      if ((cumulativeData.length - 1) % interval !== 0) {
+        const lastIndex = cumulativeData.length - 1;
+        xLabels.push({
+          x: points[lastIndex].x,
+          label: `${cumulativeData[lastIndex].day} ${monthLabel}`
+        });
+      }
     }
 
     return { width, height, points, linePath, areaPath, gridLines, xLabels, targetY };
-  }, [cumulativeData, targets.targetPoints, monthLabel]);
+  }, [isWeekly, cumulativeData, targets.targetPoints, targets.targetWeeklyPoints, monthLabel]);
 
   // Average points per day calculation
-  const averagePoints = targets.activeDays 
-    ? (targets.totalPoints / targets.activeDays).toFixed(1) 
-    : "0";
+  const averagePoints = isWeekly
+    ? (weeklyMetrics.activeDays ? (weeklyMetrics.points / weeklyMetrics.activeDays).toFixed(1) : "0")
+    : (targets.activeDays ? (targets.totalPoints / targets.activeDays).toFixed(1) : "0");
 
   // Circular gauge config
   const radius = 54;
@@ -262,6 +386,40 @@ export default function LaporanAktivitas({ targets, activities, selectedMonth }:
 
   return (
     <div className="laporan-aktivitas-wrapper">
+      {/* Report View Switcher */}
+      <div className="laporan-view-switcher" style={{ marginBottom: "1.5rem", display: "flex", flexDirection: "column", gap: "1rem" }}>
+        <div className="segmented-control" style={{ alignSelf: "flex-start" }}>
+          <button
+            className={`segmented-tab ${reportView === "monthly" ? "active" : ""}`}
+            onClick={() => setReportView("monthly")}
+          >
+            Bulanan
+          </button>
+          <button
+            className={`segmented-tab ${reportView === "weekly" ? "active" : ""}`}
+            onClick={() => setReportView("weekly")}
+          >
+            Mingguan
+          </button>
+        </div>
+
+        {reportView === "weekly" && (
+          <div className="month-tabs-container week-tabs-container" style={{ marginTop: 0 }}>
+            <div className="month-tabs-scroll">
+              {weeks.map((_, index) => (
+                <button
+                  key={index}
+                  className={`month-tab-btn ${activeWeekIdx === index ? "active" : ""}`}
+                  onClick={() => setSelectedWeek(index)}
+                >
+                  Minggu {index + 1}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+
       {/* 4 KPI Cards */}
       <div className="kpi-grid">
         {/* Total Poin Card */}
@@ -273,10 +431,10 @@ export default function LaporanAktivitas({ targets, activities, selectedMonth }:
               </svg>
             </div>
             <div className="kpi-meta">
-              <span className="kpi-label">TOTAL POIN BULAN INI</span>
+              <span className="kpi-label">Total Poin</span>
               <div className="kpi-value-row">
-                <span className="kpi-value">{targets.totalPoints}</span>
-                <span className="kpi-target">/ target {targets.targetPoints}</span>
+                <span className="kpi-value">{currentPoints}</span>
+                <span className="kpi-target">dari target {targetPoints}</span>
               </div>
             </div>
           </div>
@@ -285,7 +443,9 @@ export default function LaporanAktivitas({ targets, activities, selectedMonth }:
           </div>
           <div className="kpi-card-footer">
             <span className="kpi-pct-attained">{pointPct}% Tercapai</span>
-            <span className="kpi-weekly-badge">Minggu ini: {targets.totalWeeklyPoints}/{targets.targetWeeklyPoints} ({weeklyPointPct}%)</span>
+            {!isWeekly && (
+              <span className="kpi-weekly-badge">Minggu ini: {targets.totalWeeklyPoints}/{targets.targetWeeklyPoints} ({weeklyPointPct}%)</span>
+            )}
           </div>
         </div>
 
@@ -301,10 +461,10 @@ export default function LaporanAktivitas({ targets, activities, selectedMonth }:
               </svg>
             </div>
             <div className="kpi-meta">
-              <span className="kpi-label">JANJI PERTEMUAN</span>
+              <span className="kpi-label">Janji Pertemuan</span>
               <div className="kpi-value-row">
-                <span className="kpi-value">{targets.totalMeetings}</span>
-                <span className="kpi-target">/ target {targets.targetMeetings}</span>
+                <span className="kpi-value">{currentMeetings}</span>
+                <span className="kpi-target">dari target {targetMeetings}</span>
               </div>
             </div>
           </div>
@@ -313,7 +473,9 @@ export default function LaporanAktivitas({ targets, activities, selectedMonth }:
           </div>
           <div className="kpi-card-footer">
             <span className="kpi-pct-attained">{meetingPct}% Tercapai</span>
-            <span className="kpi-weekly-badge">Minggu ini: {targets.totalWeeklyMeetings}/{targets.targetWeeklyMeetings} ({weeklyMeetingPct}%)</span>
+            {!isWeekly && (
+              <span className="kpi-weekly-badge">Minggu ini: {targets.totalWeeklyMeetings}/{targets.targetWeeklyMeetings} ({weeklyMeetingPct}%)</span>
+            )}
           </div>
         </div>
 
@@ -328,10 +490,10 @@ export default function LaporanAktivitas({ targets, activities, selectedMonth }:
               </svg>
             </div>
             <div className="kpi-meta">
-              <span className="kpi-label">PENJUALAN</span>
+              <span className="kpi-label">Penjualan</span>
               <div className="kpi-value-row">
-                <span className="kpi-value">{targets.totalSales}</span>
-                <span className="kpi-target">/ target {targets.targetSales}</span>
+                <span className="kpi-value">{currentSales}</span>
+                <span className="kpi-target">dari target {targetSales}</span>
               </div>
             </div>
           </div>
@@ -340,32 +502,35 @@ export default function LaporanAktivitas({ targets, activities, selectedMonth }:
           </div>
           <div className="kpi-card-footer">
             <span className="kpi-pct-attained">{salesPct}% Tercapai</span>
-            <span className="kpi-weekly-badge">Minggu ini: {targets.totalWeeklySales}/{targets.targetWeeklySales} ({weeklySalesPct}%)</span>
+            {!isWeekly && (
+              <span className="kpi-weekly-badge">Minggu ini: {targets.totalWeeklySales}/{targets.targetWeeklySales} ({weeklySalesPct}%)</span>
+            )}
           </div>
         </div>
 
-        {/* Penyelesaian Aktivitas Card */}
+        {/* Total API Card */}
         <div className="kpi-card">
           <div className="kpi-card-header">
             <div className="kpi-icon kpi-icon-orange">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                <polyline points="12 6 12 12 16 14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                <path d="M12 2C9.5 2 7.5 4 7.5 6.5C7.5 7.2 7.7 7.8 8 8.3C5.5 9.5 4 12.2 4 15.5C4 19 7.5 22 12 22C16.5 22 20 19 20 15.5C20 12.2 18.5 9.5 16 8.3C16.3 7.8 16.5 7.2 16.5 6.5C16.5 4 14.5 2 12 2Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                <path d="M8 9.5C9.2 9.2 10.6 9 12 9C13.4 9 14.8 9.2 16 9.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                <text x="12" y="17" fill="currentColor" fontSize="8" fontWeight="bold" textAnchor="middle">Rp</text>
               </svg>
             </div>
             <div className="kpi-meta">
-              <span className="kpi-label">PENYELESAIAN AKTIVITAS</span>
+              <span className="kpi-label">Total API</span>
               <div className="kpi-value-row-stacked">
-                <span className="kpi-value">{activeDaysPct}%</span>
-                <span className="kpi-target-label">rata-rata bulan ini</span>
+                <span className="kpi-value">Rp {currentApi.toLocaleString("id-ID")}</span>
+                <span className="kpi-target-label">{isWeekly ? "akumulasi minggu ini" : "akumulasi bulan ini"}</span>
               </div>
             </div>
           </div>
           <div className="kpi-progress-bar-wrapper">
-            <div className="kpi-progress-bar bg-orange" style={{ width: `${Math.min(100, activeDaysPct)}%` }} />
+            <div className="kpi-progress-bar bg-orange" style={{ width: "100%" }} />
           </div>
           <div className="kpi-card-footer">
-            <span className="kpi-pct-attained">{targets.activeDays} dari {targets.totalDays} Hari Aktif</span>
+            <span className="kpi-pct-attained">{isWeekly ? "Total API Terkumpul Minggu Ini" : "Total API Terkumpul"}</span>
           </div>
         </div>
       </div>
@@ -375,22 +540,24 @@ export default function LaporanAktivitas({ targets, activities, selectedMonth }:
         {/* Line Chart Card */}
         <div className="report-chart-card">
           <div className="chart-card-header">
-            <h3 className="chart-title">Tren Poin Harian</h3>
-            <div className="chart-filter-select-wrapper">
-              <div className="chart-filter-select" onClick={(e) => { e.stopPropagation(); setIsDailyMenuOpen(!isDailyMenuOpen); }}>
-                <span>{dailyFilter === "harian" ? "Harian" : dailyFilter === "bulanan" ? "Bulanan" : "Tahunan"}</span>
-                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M6 9l6 6 6-6" />
-                </svg>
-              </div>
-              {isDailyMenuOpen && (
-                <div className="filter-dropdown-menu">
-                  <div className={`filter-option ${dailyFilter === "harian" ? "active" : ""}`} onClick={() => { setDailyFilter("harian"); setIsDailyMenuOpen(false); }}>Harian</div>
-                  <div className={`filter-option ${dailyFilter === "bulanan" ? "active" : ""}`} onClick={() => { setDailyFilter("bulanan"); setIsDailyMenuOpen(false); }}>Bulanan</div>
-                  <div className={`filter-option ${dailyFilter === "tahunan" ? "active" : ""}`} onClick={() => { setDailyFilter("tahunan"); setIsDailyMenuOpen(false); }}>Tahunan</div>
+            <h3 className="chart-title">{isWeekly ? "Tren Poin Mingguan" : "Tren Poin Harian"}</h3>
+            {!isWeekly && (
+              <div className="chart-filter-select-wrapper">
+                <div className="chart-filter-select" onClick={(e) => { e.stopPropagation(); setIsDailyMenuOpen(!isDailyMenuOpen); }}>
+                  <span>{dailyFilter === "harian" ? "Harian" : dailyFilter === "bulanan" ? "Bulanan" : "Tahunan"}</span>
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M6 9l6 6 6-6" />
+                  </svg>
                 </div>
-              )}
-            </div>
+                {isDailyMenuOpen && (
+                  <div className="filter-dropdown-menu">
+                    <div className={`filter-option ${dailyFilter === "harian" ? "active" : ""}`} onClick={() => { setDailyFilter("harian"); setIsDailyMenuOpen(false); }}>Harian</div>
+                    <div className={`filter-option ${dailyFilter === "bulanan" ? "active" : ""}`} onClick={() => { setDailyFilter("bulanan"); setIsDailyMenuOpen(false); }}>Bulanan</div>
+                    <div className={`filter-option ${dailyFilter === "tahunan" ? "active" : ""}`} onClick={() => { setDailyFilter("tahunan"); setIsDailyMenuOpen(false); }}>Tahunan</div>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           <div className="chart-body">
@@ -485,21 +652,23 @@ export default function LaporanAktivitas({ targets, activities, selectedMonth }:
         {/* Grouped Bar Chart Card */}
         <div className="report-chart-card">
           <div className="chart-card-header">
-            <h3 className="chart-title">Pencapaian vs Target</h3>
-            <div className="chart-filter-select-wrapper">
-              <div className="chart-filter-select" onClick={(e) => { e.stopPropagation(); setIsBarMenuOpen(!isBarMenuOpen); }}>
-                <span>{barFilter === "bulan" ? "Bulan Ini" : "Tahun Ini"}</span>
-                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M6 9l6 6 6-6" />
-                </svg>
-              </div>
-              {isBarMenuOpen && (
-                <div className="filter-dropdown-menu">
-                  <div className={`filter-option ${barFilter === "bulan" ? "active" : ""}`} onClick={() => { setBarFilter("bulan"); setIsBarMenuOpen(false); }}>Bulan Ini</div>
-                  <div className={`filter-option ${barFilter === "tahun" ? "active" : ""}`} onClick={() => { setBarFilter("tahun"); setIsBarMenuOpen(false); }}>Tahun Ini</div>
+            <h3 className="chart-title">{isWeekly ? "Pencapaian vs Target (Mingguan)" : "Pencapaian vs Target"}</h3>
+            {!isWeekly && (
+              <div className="chart-filter-select-wrapper">
+                <div className="chart-filter-select" onClick={(e) => { e.stopPropagation(); setIsBarMenuOpen(!isBarMenuOpen); }}>
+                  <span>{barFilter === "bulan" ? "Bulan Ini" : "Tahun Ini"}</span>
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M6 9l6 6 6-6" />
+                  </svg>
                 </div>
-              )}
-            </div>
+                {isBarMenuOpen && (
+                  <div className="filter-dropdown-menu">
+                    <div className={`filter-option ${barFilter === "bulan" ? "active" : ""}`} onClick={() => { setBarFilter("bulan"); setIsBarMenuOpen(false); }}>Bulan Ini</div>
+                    <div className={`filter-option ${barFilter === "tahun" ? "active" : ""}`} onClick={() => { setBarFilter("tahun"); setIsBarMenuOpen(false); }}>Tahun Ini</div>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           <div className="chart-body flex-col">
@@ -608,7 +777,7 @@ export default function LaporanAktivitas({ targets, activities, selectedMonth }:
                   <span className="bar-column-label">Penjualan</span>
                 </div>
 
-                {/* Group 4: Penyelesaian Aktivitas */}
+                {/* Group 4: Hari Aktif */}
                 <div className="bar-group-column">
                   <div className="bar-visual-wrapper">
                     <div className="bar-gridlines">
@@ -632,7 +801,7 @@ export default function LaporanAktivitas({ targets, activities, selectedMonth }:
                       </div>
                     </div>
                   </div>
-                  <span className="bar-column-label">Penyelesaian Aktivitas</span>
+                  <span className="bar-column-label">Hari Aktif</span>
                 </div>
               </div>
             </div>
@@ -640,11 +809,11 @@ export default function LaporanAktivitas({ targets, activities, selectedMonth }:
         </div>
       </div>
 
-      {/* Bottom Row Section: Monthly Progress Summary Card & Side Metrics */}
+      {/* Bottom Row Section: Monthly/Weekly Progress Summary Card & Side Metrics */}
       <div className="monthly-progress-summary-row">
         {/* Main Progress Card */}
         <div className="monthly-progress-main-card">
-          <h4 className="progress-section-heading">Ringkasan Progres Bulanan</h4>
+          <h4 className="progress-section-heading">{isWeekly ? "Ringkasan Progres Mingguan" : "Ringkasan Progres Bulanan"}</h4>
           
           <div className="progress-card-grid">
             {/* Column 1: Target Stats */}
@@ -657,12 +826,12 @@ export default function LaporanAktivitas({ targets, activities, selectedMonth }:
                 </svg>
               </div>
               <div className="progress-mini-item">
-                <span className="lbl">Target Poin Bulan Ini</span>
-                <span className="val">{targets.targetPoints}</span>
+                <span className="lbl">{isWeekly ? "Target Poin Minggu Ini" : "Target Poin Bulan Ini"}</span>
+                <span className="val">{targetPoints}</span>
               </div>
               <div className="progress-mini-item">
                 <span className="lbl">Total Poin</span>
-                <span className="val highlight-red">{targets.totalPoints}</span>
+                <span className="val highlight-red">{currentPoints}</span>
               </div>
             </div>
 
@@ -705,7 +874,7 @@ export default function LaporanAktivitas({ targets, activities, selectedMonth }:
             <div className="progress-line-chart-col">
               <span className="cumulative-chart-title">
                 <span className="legend-line border-red" />
-                Akumulasi Poin ({monthLabel} Ini)
+                Akumulasi Poin ({isWeekly ? `Minggu ${activeWeekIdx + 1}` : `${monthLabel} Ini`})
               </span>
 
               <div className="cumulative-chart-container">
@@ -759,7 +928,7 @@ export default function LaporanAktivitas({ targets, activities, selectedMonth }:
                     fill="var(--color-text-secondary)"
                     fontWeight="600"
                   >
-                    Target {targets.targetPoints}
+                    Target {isWeekly ? targets.targetWeeklyPoints : targets.targetPoints}
                   </text>
 
                   {/* Filled Area */}
@@ -819,10 +988,8 @@ export default function LaporanAktivitas({ targets, activities, selectedMonth }:
 
           <div className="side-metric-item">
             <span className="side-label">Hari Aktif</span>
-            <span className="side-value">{targets.activeDays} / {targets.totalDays} <span className="unit">hari</span></span>
+            <span className="side-value">{isWeekly ? weeklyMetrics.activeDays : targets.activeDays} / {isWeekly ? 5 : targets.totalDays} <span className="unit">hari</span></span>
           </div>
-
-
         </div>
       </div>
 

@@ -19,6 +19,7 @@ export interface Activity {
   catatan: string;
   nasabah: string;
   produk: string;
+  api?: number;
 }
 
 export interface DashboardTargets {
@@ -36,4 +37,6 @@ export interface DashboardTargets {
   totalWeeklyMeetings: number;
   targetWeeklySales: number;
   totalWeeklySales: number;
+  totalApi: number;
+  totalWeeklyApi: number;
 }

@@ -24,6 +24,7 @@ export async function getActivitiesByAgent(agentId: string): Promise<Activity[]>
     catatan: row.catatan,
     nasabah: row.nasabah,
     produk: row.produk,
+    api: row.api,
   }));
 }
 
@@ -44,6 +45,7 @@ export async function createActivity(
       catatan: activity.catatan,
       nasabah: activity.nasabah,
       produk: activity.produk,
+      api: activity.api,
     })
     .select()
     .single();
@@ -62,6 +64,7 @@ export async function createActivity(
     catatan: data.catatan,
     nasabah: data.nasabah,
     produk: data.produk,
+    api: data.api,
   };
 }
 
@@ -93,6 +96,7 @@ export async function updateActivity(
     catatan: data.catatan,
     nasabah: data.nasabah,
     produk: data.produk,
+    api: data.api,
   };
 }
 

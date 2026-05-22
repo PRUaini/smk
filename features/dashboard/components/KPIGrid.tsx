@@ -26,10 +26,10 @@ export default function KPIGrid({ targets }: KPIGridProps) {
             </svg>
           </div>
           <div className="kpi-meta">
-            <span className="kpi-label">Total Poin Bulan Ini</span>
+            <span className="kpi-label">Total Poin</span>
             <div className="kpi-value-row">
               <span className="kpi-value">{targets.totalPoints}</span>
-              <span className="kpi-target">/ target {targets.targetPoints}</span>
+              <span className="kpi-target">dari target {targets.targetPoints}</span>
             </div>
           </div>
         </div>
@@ -55,7 +55,7 @@ export default function KPIGrid({ targets }: KPIGridProps) {
             <span className="kpi-label">Janji Pertemuan</span>
             <div className="kpi-value-row">
               <span className="kpi-value">{targets.totalMeetings}</span>
-              <span className="kpi-target">/ target {targets.targetMeetings}</span>
+              <span className="kpi-target">dari target {targets.targetMeetings}</span>
             </div>
           </div>
         </div>
@@ -82,7 +82,7 @@ export default function KPIGrid({ targets }: KPIGridProps) {
             <span className="kpi-label">Penjualan</span>
             <div className="kpi-value-row">
               <span className="kpi-value">{targets.totalSales}</span>
-              <span className="kpi-target">/ target {targets.targetSales}</span>
+              <span className="kpi-target">dari target {targets.targetSales}</span>
             </div>
           </div>
         </div>
@@ -95,28 +95,29 @@ export default function KPIGrid({ targets }: KPIGridProps) {
         </div>
       </div>
 
-      {/* Penyelesaian Aktivitas Card */}
+      {/* Total API Card */}
       <div className="kpi-card">
         <div className="kpi-card-header">
           <div className="kpi-icon kpi-icon-orange">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="1.5"/>
-              <path d="M12 6V12L16 14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d="M12 2C9.5 2 7.5 4 7.5 6.5C7.5 7.2 7.7 7.8 8 8.3C5.5 9.5 4 12.2 4 15.5C4 19 7.5 22 12 22C16.5 22 20 19 20 15.5C20 12.2 18.5 9.5 16 8.3C16.3 7.8 16.5 7.2 16.5 6.5C16.5 4 14.5 2 12 2Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d="M8 9.5C9.2 9.2 10.6 9 12 9C13.4 9 14.8 9.2 16 9.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+              <text x="12" y="17" fill="currentColor" fontSize="8" fontWeight="bold" textAnchor="middle">Rp</text>
             </svg>
           </div>
           <div className="kpi-meta">
-            <span className="kpi-label">Penyelesaian Aktivitas</span>
-            <div className="kpi-value-row">
-              <span className="kpi-value">{activeDaysPct}%</span>
-              <span className="kpi-target">rata-rata bulan ini</span>
+            <span className="kpi-label">Total API</span>
+            <div className="kpi-value-row-stacked">
+              <span className="kpi-value">Rp {targets.totalApi.toLocaleString("id-ID")}</span>
+              <span className="kpi-target-label">akumulasi bulan ini</span>
             </div>
           </div>
         </div>
         <div className="kpi-progress-bar-wrapper">
-          <div className="kpi-progress-bar bg-orange" style={{ width: `${activeDaysPct}%` }} />
+          <div className="kpi-progress-bar bg-orange" style={{ width: "100%" }} />
         </div>
         <div className="kpi-card-footer">
-          <span>{targets.activeDays} dari {targets.totalDays} Hari Aktif</span>
+          <span>Total API Terkumpul</span>
         </div>
       </div>
     </div>
