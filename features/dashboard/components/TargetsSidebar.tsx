@@ -59,7 +59,7 @@ export default function TargetsSidebar({
             {...form.register("targetPoints")}
           />
           {form.formState.errors.targetPoints && (
-            <span className="form-error-msg">{form.formState.errors.targetPoints.message}</span>
+            <span style={{ display: "block", fontSize: "0.75rem", color: "var(--color-error)", marginTop: "0.25rem", fontWeight: 500 }}>{form.formState.errors.targetPoints.message}</span>
           )}
         </div>
 
@@ -72,7 +72,7 @@ export default function TargetsSidebar({
             {...form.register("targetMeetings")}
           />
           {form.formState.errors.targetMeetings && (
-            <span className="form-error-msg">{form.formState.errors.targetMeetings.message}</span>
+            <span style={{ display: "block", fontSize: "0.75rem", color: "var(--color-error)", marginTop: "0.25rem", fontWeight: 500 }}>{form.formState.errors.targetMeetings.message}</span>
           )}
         </div>
 
@@ -85,7 +85,7 @@ export default function TargetsSidebar({
             {...form.register("targetSales")}
           />
           {form.formState.errors.targetSales && (
-            <span className="form-error-msg">{form.formState.errors.targetSales.message}</span>
+            <span style={{ display: "block", fontSize: "0.75rem", color: "var(--color-error)", marginTop: "0.25rem", fontWeight: 500 }}>{form.formState.errors.targetSales.message}</span>
           )}
         </div>
 
@@ -100,7 +100,7 @@ export default function TargetsSidebar({
             {...form.register("targetWeeklyPoints")}
           />
           {form.formState.errors.targetWeeklyPoints && (
-            <span className="form-error-msg">{form.formState.errors.targetWeeklyPoints.message}</span>
+            <span style={{ display: "block", fontSize: "0.75rem", color: "var(--color-error)", marginTop: "0.25rem", fontWeight: 500 }}>{form.formState.errors.targetWeeklyPoints.message}</span>
           )}
         </div>
 
@@ -113,7 +113,7 @@ export default function TargetsSidebar({
             {...form.register("targetWeeklyMeetings")}
           />
           {form.formState.errors.targetWeeklyMeetings && (
-            <span className="form-error-msg">{form.formState.errors.targetWeeklyMeetings.message}</span>
+            <span style={{ display: "block", fontSize: "0.75rem", color: "var(--color-error)", marginTop: "0.25rem", fontWeight: 500 }}>{form.formState.errors.targetWeeklyMeetings.message}</span>
           )}
         </div>
 
@@ -126,7 +126,7 @@ export default function TargetsSidebar({
             {...form.register("targetWeeklySales")}
           />
           {form.formState.errors.targetWeeklySales && (
-            <span className="form-error-msg">{form.formState.errors.targetWeeklySales.message}</span>
+            <span style={{ display: "block", fontSize: "0.75rem", color: "var(--color-error)", marginTop: "0.25rem", fontWeight: 500 }}>{form.formState.errors.targetWeeklySales.message}</span>
           )}
         </div>
 

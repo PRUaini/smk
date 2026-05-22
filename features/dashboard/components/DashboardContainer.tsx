@@ -12,6 +12,8 @@ import LaporanAktivitas from "./LaporanAktivitas";
 import DashboardWidgetBoundary from "./DashboardWidgetBoundary";
 import type { AgentTargets } from "../data/targets.repository";
 import TargetsSidebar from "./TargetsSidebar";
+import { useToast } from "../utils/useToast";
+import ToastContainer from "./ToastContainer";
 const SIDEBAR_TRANSITION_MS = 250;
 
 interface DashboardContainerProps {
@@ -21,6 +23,7 @@ interface DashboardContainerProps {
 }
 
 export default function DashboardContainer({ initialKodeAgent, initialActivities, initialTargets }: DashboardContainerProps) {
+  const { toasts, showToast, dismissToast } = useToast();
   const [activities, setActivities] = useState<Activity[]>(initialActivities);
   const [targetsData, setTargetsData] = useState<AgentTargets | null>(initialTargets ?? null);
   const [selectedMonth, setSelectedMonth] = useState<number>(() => new Date().getMonth());
@@ -158,13 +161,14 @@ export default function DashboardContainer({ initialKodeAgent, initialActivities
     startTransition(async () => {
       try {
         await toggleActivityStatusAction(id, activity.status);
+        showToast("Status aktivitas berhasil diperbarui", "success");
       } catch (err) {
         setActivities((prev) =>
           prev.map((act) =>
             act.id === id ? { ...act, status: activity.status } : act
           )
         );
-        alert("Gagal memperbarui status aktivitas");
+        showToast("Gagal memperbarui status aktivitas", "error");
       }
     });
   };
@@ -190,9 +194,10 @@ export default function DashboardContainer({ initialKodeAgent, initialActivities
     startTransition(async () => {
       try {
         await saveActivityAction(activityData);
+        showToast("Aktivitas berhasil disimpan", "success");
       } catch (err) {
         setActivities(prevActivities);
-        alert("Gagal menyimpan aktivitas");
+        showToast("Gagal menyimpan aktivitas", "error");
       }
     });
   };
@@ -206,9 +211,10 @@ export default function DashboardContainer({ initialKodeAgent, initialActivities
     startTransition(async () => {
       try {
         await removeActivityAction(id);
+        showToast("Aktivitas berhasil dihapus", "success");
       } catch (err) {
         setActivities(prevActivities);
-        alert("Gagal menghapus aktivitas");
+        showToast("Gagal menghapus aktivitas", "error");
       }
     });
   };
@@ -219,8 +225,9 @@ export default function DashboardContainer({ initialKodeAgent, initialActivities
         const saved = await saveAgentTargetsAction(newTargets);
         setTargetsData(saved);
         closeTargetsSidebar();
+        showToast("Target agen berhasil disimpan", "success");
       } catch (err) {
-        alert(err instanceof Error ? err.message : "Gagal menyimpan target");
+        showToast(err instanceof Error ? err.message : "Gagal menyimpan target", "error");
       }
     });
   };
@@ -264,7 +271,7 @@ export default function DashboardContainer({ initialKodeAgent, initialActivities
 
           {activeTab === "laporan" && (
             <div className="dashboard-tab-actions">
-              <div className="report-dropdown-selector" onClick={() => alert("Buka pemilih bulan/tahun...")}>
+              <div className="report-dropdown-selector" onClick={() => showToast("Fitur pemilih bulan/tahun segera hadir!", "info")}>
                 <svg className="calendar-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
                   <line x1="16" y1="2" x2="16" y2="6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
@@ -349,6 +356,8 @@ export default function DashboardContainer({ initialKodeAgent, initialActivities
           </svg>
         </button>
       )}
+
+      <ToastContainer toasts={toasts} onDismiss={dismissToast} />
     </div>
   );
 }

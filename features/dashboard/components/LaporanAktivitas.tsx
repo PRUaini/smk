@@ -692,11 +692,11 @@ export default function LaporanAktivitas({ targets, activities, selectedMonth }:
           <div className="chart-body flex-col">
             <div className="chart-legend-double">
               <div className="legend-item">
-                <span className="legend-box bg-red" />
+                <span className="legend-box" style={{ backgroundColor: "var(--color-primary)" }} />
                 <span className="legend-label">Pencapaian</span>
               </div>
               <div className="legend-item">
-                <span className="legend-box-dashed stroke-red" />
+                <span className="legend-box-dashed" style={{ borderColor: "var(--color-primary)" }} />
                 <span className="legend-label">Target</span>
               </div>
             </div>
@@ -728,13 +728,13 @@ export default function LaporanAktivitas({ targets, activities, selectedMonth }:
                     <div className="bar-pair-aligner">
                       {/* Actual Bar */}
                       <div className="bar-pill-outer">
-                        <span className="bar-percentage-label val-red">{activePointPct}%</span>
-                        <div className="bar-pill-fill bg-red" style={{ height: `${Math.min(100, activePointPct)}%` }} />
+                        <span className="bar-percentage-label" style={{ color: "var(--color-primary)" }}>{activePointPct}%</span>
+                        <div className="bar-pill-fill" style={{ height: `${Math.min(100, activePointPct)}%`, backgroundColor: "var(--color-primary)" }} />
                       </div>
                       {/* Target Bar */}
                       <div className="bar-pill-outer target">
                         <span className="bar-percentage-label target">100%</span>
-                        <div className="bar-pill-fill-dashed border-red" style={{ height: "100%" }} />
+                        <div className="bar-pill-fill-dashed" style={{ height: "100%", borderColor: "var(--color-primary)" }} />
                       </div>
                     </div>
                   </div>
@@ -755,13 +755,13 @@ export default function LaporanAktivitas({ targets, activities, selectedMonth }:
                     <div className="bar-pair-aligner">
                       {/* Actual Bar */}
                       <div className="bar-pill-outer">
-                        <span className="bar-percentage-label val-purple">{activeMeetingPct}%</span>
-                        <div className="bar-pill-fill bg-purple" style={{ height: `${Math.min(100, activeMeetingPct)}%` }} />
+                        <span className="bar-percentage-label" style={{ color: "var(--color-dashboard-purple)" }}>{activeMeetingPct}%</span>
+                        <div className="bar-pill-fill" style={{ height: `${Math.min(100, activeMeetingPct)}%`, backgroundColor: "var(--color-dashboard-purple)" }} />
                       </div>
                       {/* Target Bar */}
                       <div className="bar-pill-outer target">
                         <span className="bar-percentage-label target">100%</span>
-                        <div className="bar-pill-fill-dashed border-purple" style={{ height: "100%" }} />
+                        <div className="bar-pill-fill-dashed" style={{ height: "100%", borderColor: "var(--color-dashboard-purple)" }} />
                       </div>
                     </div>
                   </div>
@@ -782,13 +782,13 @@ export default function LaporanAktivitas({ targets, activities, selectedMonth }:
                     <div className="bar-pair-aligner">
                       {/* Actual Bar */}
                       <div className="bar-pill-outer">
-                        <span className="bar-percentage-label val-green">{activeSalesPct}%</span>
-                        <div className="bar-pill-fill bg-green" style={{ height: `${Math.min(100, activeSalesPct)}%` }} />
+                        <span className="bar-percentage-label" style={{ color: "var(--color-dashboard-green)" }}>{activeSalesPct}%</span>
+                        <div className="bar-pill-fill" style={{ height: `${Math.min(100, activeSalesPct)}%`, backgroundColor: "var(--color-dashboard-green)" }} />
                       </div>
                       {/* Target Bar */}
                       <div className="bar-pill-outer target">
                         <span className="bar-percentage-label target">100%</span>
-                        <div className="bar-pill-fill-dashed border-green" style={{ height: "100%" }} />
+                        <div className="bar-pill-fill-dashed" style={{ height: "100%", borderColor: "var(--color-dashboard-green)" }} />
                       </div>
                     </div>
                   </div>
@@ -809,13 +809,13 @@ export default function LaporanAktivitas({ targets, activities, selectedMonth }:
                     <div className="bar-pair-aligner">
                       {/* Actual Bar */}
                       <div className="bar-pill-outer">
-                        <span className="bar-percentage-label val-orange">{activeDaysPctForBar}%</span>
-                        <div className="bar-pill-fill bg-orange" style={{ height: `${Math.min(100, activeDaysPctForBar)}%` }} />
+                        <span className="bar-percentage-label" style={{ color: "var(--color-dashboard-orange)" }}>{activeDaysPctForBar}%</span>
+                        <div className="bar-pill-fill" style={{ height: `${Math.min(100, activeDaysPctForBar)}%`, backgroundColor: "var(--color-dashboard-orange)" }} />
                       </div>
                       {/* Target Bar */}
                       <div className="bar-pill-outer target">
                         <span className="bar-percentage-label target">100%</span>
-                        <div className="bar-pill-fill-dashed border-orange" style={{ height: "100%" }} />
+                        <div className="bar-pill-fill-dashed" style={{ height: "100%", borderColor: "var(--color-dashboard-orange)" }} />
                       </div>
                     </div>
                   </div>

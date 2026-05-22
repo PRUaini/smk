@@ -72,6 +72,9 @@ export default function ActivitySidebar({
             className="form-input"
             {...form.register("tanggal")}
           />
+          {form.formState.errors.tanggal && (
+            <span style={{ display: "block", fontSize: "0.75rem", color: "var(--color-error)", marginTop: "0.25rem", fontWeight: 500 }}>{form.formState.errors.tanggal.message}</span>
+          )}
         </div>
 
         <div className="form-group">
@@ -85,6 +88,9 @@ export default function ActivitySidebar({
               <option key={t} value={t}>{t}</option>
             ))}
           </select>
+          {form.formState.errors.waktu && (
+            <span style={{ display: "block", fontSize: "0.75rem", color: "var(--color-error)", marginTop: "0.25rem", fontWeight: 500 }}>{form.formState.errors.waktu.message}</span>
+          )}
         </div>
 
         <div className="form-group">
@@ -102,6 +108,9 @@ export default function ActivitySidebar({
             <option value="Penjualan / Closing">Penjualan / Closing (1 poin)</option>
             <option value="Penyerahan Polis / Servicing">Penyerahan Polis / Servicing (1 poin)</option>
           </select>
+          {form.formState.errors.kegiatan && (
+            <span style={{ display: "block", fontSize: "0.75rem", color: "var(--color-error)", marginTop: "0.25rem", fontWeight: 500 }}>{form.formState.errors.kegiatan.message}</span>
+          )}
         </div>
 
         <div className="form-group">
@@ -126,6 +135,9 @@ export default function ActivitySidebar({
               </button>
             ))}
           </div>
+          {form.formState.errors.status && (
+            <span style={{ display: "block", fontSize: "0.75rem", color: "var(--color-error)", marginTop: "0.25rem", fontWeight: 500 }}>{form.formState.errors.status.message}</span>
+          )}
         </div>
 
         <div className="form-group">
@@ -138,6 +150,9 @@ export default function ActivitySidebar({
             {...form.register("catatan")}
           />
           <span className="char-counter">{catatan.length}/200</span>
+          {form.formState.errors.catatan && (
+            <span style={{ display: "block", fontSize: "0.75rem", color: "var(--color-error)", marginTop: "0.25rem", fontWeight: 500 }}>{form.formState.errors.catatan.message}</span>
+          )}
         </div>
 
         <div className="form-group">
