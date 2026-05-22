@@ -24,7 +24,7 @@ export default function DashboardContainer({ initialKodeAgent, initialActivities
   const [activities, setActivities] = useState<Activity[]>(initialActivities);
   const [targetsData, setTargetsData] = useState<AgentTargets | null>(initialTargets ?? null);
   const [selectedMonth, setSelectedMonth] = useState<number>(() => new Date().getMonth());
-  const [autoFocusToday, setAutoFocusToday] = useState(false);
+  const [autoFocusToday, setAutoFocusToday] = useState(true);
   const [selectedActivity, setSelectedActivity] = useState<Activity | null>(null);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
@@ -60,12 +60,7 @@ export default function DashboardContainer({ initialKodeAgent, initialActivities
   }, [initialTargets]);
 
   useEffect(() => {
-    const todayStr = new Date().toISOString().split("T")[0];
-    const lastVisited = localStorage.getItem("smk_last_visited_date");
-    if (lastVisited !== todayStr) {
-      localStorage.setItem("smk_last_visited_date", todayStr);
-      setAutoFocusToday(true);
-    }
+    setAutoFocusToday(true);
   }, []);
 
   useEffect(() => {

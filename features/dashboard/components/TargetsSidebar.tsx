@@ -23,12 +23,12 @@ export default function TargetsSidebar({
   const form = useForm<TargetsFormData>({
     resolver: zodResolver(targetsFormSchema) as Resolver<TargetsFormData>,
     values: {
-      targetPoints: initialTargets?.targetPoints ?? DEFAULT_TARGETS.targetPoints,
-      targetMeetings: initialTargets?.targetMeetings ?? DEFAULT_TARGETS.targetMeetings,
-      targetSales: initialTargets?.targetSales ?? DEFAULT_TARGETS.targetSales,
-      targetWeeklyPoints: initialTargets?.targetWeeklyPoints ?? DEFAULT_TARGETS.targetWeeklyPoints,
-      targetWeeklyMeetings: initialTargets?.targetWeeklyMeetings ?? DEFAULT_TARGETS.targetWeeklyMeetings,
-      targetWeeklySales: initialTargets?.targetWeeklySales ?? DEFAULT_TARGETS.targetWeeklySales,
+      targetPoints: initialTargets?.targetPoints ?? ("" as any),
+      targetMeetings: initialTargets?.targetMeetings ?? ("" as any),
+      targetSales: initialTargets?.targetSales ?? ("" as any),
+      targetWeeklyPoints: initialTargets?.targetWeeklyPoints ?? ("" as any),
+      targetWeeklyMeetings: initialTargets?.targetWeeklyMeetings ?? ("" as any),
+      targetWeeklySales: initialTargets?.targetWeeklySales ?? ("" as any),
     },
   });
 
@@ -55,6 +55,7 @@ export default function TargetsSidebar({
           <input
             type="number"
             className="form-input"
+            placeholder="Contoh: 500"
             {...form.register("targetPoints")}
           />
           {form.formState.errors.targetPoints && (
@@ -67,6 +68,7 @@ export default function TargetsSidebar({
           <input
             type="number"
             className="form-input"
+            placeholder="Contoh: 10"
             {...form.register("targetMeetings")}
           />
           {form.formState.errors.targetMeetings && (
@@ -79,6 +81,7 @@ export default function TargetsSidebar({
           <input
             type="number"
             className="form-input"
+            placeholder="Contoh: 5"
             {...form.register("targetSales")}
           />
           {form.formState.errors.targetSales && (
@@ -93,6 +96,7 @@ export default function TargetsSidebar({
           <input
             type="number"
             className="form-input"
+            placeholder="Contoh: 125"
             {...form.register("targetWeeklyPoints")}
           />
           {form.formState.errors.targetWeeklyPoints && (
@@ -105,6 +109,7 @@ export default function TargetsSidebar({
           <input
             type="number"
             className="form-input"
+            placeholder="Contoh: 3"
             {...form.register("targetWeeklyMeetings")}
           />
           {form.formState.errors.targetWeeklyMeetings && (
@@ -117,6 +122,7 @@ export default function TargetsSidebar({
           <input
             type="number"
             className="form-input"
+            placeholder="Contoh: 1"
             {...form.register("targetWeeklySales")}
           />
           {form.formState.errors.targetWeeklySales && (

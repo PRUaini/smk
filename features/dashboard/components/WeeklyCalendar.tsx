@@ -23,6 +23,7 @@ export default function WeeklyCalendar({
 }: WeeklyCalendarProps) {
   const [weekSelection, setWeekSelection] = React.useState({ month: selectedMonth, week: 0 });
   const selectedWeek = weekSelection.month === selectedMonth ? weekSelection.week : 0;
+  const [expandedSlots, setExpandedSlots] = React.useState<Record<string, boolean>>({});
 
   React.useEffect(() => {
     if (autoFocusToday) {
@@ -98,10 +99,9 @@ export default function WeeklyCalendar({
   const weeklyActivities = activities.filter((activity) =>
     weekDates.some((date) => date.formatted === activity.tanggal)
   );
-
-  // Helper: Find activity for a given date and time slot
-  const getActivityForSlot = (dateStr: string, timeStr: string) => {
-    return activities.find(
+  // Helper: Find activities for a given date and time slot
+  const getActivitiesForSlot = (dateStr: string, timeStr: string) => {
+    return activities.filter(
       (act) => act.tanggal === dateStr && act.waktu === timeStr
     );
   };
@@ -117,6 +117,73 @@ export default function WeeklyCalendar({
     const today = new Date();
     const formattedToday = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
     return dateStr === formattedToday;
+  };
+
+  const renderActivityCard = (activity: Activity) => {
+    return (
+      <div
+        key={activity.id}
+        className={`activity-card-item ${
+          activity.status === "Selesai"
+            ? "border-green"
+            : activity.status === "Proses"
+            ? "border-orange"
+            : "border-gray"
+        } ${selectedActivityId === activity.id ? "selected-activity" : ""}`}
+        onClick={(e) => {
+          e.stopPropagation();
+          onSelectActivity(activity);
+        }}
+      >
+        <div className="activity-card-top">
+          <div className="activity-card-left-group">
+            <label className="checkbox-container" onClick={(e) => e.stopPropagation()}>
+              <input
+                type="checkbox"
+                checked={activity.status === "Selesai"}
+                onChange={() => onToggleComplete(activity.id)}
+              />
+              <span className="checkmark" />
+            </label>
+            <span className="activity-card-title">{activity.kegiatan}</span>
+          </div>
+          
+          <span
+            className={`badge-point ${
+              activity.status === "Selesai" ? "point-green" : "point-gray"
+            }`}
+          >
+            {activity.poin} poin
+          </span>
+        </div>
+
+        {(activity.nasabah || activity.produk || activity.catatan) && (
+          <div className="activity-card-meta-list">
+            {activity.nasabah && (
+              <div className="activity-card-meta-item">
+                <span className="meta-label">Nasabah:</span>
+                <span className="meta-value font-semibold">{activity.nasabah}</span>
+              </div>
+            )}
+            {activity.produk && (
+              <div className="activity-card-meta-item">
+                <span className="meta-label">Produk:</span>
+                <span className="meta-value">{activity.produk}</span>
+              </div>
+            )}
+            {activity.catatan && (
+              <p className="activity-card-notes">"{activity.catatan}"</p>
+            )}
+          </div>
+        )}
+
+        {activity.status === "Proses" && (
+          <div className="activity-card-footer">
+            <span className="badge-proses">Proses</span>
+          </div>
+        )}
+      </div>
+    );
   };
 
   return (
@@ -174,12 +241,13 @@ export default function WeeklyCalendar({
 
               {/* Day Cells */}
               {weekDates.map((d) => {
-                const activity = getActivityForSlot(d.formatted, time);
+                const slotActivities = getActivitiesForSlot(d.formatted, time);
                 const isActiveDay = isToday(d.formatted);
+                const slotKey = `${d.formatted}-${time}`;
 
                 return (
                   <div
-                    key={`${d.formatted}-${time}`}
+                    key={slotKey}
                     className={`calendar-cell ${isActiveDay ? "active-day-col" : ""}`}
                     onClick={(e) => {
                       // Only trigger cell select if clicking empty space
@@ -188,43 +256,51 @@ export default function WeeklyCalendar({
                       }
                     }}
                   >
-                    {activity ? (
-                      <div
-                        className={`activity-card-item ${
-                          activity.status === "Selesai"
-                            ? "border-green"
-                            : activity.status === "Proses"
-                            ? "border-orange"
-                            : "border-gray"
-                        } ${selectedActivityId === activity.id ? "selected-activity" : ""}`}
-                        onClick={() => onSelectActivity(activity)}
-                      >
-                        <div className="activity-card-left">
-                          <label className="checkbox-container" onClick={(e) => e.stopPropagation()}>
-                            <input
-                              type="checkbox"
-                              checked={activity.status === "Selesai"}
-                              onChange={() => onToggleComplete(activity.id)}
-                            />
-                            <span className="checkmark" />
-                          </label>
-                          <div className="activity-details">
-                            <span className="activity-card-title">{activity.kegiatan}</span>
-                            <span className="activity-card-desc">{activity.catatan}</span>
-                          </div>
-                        </div>
-                        <div className="activity-card-right">
-                          {activity.status === "Proses" && (
-                            <span className="badge-proses">Proses</span>
-                          )}
-                          <span
-                            className={`badge-point ${
-                              activity.status === "Selesai" ? "point-green" : "point-gray"
-                            }`}
-                          >
-                            {activity.poin} poin
-                          </span>
-                        </div>
+                    {slotActivities.length > 0 ? (
+                      <div className="slot-activities-container" style={{ display: "flex", flexDirection: "column", gap: "0.375rem", width: "100%" }}>
+                        {renderActivityCard(slotActivities[0])}
+
+                        {slotActivities.length > 1 && (
+                          <>
+                            <button
+                              type="button"
+                              className="more-activities-toggle"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setExpandedSlots((prev) => ({
+                                  ...prev,
+                                  [slotKey]: !prev[slotKey],
+                                }));
+                              }}
+                            >
+                              <span>
+                                {expandedSlots[slotKey]
+                                  ? "Sembunyikan"
+                                  : `+${slotActivities.length - 1} aktivitas lagi`}
+                              </span>
+                              <svg
+                                width="10"
+                                height="10"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2.5"
+                                style={{
+                                  transform: expandedSlots[slotKey] ? "rotate(180deg)" : "rotate(0deg)",
+                                  transition: "transform 0.2s ease",
+                                }}
+                              >
+                                <path d="M6 9l6 6 6-6" />
+                              </svg>
+                            </button>
+
+                            {expandedSlots[slotKey] && (
+                              <div className="expanded-activities-list" style={{ display: "flex", flexDirection: "column", gap: "0.375rem", width: "100%" }}>
+                                {slotActivities.slice(1).map((act) => renderActivityCard(act))}
+                              </div>
+                            )}
+                          </>
+                        )}
                       </div>
                     ) : (
                       <div className="empty-cell-hover-indicator">+ Tambah</div>

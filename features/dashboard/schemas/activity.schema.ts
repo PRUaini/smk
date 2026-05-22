@@ -33,7 +33,7 @@ export function buildActivityPayload(
     kegiatan: formData.kegiatan,
     poin: ACTIVITY_POINTS[formData.kegiatan],
     status: formData.status,
-    catatan: formData.catatan || ACTIVITY_DESCRIPTIONS[formData.kegiatan],
+    catatan: formData.catatan,
     nasabah: formData.nasabah,
     produk: formData.produk
   };

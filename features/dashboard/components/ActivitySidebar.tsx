@@ -33,9 +33,9 @@ export default function ActivitySidebar({
       waktu: selectedActivity?.waktu ?? selectedTime ?? "08:00",
       kegiatan: selectedActivity?.kegiatan ?? "Pendekatan",
       status: selectedActivity?.status ?? "Belum",
-      catatan: selectedActivity?.catatan ?? "...",
-      nasabah: selectedActivity?.nasabah ?? "...",
-      produk: selectedActivity?.produk ?? "...",
+      catatan: selectedActivity?.catatan ?? "",
+      nasabah: selectedActivity?.nasabah ?? "",
+      produk: selectedActivity?.produk ?? "",
     },
   });
 
@@ -45,9 +45,6 @@ export default function ActivitySidebar({
 
   const handleKegiatanChange = (value: ActivityType) => {
     form.setValue("kegiatan", value, { shouldValidate: true });
-    if (!catatan || Object.values(ACTIVITY_DESCRIPTIONS).includes(catatan)) {
-      form.setValue("catatan", ACTIVITY_DESCRIPTIONS[value], { shouldValidate: true });
-    }
   };
 
   const handleSubmit = (data: ActivityFormData) => {
@@ -158,7 +155,7 @@ export default function ActivitySidebar({
           <input
             type="text"
             className="form-input"
-            placeholder="Nama calon nasabah..."
+            placeholder="Nama produk..."
             {...form.register("produk")}
           />
         </div>
