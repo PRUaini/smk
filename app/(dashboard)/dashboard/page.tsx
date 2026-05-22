@@ -3,8 +3,8 @@ import { DashboardContainer } from "@/features/dashboard";
 import { createClient } from "@/lib/supabase/server";
 
 export const metadata: Metadata = {
-  title: "Dashboard — SMK Portal",
-  description: "Dashboard utama SMK Portal.",
+  title: "Sistem Management Kegiatan",
+  description: "Dashboard Utama",
 };
 
 import { getActivitiesByAgent } from "@/features/dashboard/data/activities.repository";
@@ -17,7 +17,7 @@ export default async function DashboardPage() {
   } = await supabase.auth.getUser();
 
   if (!user) {
-    throw new Error("User session not found");
+    throw new Error("Sesi tidak ditemukan.");
   }
 
   const kodeAgent = user.email?.replace("@smk.internal", "") ?? "Agent";
