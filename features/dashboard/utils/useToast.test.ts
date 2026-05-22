@@ -47,4 +47,31 @@ describe("useToast", () => {
 
     expect(result.current.toasts).toHaveLength(0);
   });
+
+  it("should not auto-dismiss confirm toasts and call callbacks", () => {
+    const { result } = renderHook(() => useToast());
+    const onConfirm = vi.fn();
+    const onCancel = vi.fn();
+
+    act(() => {
+      result.current.showToast("Confirm delete?", "confirm", { onConfirm, onCancel });
+    });
+
+    expect(result.current.toasts).toHaveLength(1);
+    expect(result.current.toasts[0].type).toBe("confirm");
+
+    // should not auto-dismiss after 4000ms
+    act(() => {
+      vi.advanceTimersByTime(4000);
+    });
+    expect(result.current.toasts).toHaveLength(1);
+
+    // should call onCancel if dismissed without confirming
+    const id = result.current.toasts[0].id;
+    act(() => {
+      result.current.dismissToast(id);
+    });
+    expect(result.current.toasts).toHaveLength(0);
+    expect(onCancel).toHaveBeenCalledOnce();
+  });
 });

@@ -203,18 +203,22 @@ export default function DashboardContainer({ initialKodeAgent, initialActivities
   };
 
   const handleDeleteActivity = (id: string) => {
-    const prevActivities = [...activities];
+    showToast("Apakah Anda yakin ingin menghapus aktivitas ini?", "confirm", {
+      onConfirm: () => {
+        const prevActivities = [...activities];
 
-    setActivities((prev) => prev.filter((act) => act.id !== id));
-    closeActivitySidebar();
+        setActivities((prev) => prev.filter((act) => act.id !== id));
+        closeActivitySidebar();
 
-    startTransition(async () => {
-      try {
-        await removeActivityAction(id);
-        showToast("Aktivitas berhasil dihapus", "success");
-      } catch (err) {
-        setActivities(prevActivities);
-        showToast("Gagal menghapus aktivitas", "error");
+        startTransition(async () => {
+          try {
+            await removeActivityAction(id);
+            showToast("Aktivitas berhasil dihapus", "success");
+          } catch (err) {
+            setActivities(prevActivities);
+            showToast("Gagal menghapus aktivitas", "error");
+          }
+        });
       }
     });
   };

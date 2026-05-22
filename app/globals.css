@@ -3085,6 +3085,13 @@ body {
   color: var(--color-blue-icon);
 }
 
+.toast-confirm {
+  border-left: 4px solid var(--color-warning);
+}
+.toast-confirm .toast-icon {
+  color: var(--color-warning);
+}
+
 @keyframes toastSlideIn {
   from {
     opacity: 0;
