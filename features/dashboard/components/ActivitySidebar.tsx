@@ -36,7 +36,7 @@ export default function ActivitySidebar({
       catatan: selectedActivity?.catatan ?? "",
       nasabah: selectedActivity?.nasabah ?? "",
       produk: selectedActivity?.produk ?? "",
-      api: selectedActivity?.api ?? undefined,
+      api: selectedActivity?.api !== undefined && selectedActivity?.api !== null ? String(selectedActivity.api) : "",
     },
   });
 

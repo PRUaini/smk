@@ -19,10 +19,12 @@ export const activityFormSchema = z.object({
   nasabah: z.string(),
   produk: z.string(),
   api: z
-    .preprocess(
-      (val) => (val === "" || val === undefined || val === null ? undefined : Number(val)),
-      z.number().min(0, "API tidak boleh negatif").optional()
-    )
+    .string()
+    .refine((val) => {
+      if (!val) return true;
+      const num = Number(val);
+      return !isNaN(num) && num >= 0;
+    }, "API tidak boleh negatif")
     .optional(),
 });
 
@@ -42,6 +44,6 @@ export function buildActivityPayload(
     catatan: formData.catatan,
     nasabah: formData.nasabah,
     produk: formData.produk,
-    api: formData.api,
+    api: formData.api ? Number(formData.api) : undefined,
   };
 }

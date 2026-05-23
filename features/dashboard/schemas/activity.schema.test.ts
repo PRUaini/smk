@@ -57,7 +57,10 @@ describe("activityFormSchema", () => {
       api: "15000000",
     });
     expect(validResult.success).toBe(true);
-    expect(validResult.data?.api).toBe(15000000);
+    expect(validResult.data?.api).toBe("15000000");
+
+    const payload = buildActivityPayload(validResult.data as any);
+    expect(payload.api).toBe(15000000);
 
     const invalidResult = activityFormSchema.safeParse({
       tanggal: "2026-01-05",
