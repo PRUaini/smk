@@ -1,5 +1,6 @@
 import { DEFAULT_TARGETS } from "../constants";
 import type { Activity, DashboardTargets } from "../types";
+import { getWeeksInMonth, getWeekDates } from "../utils/date";
 
 const MEETING_TYPES = new Set(["Pertemuan", "Wawancara Penutupan"]);
 
@@ -102,34 +103,3 @@ function getDaysInMonth(year: number, monthIndex: number) {
   return new Date(year, monthIndex + 1, 0).getDate();
 }
 
-function getWeeksInMonth(selectedMonth: number) {
-  const today = new Date();
-  const currentYear = today.getFullYear();
-  const weeks: Date[] = [];
-  
-  let d = new Date(currentYear, selectedMonth, 1);
-  const day = d.getDay();
-  if (day === 0) {
-    d.setDate(d.getDate() + 1);
-  } else if (day > 1) {
-    d.setDate(d.getDate() + (8 - day));
-  }
-
-  while (d.getMonth() === selectedMonth) {
-    weeks.push(new Date(d));
-    d.setDate(d.getDate() + 7);
-  }
-  return weeks;
-}
-
-function getWeekDates(startDate: Date) {
-  const dates = [];
-  for (let i = 0; i < 6; i++) {
-    const tempDate = new Date(startDate);
-    tempDate.setDate(startDate.getDate() + i);
-    dates.push(
-      `${tempDate.getFullYear()}-${String(tempDate.getMonth() + 1).padStart(2, "0")}-${String(tempDate.getDate()).padStart(2, "0")}`
-    );
-  }
-  return dates;
-}

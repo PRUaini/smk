@@ -1,6 +1,7 @@
 import React from "react";
 import { Activity } from "../types";
 import { DASHBOARD_TIME_SLOTS, DAYS_OF_WEEK } from "../constants";
+import { getWeeksInMonth } from "../utils/date";
 
 interface WeeklyCalendarProps {
   selectedMonth: number;
@@ -29,7 +30,7 @@ export default function WeeklyCalendar({
     if (autoFocusToday) {
       const today = new Date();
       if (selectedMonth === today.getMonth()) {
-        const weeksList = getWeeksInMonth();
+        const weeksList = getWeeksInMonth(selectedMonth);
         today.setHours(0, 0, 0, 0);
         let todayWeekIdx = 0;
         for (let i = 0; i < weeksList.length; i++) {
@@ -48,27 +49,7 @@ export default function WeeklyCalendar({
     }
   }, [selectedMonth, autoFocusToday]);
 
-  const getWeeksInMonth = () => {
-    const today = new Date();
-    const currentYear = today.getFullYear();
-    const weeks: Date[] = [];
-    
-    let d = new Date(currentYear, selectedMonth, 1);
-    const day = d.getDay();
-    if (day === 0) {
-      d.setDate(d.getDate() + 1);
-    } else if (day > 1) {
-      d.setDate(d.getDate() + (8 - day));
-    }
-
-    while (d.getMonth() === selectedMonth) {
-      weeks.push(new Date(d));
-      d.setDate(d.getDate() + 7);
-    }
-    return weeks;
-  };
-
-  const weeks = getWeeksInMonth();
+  const weeks = getWeeksInMonth(selectedMonth);
 
   // Helper: Get dates (Monday - Saturday) for the active week
   const getWeekDates = () => {
