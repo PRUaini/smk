@@ -55,19 +55,15 @@ export default function WeeklyCalendar({
     
     let d = new Date(currentYear, selectedMonth, 1);
     const day = d.getDay();
-    const diff = day === 0 ? -6 : 1 - day;
-    d.setDate(d.getDate() + diff); // First Monday of the month's first week
+    if (day === 0) {
+      d.setDate(d.getDate() + 1);
+    } else if (day > 1) {
+      d.setDate(d.getDate() + (8 - day));
+    }
 
-    while (true) {
+    while (d.getMonth() === selectedMonth) {
       weeks.push(new Date(d));
-      const nextMonday = new Date(d);
-      nextMonday.setDate(nextMonday.getDate() + 7);
-      
-      // Stop if the next Monday is in the next month
-      if (nextMonday.getFullYear() > currentYear || (nextMonday.getFullYear() === currentYear && nextMonday.getMonth() > selectedMonth)) {
-        break;
-      }
-      d = nextMonday;
+      d.setDate(d.getDate() + 7);
     }
     return weeks;
   };

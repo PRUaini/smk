@@ -19,9 +19,12 @@ export function calculateDashboardTargets(
   >
 ): DashboardTargets {
   const monthNumber = selectedMonth + 1;
+  const currentYear = new Date().getFullYear();
   const monthlyActivities = activities.filter((activity) => {
-    const activityDate = new Date(`${activity.tanggal}T00:00:00`);
-    return activityDate.getMonth() + 1 === monthNumber;
+    const parts = activity.tanggal.split("-");
+    const yr = parseInt(parts[0], 10);
+    const mo = parseInt(parts[1], 10);
+    return yr === currentYear && mo === monthNumber;
   });
   const completedMonthlyActivities = monthlyActivities.filter(
     (activity) => activity.status === "Selesai"
@@ -106,18 +109,15 @@ function getWeeksInMonth(selectedMonth: number) {
   
   let d = new Date(currentYear, selectedMonth, 1);
   const day = d.getDay();
-  const diff = day === 0 ? -6 : 1 - day;
-  d.setDate(d.getDate() + diff);
+  if (day === 0) {
+    d.setDate(d.getDate() + 1);
+  } else if (day > 1) {
+    d.setDate(d.getDate() + (8 - day));
+  }
 
-  while (true) {
+  while (d.getMonth() === selectedMonth) {
     weeks.push(new Date(d));
-    const nextMonday = new Date(d);
-    nextMonday.setDate(nextMonday.getDate() + 7);
-    
-    if (nextMonday.getFullYear() > currentYear || (nextMonday.getFullYear() === currentYear && nextMonday.getMonth() > selectedMonth)) {
-      break;
-    }
-    d = nextMonday;
+    d.setDate(d.getDate() + 7);
   }
   return weeks;
 }

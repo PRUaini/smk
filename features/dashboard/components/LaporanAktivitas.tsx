@@ -9,18 +9,15 @@ const getWeeksInMonth = (selectedMonth: number) => {
   
   let d = new Date(currentYear, selectedMonth, 1);
   const day = d.getDay();
-  const diff = day === 0 ? -6 : 1 - day;
-  d.setDate(d.getDate() + diff);
+  if (day === 0) {
+    d.setDate(d.getDate() + 1);
+  } else if (day > 1) {
+    d.setDate(d.getDate() + (8 - day));
+  }
 
-  while (true) {
+  while (d.getMonth() === selectedMonth) {
     weeks.push(new Date(d));
-    const nextMonday = new Date(d);
-    nextMonday.setDate(nextMonday.getDate() + 7);
-    
-    if (nextMonday.getFullYear() > currentYear || (nextMonday.getFullYear() === currentYear && nextMonday.getMonth() > selectedMonth)) {
-      break;
-    }
-    d = nextMonday;
+    d.setDate(d.getDate() + 7);
   }
   return weeks;
 };
@@ -75,10 +72,13 @@ export default function LaporanAktivitas({ targets, activities, selectedMonth }:
     const completedWeeklyActivities = activities.filter(
       (act) => act.status === "Selesai" && dates.includes(act.tanggal)
     );
+    const weeklyActivities = activities.filter(
+      (act) => dates.includes(act.tanggal)
+    );
     const points = completedWeeklyActivities.reduce((sum, act) => sum + act.poin, 0);
     const meetings = completedWeeklyActivities.filter((act) => act.kegiatan === "Pertemuan" || act.kegiatan === "Wawancara Penutupan").length;
     const sales = completedWeeklyActivities.filter((act) => act.kegiatan === "Penjualan / Closing").length;
-    const api = completedWeeklyActivities
+    const api = weeklyActivities
       .filter((act) => act.kegiatan === "Penjualan / Closing")
       .reduce((sum, act) => sum + (act.api || 0), 0);
     const activeDays = new Set(completedWeeklyActivities.map((act) => act.tanggal)).size;
@@ -132,8 +132,10 @@ export default function LaporanAktivitas({ targets, activities, selectedMonth }:
     const data = [];
     for (let m = 0; m < 12; m++) {
       const monthActivities = activities.filter((act) => {
-        const actDate = new Date(`${act.tanggal}T00:00:00`);
-        return actDate.getFullYear() === currentYear && actDate.getMonth() === m && act.status === "Selesai";
+        const parts = act.tanggal.split("-");
+        const yr = parseInt(parts[0], 10);
+        const mo = parseInt(parts[1], 10);
+        return yr === currentYear && mo - 1 === m && act.status === "Selesai";
       });
       const points = monthActivities.reduce((sum, act) => sum + act.poin, 0);
       data.push({ month: m, points });
@@ -147,8 +149,8 @@ export default function LaporanAktivitas({ targets, activities, selectedMonth }:
     const targetRangeYears = [currentYear - 2, currentYear - 1, currentYear];
     for (const yr of targetRangeYears) {
       const yearActivities = activities.filter((act) => {
-        const actDate = new Date(`${act.tanggal}T00:00:00`);
-        return actDate.getFullYear() === yr && act.status === "Selesai";
+        const yrPart = parseInt(act.tanggal.split("-")[0], 10);
+        return yrPart === yr && act.status === "Selesai";
       });
       const points = yearActivities.reduce((sum, act) => sum + act.poin, 0);
       data.push({ year: yr, points });
@@ -159,8 +161,8 @@ export default function LaporanAktivitas({ targets, activities, selectedMonth }:
   // Yearly target parameters (aggregated compare)
   const yearlyTargetData = useMemo(() => {
     const yearActivities = activities.filter((act) => {
-      const actDate = new Date(`${act.tanggal}T00:00:00`);
-      return actDate.getFullYear() === currentYear && act.status === "Selesai";
+      const yrPart = parseInt(act.tanggal.split("-")[0], 10);
+      return yrPart === currentYear && act.status === "Selesai";
     });
 
     const MEETING_TYPES = new Set(["Pertemuan", "Wawancara Penutupan"]);
