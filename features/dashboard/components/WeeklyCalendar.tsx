@@ -254,7 +254,8 @@ const getActivityTypeClass = (kegiatan: string) => {
                     className={`calendar-cell ${isActiveDay ? "active-day-col" : ""}`}
                     onClick={(e) => {
                       // Only trigger cell select if clicking empty space
-                      if (e.target === e.currentTarget) {
+                      const target = e.target as HTMLElement;
+                      if (!target.closest(".activity-card-item") && !target.closest(".more-activities-toggle")) {
                         onSelectTimeSlot(d.formatted, time);
                       }
                     }}
