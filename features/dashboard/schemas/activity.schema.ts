@@ -17,7 +17,13 @@ export const activityFormSchema = z.object({
   status: z.enum(activityStatuses),
   catatan: z.string().max(200, "Catatan maksimal 200 karakter"),
   nasabah: z.string(),
-  produk: z.string()
+  produk: z.string(),
+  api: z
+    .preprocess(
+      (val) => (val === "" || val === undefined || val === null ? undefined : Number(val)),
+      z.number().min(0, "API tidak boleh negatif").optional()
+    )
+    .optional(),
 });
 
 export type ActivityFormData = z.infer<typeof activityFormSchema>;
@@ -35,6 +41,7 @@ export function buildActivityPayload(
     status: formData.status,
     catatan: formData.catatan,
     nasabah: formData.nasabah,
-    produk: formData.produk
+    produk: formData.produk,
+    api: formData.api,
   };
 }

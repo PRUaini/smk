@@ -36,6 +36,7 @@ export default function ActivitySidebar({
       catatan: selectedActivity?.catatan ?? "",
       nasabah: selectedActivity?.nasabah ?? "",
       produk: selectedActivity?.produk ?? "",
+      api: selectedActivity?.api ?? undefined,
     },
   });
 
@@ -174,6 +175,23 @@ export default function ActivitySidebar({
             {...form.register("produk")}
           />
         </div>
+
+        {kegiatan === "Penjualan / Closing" && (
+          <div className="form-group">
+            <label className="form-label">Annualized Premium Income (API) (Opsional)</label>
+            <input
+              type="number"
+              className="form-input"
+              placeholder="Contoh: 10000000"
+              {...form.register("api")}
+            />
+            {form.formState.errors.api && (
+              <span style={{ display: "block", fontSize: "0.75rem", color: "var(--color-error)", marginTop: "0.25rem", fontWeight: 500 }}>
+                {form.formState.errors.api.message}
+              </span>
+            )}
+          </div>
+        )}
 
         <div className="sidebar-actions">
           <button type="submit" className="save-activity-btn" disabled={isPending}>

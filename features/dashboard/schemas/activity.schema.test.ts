@@ -44,4 +44,31 @@ describe("activityFormSchema", () => {
     expect(payload.poin).toBe(1);
     expect(payload.catatan).toBe("");
   });
+
+  it("handles valid and invalid API numbers", () => {
+    const validResult = activityFormSchema.safeParse({
+      tanggal: "2026-01-05",
+      waktu: "08:00",
+      kegiatan: "Penjualan / Closing",
+      status: "Selesai",
+      catatan: "Sales",
+      nasabah: "Ibu Rina",
+      produk: "PRUWarisan",
+      api: "15000000",
+    });
+    expect(validResult.success).toBe(true);
+    expect(validResult.data?.api).toBe(15000000);
+
+    const invalidResult = activityFormSchema.safeParse({
+      tanggal: "2026-01-05",
+      waktu: "08:00",
+      kegiatan: "Penjualan / Closing",
+      status: "Selesai",
+      catatan: "Sales",
+      nasabah: "Ibu Rina",
+      produk: "PRUWarisan",
+      api: "-5000",
+    });
+    expect(invalidResult.success).toBe(false);
+  });
 });
