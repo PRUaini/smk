@@ -19,7 +19,8 @@ export async function getAgentTargets(kodeAgent: string): Promise<AgentTargets |
     .maybeSingle();
 
   if (error) {
-    throw new Error(`Failed to fetch agent targets: ${error.message}`);
+    console.error("Failed to fetch agent targets:", error);
+    throw new Error("Failed to fetch agent targets. Please try again later.");
   }
 
   if (!data) return null;
@@ -56,7 +57,8 @@ export async function saveAgentTargets(kodeAgent: string, targets: Omit<AgentTar
     .single();
 
   if (error) {
-    throw new Error(`Failed to save agent targets: ${error.message}`);
+    console.error("Failed to save agent targets:", error);
+    throw new Error("Failed to save agent targets. Please try again later.");
   }
 
   return {

@@ -11,7 +11,8 @@ export async function getActivitiesByAgent(agentId: string): Promise<Activity[]>
     .order("waktu", { ascending: true });
 
   if (error) {
-    throw new Error(`Failed to fetch activities: ${error.message}`);
+    console.error("Failed to fetch activities:", error);
+    throw new Error("Failed to fetch activities. Please try again later.");
   }
 
   return (data || []).map((row) => ({
@@ -51,7 +52,8 @@ export async function createActivity(
     .single();
 
   if (error) {
-    throw new Error(`Failed to create activity: ${error.message}`);
+    console.error("Failed to create activity:", error);
+    throw new Error("Failed to create activity. Please try again later.");
   }
 
   return {
@@ -83,7 +85,8 @@ export async function updateActivity(
     .single();
 
   if (error) {
-    throw new Error(`Failed to update activity: ${error.message}`);
+    console.error("Failed to update activity:", error);
+    throw new Error("Failed to update activity. Please try again later.");
   }
 
   return {
@@ -109,6 +112,7 @@ export async function deleteActivity(id: string, agentId: string): Promise<void>
     .eq("agent_id", agentId);
 
   if (error) {
-    throw new Error(`Failed to delete activity: ${error.message}`);
+    console.error("Failed to delete activity:", error);
+    throw new Error("Failed to delete activity. Please try again later.");
   }
 }
