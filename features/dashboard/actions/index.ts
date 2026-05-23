@@ -11,6 +11,7 @@ import {
 import type { Activity } from "../types";
 import { activityActionSchema } from "../schemas/activity.schema";
 import { targetsFormSchema } from "../schemas/targets.schema";
+import { ACTIVITY_POINTS } from "../constants";
 
 async function getAuthenticatedAgentId(): Promise<string> {
   const supabase = await createClient();
@@ -37,12 +38,13 @@ export async function saveActivityAction(
   }
 
   const validatedData = validated.data;
+  const poin = ACTIVITY_POINTS[validatedData.kegiatan];
 
   if (validatedData.id) {
     const { id, ...payload } = validatedData;
-    await updateActivity(id, agentId, payload);
+    await updateActivity(id, agentId, { ...payload, poin });
   } else {
-    await createActivity(agentId, validatedData);
+    await createActivity(agentId, { ...validatedData, poin });
   }
 
   revalidatePath("/dashboard");
