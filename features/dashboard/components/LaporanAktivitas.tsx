@@ -546,7 +546,9 @@ export default function LaporanAktivitas({ targets, activities, selectedMonth }:
             <div className="kpi-progress-bar bg-orange" style={{ width: "100%" }} />
           </div>
           <div className="kpi-card-footer">
-            <span className="kpi-pct-attained">{isWeekly ? "Total API Terkumpul Minggu Ini" : "Total API Terkumpul"}</span>
+            <span className="kpi-pct-attained">
+              {isWeekly ? "Total API terkumpul minggu ini" : "Total API terkumpul"}: Rp {currentApi.toLocaleString("id-ID")}
+            </span>
           </div>
         </div>
       </div>

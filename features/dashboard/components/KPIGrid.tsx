@@ -117,7 +117,7 @@ export default function KPIGrid({ targets }: KPIGridProps) {
           <div className="kpi-progress-bar bg-orange" style={{ width: "100%" }} />
         </div>
         <div className="kpi-card-footer">
-          <span>Total API Terkumpul</span>
+          <span>Total API terkumpul: Rp {targets.totalApi.toLocaleString("id-ID")}</span>
         </div>
       </div>
     </div>
