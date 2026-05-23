@@ -74,10 +74,10 @@ export function calculateDashboardTargets(
     totalWeeklyPoints: sumPoints(completedWeeklyActivities),
     totalWeeklyMeetings: countMeetings(completedWeeklyActivities),
     totalWeeklySales: countSales(completedWeeklyActivities),
-    totalApi: completedMonthlyActivities
+    totalApi: monthlyActivities
       .filter((activity) => activity.kegiatan === "Penjualan / Closing")
       .reduce((sum, activity) => sum + (activity.api || 0), 0),
-    totalWeeklyApi: completedWeeklyActivities
+    totalWeeklyApi: weeklyActivities
       .filter((activity) => activity.kegiatan === "Penjualan / Closing")
       .reduce((sum, activity) => sum + (activity.api || 0), 0),
   };
