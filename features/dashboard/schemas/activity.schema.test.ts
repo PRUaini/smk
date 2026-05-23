@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { activityFormSchema, buildActivityPayload } from "./activity.schema";
+import { activityActionSchema, activityFormSchema, buildActivityPayload } from "./activity.schema";
 
 describe("activityFormSchema", () => {
   it("accepts a valid activity form", () => {
@@ -73,5 +73,35 @@ describe("activityFormSchema", () => {
       api: "-5000",
     });
     expect(invalidResult.success).toBe(false);
+  });
+});
+
+describe("activityActionSchema", () => {
+  it("accepts a valid activity action payload", () => {
+    const result = activityActionSchema.safeParse({
+      tanggal: "2026-01-05",
+      waktu: "08:00",
+      kegiatan: "Pertemuan",
+      status: "Selesai",
+      catatan: "Meeting",
+      nasabah: "Bapak Andi",
+      produk: "PRULink",
+      api: 15000000,
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("rejects negative API numbers", () => {
+    const result = activityActionSchema.safeParse({
+      tanggal: "2026-01-05",
+      waktu: "08:00",
+      kegiatan: "Penjualan / Closing",
+      status: "Selesai",
+      catatan: "Sales",
+      nasabah: "Ibu Rina",
+      produk: "PRUWarisan",
+      api: -5000,
+    });
+    expect(result.success).toBe(false);
   });
 });

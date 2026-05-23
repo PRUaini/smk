@@ -9,6 +9,8 @@ import {
   getActivitiesByAgent,
 } from "../data/activities.repository";
 import type { Activity } from "../types";
+import { activityActionSchema } from "../schemas/activity.schema";
+import { targetsFormSchema } from "../schemas/targets.schema";
 
 async function getAuthenticatedAgentId(): Promise<string> {
   const supabase = await createClient();
@@ -29,11 +31,18 @@ export async function saveActivityAction(
 ): Promise<void> {
   const agentId = await getAuthenticatedAgentId();
 
-  if (activityData.id) {
-    const { id, ...payload } = activityData;
+  const validated = activityActionSchema.safeParse(activityData);
+  if (!validated.success) {
+    throw new Error("Invalid activity data");
+  }
+
+  const validatedData = validated.data;
+
+  if (validatedData.id) {
+    const { id, ...payload } = validatedData;
     await updateActivity(id, agentId, payload);
   } else {
-    await createActivity(agentId, activityData);
+    await createActivity(agentId, validatedData);
   }
 
   revalidatePath("/dashboard");
@@ -72,8 +81,13 @@ export async function saveAgentTargetsAction(
     throw new Error("Unauthorized access");
   }
 
+  const validated = targetsFormSchema.safeParse(targetsData);
+  if (!validated.success) {
+    throw new Error("Invalid targets data");
+  }
+
   const kodeAgent = user.email?.replace("@smk.internal", "") ?? "Agent";
-  const result = await saveAgentTargets(kodeAgent, targetsData);
+  const result = await saveAgentTargets(kodeAgent, validated.data);
   revalidatePath("/dashboard");
   return result;
 }

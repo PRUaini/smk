@@ -47,3 +47,20 @@ export function buildActivityPayload(
     api: formData.api ? Number(formData.api) : undefined,
   };
 }
+
+export const activityActionSchema = z.object({
+  id: z.string().optional(),
+  tanggal: z.string().min(1, "Tanggal wajib diisi"),
+  waktu: z
+    .string()
+    .min(1, "Waktu wajib dipilih")
+    .refine((value) => DASHBOARD_TIME_SLOTS.includes(value as (typeof DASHBOARD_TIME_SLOTS)[number]), {
+      message: "Waktu tidak valid",
+    }),
+  kegiatan: z.enum(activityTypes),
+  status: z.enum(activityStatuses),
+  catatan: z.string().max(200, "Catatan maksimal 200 karakter"),
+  nasabah: z.string(),
+  produk: z.string(),
+  api: z.number().nonnegative("API tidak boleh negatif").optional(),
+});
