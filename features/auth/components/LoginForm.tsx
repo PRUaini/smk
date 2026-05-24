@@ -1,85 +1,18 @@
 "use client";
 
-import { useActionState, useState, useRef } from "react";
+import { useActionState, useState } from "react";
 import { login } from "../actions/login";
 
 export default function LoginForm() {
   const [state, formAction, isPending] = useActionState(login, undefined);
   const [showPassword, setShowPassword] = useState(false);
-  const illustrationRef = useRef<HTMLDivElement>(null);
-
-  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!illustrationRef.current) return;
-    const rect = e.currentTarget.getBoundingClientRect();
-    const x = (e.clientX - rect.left) / rect.width - 0.5;
-    const y = (e.clientY - rect.top) / rect.height - 0.5;
-
-    illustrationRef.current.style.setProperty("--tilt-x", `${y * -35}deg`);
-    illustrationRef.current.style.setProperty("--tilt-y", `${x * 35}deg`);
-    illustrationRef.current.style.setProperty("--scale", "1.08");
-  };
-
-  const handleMouseLeave = () => {
-    if (!illustrationRef.current) return;
-    illustrationRef.current.style.setProperty("--tilt-x", "0deg");
-    illustrationRef.current.style.setProperty("--tilt-y", "0deg");
-    illustrationRef.current.style.setProperty("--scale", "1");
-  };
 
   return (
     <div className="login-container">
       <div className="login-backdrop" />
 
-      <div className="login-card-split">
-        {/* Left Banner */}
-        <div 
-          className="login-banner"
-          onMouseMove={handleMouseMove}
-          onMouseLeave={handleMouseLeave}
-        >
-          <h1 className="banner-title">Sistem Manajemen Kegiatan</h1>
-          <p className="banner-subtitle">
-            Kelola kegiatan harian, sasaran mingguan, dan capaian Anda dengan lebih terstruktur.
-          </p>
-
-          {/* Animated Glassmorphism Illustration */}
-          <div 
-            ref={illustrationRef}
-            className="banner-illustration-glass"
-          >
-            {/* Floating Checklist Board */}
-            <div className="glass-board floating-slow">
-              <div className="glass-board-header" />
-              <div className="glass-board-subtitle" />
-              <div className="glass-board-items">
-                {[1, 2, 3].map((i) => (
-                  <div key={i} className="glass-item">
-                    <div className="glass-checkbox" style={{ flexShrink: 0 }}>
-                      <svg width="10" height="10" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ width: '10px', height: '10px' }}>
-                        <path d="M3 7.5L5.5 10L11 4" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                      </svg>
-                    </div>
-                    <div className="glass-line" style={{ width: i === 3 ? '60%' : '85%' }} />
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Floating Calendar */}
-            <div className="glass-calendar floating-fast">
-              <div className="glass-calendar-header" />
-              <div className="glass-calendar-grid">
-                {Array.from({ length: 12 }).map((_, i) => (
-                  <div key={i} className={`glass-dot ${i === 5 ? 'active' : ''}`} />
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Right Form */}
+      <div className="login-card">
         <div className="login-form-pane">
-          {/* Error message */}
           {state?.error && (
             <div className="login-error" role="alert" id="login-error">
               <svg
@@ -98,7 +31,6 @@ export default function LoginForm() {
             </div>
           )}
 
-          {/* Form */}
           <form action={formAction} className="login-form">
             <div className="form-group">
               <label htmlFor="kode_agent" className="form-label">
@@ -202,9 +134,8 @@ export default function LoginForm() {
         </div>
       </div>
       
-      {/* Absolute Bottom Footer */}
       <p className="login-split-footer">
-        &copy; {new Date().getFullYear()} PRUaini Group
+        &copy; 2026 PRUaini Group
       </p>
     </div>
   );
