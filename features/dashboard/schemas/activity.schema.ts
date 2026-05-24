@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { ACTIVITY_DESCRIPTIONS, ACTIVITY_POINTS, DASHBOARD_TIME_SLOTS } from "../constants";
+import { ACTIVITY_POINTS, DASHBOARD_TIME_SLOTS } from "../constants";
 import type { Activity, ActivityStatus, ActivityType } from "../types";
 
 const activityTypes = Object.keys(ACTIVITY_POINTS) as [ActivityType, ...ActivityType[]];

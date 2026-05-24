@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { activityActionSchema, activityFormSchema, buildActivityPayload } from "./activity.schema";
+import {
+  activityActionSchema,
+  activityFormSchema,
+  buildActivityPayload,
+  type ActivityFormData,
+} from "./activity.schema";
 
 describe("activityFormSchema", () => {
   it("accepts a valid activity form", () => {
@@ -59,7 +64,7 @@ describe("activityFormSchema", () => {
     expect(validResult.success).toBe(true);
     expect(validResult.data?.api).toBe("15000000");
 
-    const payload = buildActivityPayload(validResult.data as any);
+    const payload = buildActivityPayload(validResult.data as ActivityFormData);
     expect(payload.api).toBe(15000000);
 
     const invalidResult = activityFormSchema.safeParse({

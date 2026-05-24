@@ -3,7 +3,7 @@ export function getWeeksInMonth(selectedMonth: number) {
   const currentYear = today.getFullYear();
   const weeks: Date[] = [];
   
-  let d = new Date(currentYear, selectedMonth, 1);
+  const d = new Date(currentYear, selectedMonth, 1);
   const day = d.getDay();
   if (day === 0) {
     d.setDate(d.getDate() + 1);

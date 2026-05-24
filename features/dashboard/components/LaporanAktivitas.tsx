@@ -1,9 +1,8 @@
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo } from "react";
 import { Activity, DashboardTargets } from "../types";
 import { calculatePercentage } from "../utils/percentage";
 import { getWeeksInMonth, getWeekDates } from "../utils/date";
-
-
+import { buildLineChartSvg, getMonthsAbbr, type ChartDatum } from "../utils/report";
 
 interface LaporanAktivitasProps {
   targets: DashboardTargets;
@@ -13,10 +12,7 @@ interface LaporanAktivitasProps {
 
 export default function LaporanAktivitas({ targets, activities, selectedMonth }: LaporanAktivitasProps) {
   const currentYear = new Date().getFullYear();
-  const monthsAbbr = [
-    "Jan", "Feb", "Mar", "Apr", "Mei", "Jun",
-    "Jul", "Agt", "Sep", "Okt", "Nov", "Des"
-  ];
+  const monthsAbbr = getMonthsAbbr();
   const monthLabel = monthsAbbr[selectedMonth];
 
   // Interactive Filter States
@@ -25,11 +21,8 @@ export default function LaporanAktivitas({ targets, activities, selectedMonth }:
   const [isDailyMenuOpen, setIsDailyMenuOpen] = useState(false);
   const [isBarMenuOpen, setIsBarMenuOpen] = useState(false);
   const [reportView, setReportView] = useState<"monthly" | "weekly">("monthly");
-  const [selectedWeek, setSelectedWeek] = useState(0);
-
-  useEffect(() => {
-    setSelectedWeek(0);
-  }, [selectedMonth]);
+  const [weekSelection, setWeekSelection] = useState({ month: selectedMonth, week: 0 });
+  const selectedWeek = weekSelection.month === selectedMonth ? weekSelection.week : 0;
 
   const weeks = useMemo(() => getWeeksInMonth(selectedMonth), [selectedMonth]);
   const activeWeekIdx = Math.min(selectedWeek, weeks.length - 1);
@@ -201,14 +194,7 @@ export default function LaporanAktivitas({ targets, activities, selectedMonth }:
 
   // SVG dimensions & scales for Tren Poin Harian
   const dailyChartSvg = useMemo(() => {
-    const width = 600;
-    const height = 220;
-    const padding = { top: 20, right: 20, bottom: 35, left: 40 };
-    
-    const chartWidth = width - padding.left - padding.right;
-    const chartHeight = height - padding.top - padding.bottom;
-    
-    let dataset: { label: string; points: number }[] = [];
+    let dataset: ChartDatum[] = [];
     if (isWeekly) {
       const weekStartDate = weeks[activeWeekIdx];
       if (weekStartDate) {
@@ -242,58 +228,12 @@ export default function LaporanAktivitas({ targets, activities, selectedMonth }:
       }));
     }
     
-    const maxVal = Math.max(100, ...dataset.map((d) => d.points));
-    
-    // Points coordinates
-    const points = dataset.map((d, index) => {
-      const x = padding.left + (index / Math.max(1, dataset.length - 1)) * chartWidth;
-      const y = padding.top + chartHeight - (d.points / maxVal) * chartHeight;
-      return { x, y, label: d.label, val: d.points };
-    });
-
-    // Generate Path Data
-    let linePath = "";
-    let areaPath = "";
-    if (points.length > 0) {
-      linePath = `M ${points[0].x} ${points[0].y} ` + points.slice(1).map((p) => `L ${p.x} ${p.y}`).join(" ");
-      areaPath = `${linePath} L ${points[points.length - 1].x} ${padding.top + chartHeight} L ${points[0].x} ${padding.top + chartHeight} Z`;
-    }
-
-    // Grid lines (y values)
-    const gridLines = [0, 0.25, 0.5, 0.75, 1].map((ratio) => {
-      const val = Math.round(ratio * maxVal);
-      const y = padding.top + chartHeight - ratio * chartHeight;
-      return { y, label: val };
-    });
-
-    // X axis labels
-    const xLabels = [];
-    if (isWeekly) {
-      for (let i = 0; i < dataset.length; i++) {
-        xLabels.push({ x: points[i].x, label: dataset[i].label });
-      }
-    } else if (dailyFilter === "harian") {
-      const interval = 5;
-      for (let i = 0; i < dataset.length; i += interval) {
-        xLabels.push({ x: points[i].x, label: points[i].label });
-      }
-      if ((dataset.length - 1) % interval !== 0) {
-        const lastIndex = dataset.length - 1;
-        xLabels.push({ x: points[lastIndex].x, label: points[lastIndex].label });
-      }
-    } else if (dailyFilter === "bulanan") {
-      // Show every month name
-      for (let i = 0; i < dataset.length; i++) {
-        xLabels.push({ x: points[i].x, label: points[i].label });
-      }
-    } else {
-      // Show years
-      for (let i = 0; i < dataset.length; i++) {
-        xLabels.push({ x: points[i].x, label: points[i].label });
-      }
-    }
-
-    return { width, height, points, linePath, areaPath, gridLines, xLabels };
+    return buildLineChartSvg(
+      dataset,
+      { width: 600, height: 220, padding: { top: 20, right: 20, bottom: 35, left: 40 } },
+      100,
+      !isWeekly && dailyFilter === "harian" ? 5 : 1
+    );
   }, [isWeekly, weeks, activeWeekIdx, activities, dailyFilter, dailyData, monthlyData, yearlyData, monthLabel, monthsAbbr]);
 
   // SVG dimensions & scales for Akumulasi Poin
@@ -399,7 +339,7 @@ export default function LaporanAktivitas({ targets, activities, selectedMonth }:
                 <button
                   key={index}
                   className={`month-tab-btn ${activeWeekIdx === index ? "active" : ""}`}
-                  onClick={() => setSelectedWeek(index)}
+                  onClick={() => setWeekSelection({ month: selectedMonth, week: index })}
                 >
                   Minggu {index + 1}
                 </button>

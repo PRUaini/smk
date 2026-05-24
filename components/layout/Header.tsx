@@ -1,14 +1,12 @@
-import { createClient } from "@/lib/supabase/server";
+import {
+  getCurrentUser,
+  getKodeAgentFromEmail,
+} from "@/features/auth/data/auth.repository";
 import LogoutButton from "@/features/auth/components/LogoutButton";
 
 export default async function Header() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  // Extract kode_agent from the synthetic email
-  const kodeAgent = user?.email?.replace("@smk.internal", "") ?? "Agent";
+  const user = await getCurrentUser();
+  const kodeAgent = getKodeAgentFromEmail(user?.email);
 
   return (
     <header className="dashboard-header" id="dashboard-header">

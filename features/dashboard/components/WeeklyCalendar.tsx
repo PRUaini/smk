@@ -23,33 +23,28 @@ export default function WeeklyCalendar({
   autoFocusToday,
 }: WeeklyCalendarProps) {
   const [weekSelection, setWeekSelection] = React.useState({ month: selectedMonth, week: 0 });
-  const selectedWeek = weekSelection.month === selectedMonth ? weekSelection.week : 0;
   const [expandedSlots, setExpandedSlots] = React.useState<Record<string, boolean>>({});
-
-  React.useEffect(() => {
+  const weeks = getWeeksInMonth(selectedMonth);
+  const defaultWeek = React.useMemo(() => {
     if (autoFocusToday) {
       const today = new Date();
       if (selectedMonth === today.getMonth()) {
-        const weeksList = getWeeksInMonth(selectedMonth);
         today.setHours(0, 0, 0, 0);
-        let todayWeekIdx = 0;
-        for (let i = 0; i < weeksList.length; i++) {
-          const start = new Date(weeksList[i]);
+        for (let i = 0; i < weeks.length; i++) {
+          const start = new Date(weeks[i]);
           start.setHours(0, 0, 0, 0);
           const end = new Date(start);
           end.setDate(end.getDate() + 6);
           end.setHours(23, 59, 59, 999);
           if (today >= start && today <= end) {
-            todayWeekIdx = i;
-            break;
+            return i;
           }
         }
-        setWeekSelection({ month: selectedMonth, week: todayWeekIdx });
       }
     }
-  }, [selectedMonth, autoFocusToday]);
-
-  const weeks = getWeeksInMonth(selectedMonth);
+    return 0;
+  }, [selectedMonth, autoFocusToday, weeks]);
+  const selectedWeek = weekSelection.month === selectedMonth ? weekSelection.week : defaultWeek;
 
   // Helper: Get dates (Monday - Saturday) for the active week
   const getWeekDates = () => {
@@ -152,7 +147,7 @@ const getActivityTypeClass = (kegiatan: string) => {
               </div>
             )}
             {activity.catatan && (
-              <p className="activity-card-notes">"{activity.catatan}"</p>
+              <p className="activity-card-notes">&quot;{activity.catatan}&quot;</p>
             )}
           </div>
         )}

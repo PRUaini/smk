@@ -5,7 +5,7 @@ const mockQuery = vi.hoisted(() => {
     select: () => queryObj,
     eq: () => queryObj,
     order: () => queryObj,
-    then: (onfulfilled: any) => {
+    then: (onfulfilled: (value: { data: null; error: { message: string } }) => void) => {
       if (onfulfilled) {
         onfulfilled({
           data: null,

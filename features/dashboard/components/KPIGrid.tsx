@@ -10,7 +10,6 @@ export default function KPIGrid({ targets }: KPIGridProps) {
   const pointPct = calculatePercentage(targets.totalPoints, targets.targetPoints);
   const meetingPct = calculatePercentage(targets.totalMeetings, targets.targetMeetings);
   const salesPct = calculatePercentage(targets.totalSales, targets.targetSales);
-  const activeDaysPct = calculatePercentage(targets.activeDays, targets.totalDays);
   const weeklyPointPct = calculatePercentage(targets.totalWeeklyPoints, targets.targetWeeklyPoints);
   const weeklyMeetingPct = calculatePercentage(targets.totalWeeklyMeetings, targets.targetWeeklyMeetings);
   const weeklySalesPct = calculatePercentage(targets.totalWeeklySales, targets.targetWeeklySales);

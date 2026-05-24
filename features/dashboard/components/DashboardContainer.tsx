@@ -55,18 +55,6 @@ export default function DashboardContainer({ initialKodeAgent, initialActivities
   };
 
   useEffect(() => {
-    setActivities(initialActivities);
-  }, [initialActivities]);
-
-  useEffect(() => {
-    setTargetsData(initialTargets ?? null);
-  }, [initialTargets]);
-
-  useEffect(() => {
-    setAutoFocusToday(true);
-  }, []);
-
-  useEffect(() => {
     return () => {
       clearSidebarCloseTimer();
       clearTargetsSidebarCloseTimer();
@@ -128,6 +116,7 @@ export default function DashboardContainer({ initialKodeAgent, initialActivities
   }, [activities, selectedMonth, targetsData]);
 
   const handleMonthChange = (monthIdx: number) => {
+    setAutoFocusToday(false);
     setSelectedMonth(monthIdx);
     closeActivitySidebar();
   };
@@ -162,7 +151,7 @@ export default function DashboardContainer({ initialKodeAgent, initialActivities
       try {
         await toggleActivityStatusAction(id, activity.status);
         showToast("Status aktivitas berhasil diperbarui", "success");
-      } catch (err) {
+      } catch {
         setActivities((prev) =>
           prev.map((act) =>
             act.id === id ? { ...act, status: activity.status } : act
@@ -195,7 +184,7 @@ export default function DashboardContainer({ initialKodeAgent, initialActivities
       try {
         await saveActivityAction(activityData);
         showToast("Aktivitas berhasil disimpan", "success");
-      } catch (err) {
+      } catch {
         setActivities(prevActivities);
         showToast("Gagal menyimpan aktivitas", "error");
       }
@@ -214,7 +203,7 @@ export default function DashboardContainer({ initialKodeAgent, initialActivities
           try {
             await removeActivityAction(id);
             showToast("Aktivitas berhasil dihapus", "success");
-          } catch (err) {
+          } catch {
             setActivities(prevActivities);
             showToast("Gagal menghapus aktivitas", "error");
           }

@@ -1,7 +1,6 @@
 import React from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, type Resolver } from "react-hook-form";
-import { DEFAULT_TARGETS } from "../constants";
 import { targetsFormSchema, type TargetsFormData } from "../schemas/targets.schema";
 import type { AgentTargets } from "../data/targets.repository";
 
@@ -13,6 +12,21 @@ interface TargetsSidebarProps {
   className?: string;
 }
 
+const emptyTargetValue = "" as unknown as number;
+
+const targetFields: Array<{
+  name: keyof TargetsFormData;
+  label: string;
+  placeholder: string;
+}> = [
+  { name: "targetPoints", label: "Target Poin", placeholder: "Contoh: 500" },
+  { name: "targetMeetings", label: "Target Janji Pertemuan", placeholder: "Contoh: 10" },
+  { name: "targetSales", label: "Target Penjualan", placeholder: "Contoh: 5" },
+  { name: "targetWeeklyPoints", label: "Target Poin", placeholder: "Contoh: 125" },
+  { name: "targetWeeklyMeetings", label: "Target Janji Pertemuan", placeholder: "Contoh: 3" },
+  { name: "targetWeeklySales", label: "Target Penjualan", placeholder: "Contoh: 1" },
+];
+
 export default function TargetsSidebar({
   initialTargets,
   onSave,
@@ -23,18 +37,35 @@ export default function TargetsSidebar({
   const form = useForm<TargetsFormData>({
     resolver: zodResolver(targetsFormSchema) as Resolver<TargetsFormData>,
     values: {
-      targetPoints: initialTargets?.targetPoints ?? ("" as any),
-      targetMeetings: initialTargets?.targetMeetings ?? ("" as any),
-      targetSales: initialTargets?.targetSales ?? ("" as any),
-      targetWeeklyPoints: initialTargets?.targetWeeklyPoints ?? ("" as any),
-      targetWeeklyMeetings: initialTargets?.targetWeeklyMeetings ?? ("" as any),
-      targetWeeklySales: initialTargets?.targetWeeklySales ?? ("" as any),
+      targetPoints: initialTargets?.targetPoints ?? emptyTargetValue,
+      targetMeetings: initialTargets?.targetMeetings ?? emptyTargetValue,
+      targetSales: initialTargets?.targetSales ?? emptyTargetValue,
+      targetWeeklyPoints: initialTargets?.targetWeeklyPoints ?? emptyTargetValue,
+      targetWeeklyMeetings: initialTargets?.targetWeeklyMeetings ?? emptyTargetValue,
+      targetWeeklySales: initialTargets?.targetWeeklySales ?? emptyTargetValue,
     },
   });
 
   const handleSubmit = (data: TargetsFormData) => {
     onSave(data);
   };
+
+  const renderTargetField = (field: (typeof targetFields)[number]) => (
+    <div className="form-group" key={field.name}>
+      <label className="form-label">{field.label}</label>
+      <input
+        type="number"
+        className="form-input"
+        placeholder={field.placeholder}
+        {...form.register(field.name)}
+      />
+      {form.formState.errors[field.name] && (
+        <span style={{ display: "block", fontSize: "0.75rem", color: "var(--color-error)", marginTop: "0.25rem", fontWeight: 500 }}>
+          {form.formState.errors[field.name]?.message}
+        </span>
+      )}
+    </div>
+  );
 
   return (
     <aside className={`activity-sidebar-card ${className}`.trim()}>
@@ -49,86 +80,10 @@ export default function TargetsSidebar({
 
       <form onSubmit={form.handleSubmit(handleSubmit)} className="sidebar-form">
         <h3 className="section-subtitle-targets">Target Bulanan</h3>
-        
-        <div className="form-group">
-          <label className="form-label">Target Poin</label>
-          <input
-            type="number"
-            className="form-input"
-            placeholder="Contoh: 500"
-            {...form.register("targetPoints")}
-          />
-          {form.formState.errors.targetPoints && (
-            <span style={{ display: "block", fontSize: "0.75rem", color: "var(--color-error)", marginTop: "0.25rem", fontWeight: 500 }}>{form.formState.errors.targetPoints.message}</span>
-          )}
-        </div>
-
-        <div className="form-group">
-          <label className="form-label">Target Janji Pertemuan</label>
-          <input
-            type="number"
-            className="form-input"
-            placeholder="Contoh: 10"
-            {...form.register("targetMeetings")}
-          />
-          {form.formState.errors.targetMeetings && (
-            <span style={{ display: "block", fontSize: "0.75rem", color: "var(--color-error)", marginTop: "0.25rem", fontWeight: 500 }}>{form.formState.errors.targetMeetings.message}</span>
-          )}
-        </div>
-
-        <div className="form-group">
-          <label className="form-label">Target Penjualan</label>
-          <input
-            type="number"
-            className="form-input"
-            placeholder="Contoh: 5"
-            {...form.register("targetSales")}
-          />
-          {form.formState.errors.targetSales && (
-            <span style={{ display: "block", fontSize: "0.75rem", color: "var(--color-error)", marginTop: "0.25rem", fontWeight: 500 }}>{form.formState.errors.targetSales.message}</span>
-          )}
-        </div>
+        {targetFields.slice(0, 3).map(renderTargetField)}
 
         <h3 className="section-subtitle-targets margin-top">Target Mingguan</h3>
-
-        <div className="form-group">
-          <label className="form-label">Target Poin</label>
-          <input
-            type="number"
-            className="form-input"
-            placeholder="Contoh: 125"
-            {...form.register("targetWeeklyPoints")}
-          />
-          {form.formState.errors.targetWeeklyPoints && (
-            <span style={{ display: "block", fontSize: "0.75rem", color: "var(--color-error)", marginTop: "0.25rem", fontWeight: 500 }}>{form.formState.errors.targetWeeklyPoints.message}</span>
-          )}
-        </div>
-
-        <div className="form-group">
-          <label className="form-label">Target Janji Pertemuan</label>
-          <input
-            type="number"
-            className="form-input"
-            placeholder="Contoh: 3"
-            {...form.register("targetWeeklyMeetings")}
-          />
-          {form.formState.errors.targetWeeklyMeetings && (
-            <span style={{ display: "block", fontSize: "0.75rem", color: "var(--color-error)", marginTop: "0.25rem", fontWeight: 500 }}>{form.formState.errors.targetWeeklyMeetings.message}</span>
-          )}
-        </div>
-
-        <div className="form-group">
-          <label className="form-label">Target Penjualan</label>
-          <input
-            type="number"
-            className="form-input"
-            placeholder="Contoh: 1"
-            {...form.register("targetWeeklySales")}
-          />
-          {form.formState.errors.targetWeeklySales && (
-            <span style={{ display: "block", fontSize: "0.75rem", color: "var(--color-error)", marginTop: "0.25rem", fontWeight: 500 }}>{form.formState.errors.targetWeeklySales.message}</span>
-          )}
-        </div>
+        {targetFields.slice(3).map(renderTargetField)}
 
         <div className="sidebar-action-buttons">
           <button

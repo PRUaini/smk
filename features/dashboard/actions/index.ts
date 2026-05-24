@@ -1,52 +1,25 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { createClient } from "@/lib/supabase/server";
 import {
-  createActivity,
-  updateActivity,
-  deleteActivity,
-  getActivitiesByAgent,
-} from "../data/activities.repository";
+  getKodeAgentFromEmail,
+  getRequiredCurrentUser,
+} from "@/features/auth/data/auth.repository";
 import type { Activity } from "../types";
-import { activityActionSchema } from "../schemas/activity.schema";
-import { targetsFormSchema } from "../schemas/targets.schema";
-import { ACTIVITY_POINTS } from "../constants";
-
-async function getAuthenticatedAgentId(): Promise<string> {
-  const supabase = await createClient();
-  const {
-    data: { user },
-    error,
-  } = await supabase.auth.getUser();
-
-  if (error || !user) {
-    throw new Error("Unauthorized access");
-  }
-
-  return user.id;
-}
+import {
+  removeActivityForAgent,
+  saveActivityForAgent,
+  saveTargetsForAgent,
+  toggleActivityStatusForAgent,
+} from "../services/dashboard-actions.service";
+import type { AgentTargets } from "../data/targets.repository";
 
 export async function saveActivityAction(
   activityData: Omit<Activity, "id"> & { id?: string }
 ): Promise<void> {
-  const agentId = await getAuthenticatedAgentId();
+  const user = await getRequiredCurrentUser();
 
-  const validated = activityActionSchema.safeParse(activityData);
-  if (!validated.success) {
-    throw new Error("Invalid activity data");
-  }
-
-  const validatedData = validated.data;
-  const poin = ACTIVITY_POINTS[validatedData.kegiatan];
-
-  if (validatedData.id) {
-    const { id, ...payload } = validatedData;
-    await updateActivity(id, agentId, { ...payload, poin });
-  } else {
-    await createActivity(agentId, { ...validatedData, poin });
-  }
-
+  await saveActivityForAgent(user.id, activityData);
   revalidatePath("/dashboard");
 }
 
@@ -54,42 +27,26 @@ export async function toggleActivityStatusAction(
   id: string,
   currentStatus: Activity["status"]
 ): Promise<void> {
-  const agentId = await getAuthenticatedAgentId();
-  const nextStatus: Activity["status"] = currentStatus === "Selesai" ? "Belum" : "Selesai";
+  const user = await getRequiredCurrentUser();
 
-  await updateActivity(id, agentId, { status: nextStatus });
+  await toggleActivityStatusForAgent(user.id, id, currentStatus);
   revalidatePath("/dashboard");
 }
 
 export async function removeActivityAction(id: string): Promise<void> {
-  const agentId = await getAuthenticatedAgentId();
+  const user = await getRequiredCurrentUser();
 
-  await deleteActivity(id, agentId);
+  await removeActivityForAgent(user.id, id);
   revalidatePath("/dashboard");
 }
-
-import { saveAgentTargets, type AgentTargets } from "../data/targets.repository";
 
 export async function saveAgentTargetsAction(
   targetsData: Omit<AgentTargets, "kodeAgent">
 ): Promise<AgentTargets> {
-  const supabase = await createClient();
-  const {
-    data: { user },
-    error,
-  } = await supabase.auth.getUser();
+  const user = await getRequiredCurrentUser();
+  const kodeAgent = getKodeAgentFromEmail(user.email);
+  const result = await saveTargetsForAgent(kodeAgent, targetsData);
 
-  if (error || !user) {
-    throw new Error("Unauthorized access");
-  }
-
-  const validated = targetsFormSchema.safeParse(targetsData);
-  if (!validated.success) {
-    throw new Error("Invalid targets data");
-  }
-
-  const kodeAgent = user.email?.replace("@smk.internal", "") ?? "Agent";
-  const result = await saveAgentTargets(kodeAgent, validated.data);
   revalidatePath("/dashboard");
   return result;
 }
