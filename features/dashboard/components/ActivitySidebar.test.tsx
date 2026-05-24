@@ -18,7 +18,7 @@ const activity: Activity = {
 
 describe("ActivitySidebar", () => {
   it("groups add activity fields into polished sections", () => {
-    render(
+    const { container } = render(
       <ActivitySidebar
         selectedActivity={null}
         selectedDate="2026-05-21"
@@ -29,7 +29,11 @@ describe("ActivitySidebar", () => {
         onClose={vi.fn()}
       />
     );
+    const drawer = container.querySelector(".activity-drawer-panel");
 
+    expect(drawer).toBeInTheDocument();
+    expect(container.querySelectorAll(".activity-form-section")).toHaveLength(3);
+    expect(container.querySelector(".sidebar-actions")).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Tambah Aktivitas" })).toBeInTheDocument();
     expect(screen.getByText("Isi detail kegiatan harian Anda")).toBeInTheDocument();
     expect(screen.getByText("Informasi Waktu")).toBeInTheDocument();
