@@ -10,6 +10,10 @@ vi.mock("../actions", () => ({
   saveAgentTargetsAction: vi.fn(),
 }));
 
+vi.mock("@/features/auth/actions/logout", () => ({
+  logout: vi.fn(),
+}));
+
 const activity: Activity = {
   id: "activity-1",
   tanggal: "2026-05-21",
@@ -78,5 +82,52 @@ describe("DashboardContainer", () => {
     });
 
     expect(screen.queryByRole("heading", { name: "Edit Target Agen" })).not.toBeInTheDocument();
+  });
+
+  it("renders both dashboard tabs and switches between agenda and laporan", () => {
+    render(
+      <DashboardContainer
+        initialKodeAgent="Agent"
+        initialActivities={[]}
+        initialTargets={null}
+      />
+    );
+
+    expect(screen.getByRole("button", { name: "Agenda Aktivitas" })).toHaveClass("active");
+    expect(screen.getByText("Belum ada aktivitas minggu ini")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Laporan Aktivitas" }));
+
+    expect(screen.getByRole("button", { name: "Laporan Aktivitas" })).toHaveClass("active");
+    expect(screen.getByRole("button", { name: "Edit Target" })).toBeInTheDocument();
+  });
+
+  it("does not render fake activity titles when initial activities are empty", () => {
+    render(
+      <DashboardContainer
+        initialKodeAgent="Agent"
+        initialActivities={[]}
+        initialTargets={null}
+      />
+    );
+
+    expect(screen.queryByText("Pendekatan")).not.toBeInTheDocument();
+    expect(screen.queryByText("Pertemuan")).not.toBeInTheDocument();
+    expect(screen.queryByText("Wawancara")).not.toBeInTheDocument();
+    expect(screen.queryByText("Penjualan")).not.toBeInTheDocument();
+  });
+
+  it("opens the add activity panel from the floating add button", () => {
+    render(
+      <DashboardContainer
+        initialKodeAgent="Agent"
+        initialActivities={[]}
+        initialTargets={null}
+      />
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Add Activity" }));
+
+    expect(screen.getByRole("heading", { name: "Tambah Aktivitas" })).toBeInTheDocument();
   });
 });

@@ -37,7 +37,7 @@ export default function DashboardHeader({ kodeAgent }: DashboardHeaderProps) {
     <header className="dashboard-header-new">
       <div className="header-greeting-section">
         <h1 className="header-title-new">
-          {getGreeting()}, <span className="highlight-agent">{kodeAgent}</span>! 👋
+          {getGreeting()}, <span className="highlight-agent">{kodeAgent}</span>!
         </h1>
         <p className="header-subtitle-new">{formatIndoDate(currentDate)}</p>
       </div>
