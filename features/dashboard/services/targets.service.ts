@@ -4,6 +4,14 @@ import { getWeeksInMonth, getWeekDates } from "../utils/date";
 
 const MEETING_TYPES = new Set(["Pertemuan", "Wawancara Penutupan"]);
 
+function parseYearMonth(dateStr: string) {
+  const parts = dateStr.split("-");
+  return {
+    yr: parseInt(parts[0], 10),
+    mo: parseInt(parts[1], 10),
+  };
+}
+
 export function calculateDashboardTargets(
   activities: Activity[],
   selectedMonth: number,
@@ -21,11 +29,13 @@ export function calculateDashboardTargets(
 ): DashboardTargets {
   const monthNumber = selectedMonth + 1;
   const currentYear = new Date().getFullYear();
-  const monthlyActivities = activities.filter((activity) => {
-    const parts = activity.tanggal.split("-");
-    const yr = parseInt(parts[0], 10);
-    const mo = parseInt(parts[1], 10);
-    return yr === currentYear && mo === monthNumber;
+  const activitiesUpToMonth = activities.filter((activity) => {
+    const { yr, mo } = parseYearMonth(activity.tanggal);
+    return yr === currentYear && mo <= monthNumber;
+  });
+  const monthlyActivities = activitiesUpToMonth.filter((activity) => {
+    const { mo } = parseYearMonth(activity.tanggal);
+    return mo === monthNumber;
   });
   const completedMonthlyActivities = monthlyActivities.filter(
     (activity) => activity.status === "Selesai"
@@ -78,7 +88,7 @@ export function calculateDashboardTargets(
     totalWeeklyPoints: sumPoints(completedWeeklyActivities),
     totalWeeklyMeetings: countMeetings(completedWeeklyActivities),
     totalWeeklySales: countSales(completedWeeklyActivities),
-    totalApi: monthlyActivities
+    totalApi: activitiesUpToMonth
       .filter((activity) => activity.kegiatan === "Penjualan / Closing")
       .reduce((sum, activity) => sum + (activity.api || 0), 0),
     totalWeeklyApi: weeklyActivities

@@ -90,4 +90,10 @@ describe("calculateDashboardTargets", () => {
     expect(targets.totalSales).toBe(0);
     expect(targets.activeDays).toBe(0);
   });
+
+  it("accumulates total api from previous months of the current year", () => {
+    const targets = calculateDashboardTargets(activities, 1);
+
+    expect(targets.totalApi).toBe(25000000);
+  });
 });
