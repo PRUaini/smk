@@ -1946,8 +1946,8 @@ body {
 }
 
 .activity-drawer-panel {
-  width: min(100vw, 430px);
-  max-width: 100vw;
+  width: 720px;
+  max-width: min(720px, calc(100vw - 48px));
   min-width: 0;
   background: #f3f4f6;
   border-left: 1px solid var(--color-border);
@@ -2159,6 +2159,7 @@ body {
 
 .activity-drawer-panel .activity-field-grid-summary {
   align-items: end;
+  grid-template-columns: 1fr;
 }
 
 .activity-drawer-panel .form-group {
@@ -2250,7 +2251,7 @@ body {
 
 .activity-drawer-panel .status-radio-group {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(92px, 1fr));
   gap: 0.5rem;
   min-height: 46px;
   width: 100%;
@@ -2277,8 +2278,8 @@ body {
   cursor: pointer;
   transition: all 0.15s ease;
   box-sizing: border-box;
-  white-space: nowrap;
-  overflow: hidden;
+  white-space: normal;
+  overflow-wrap: anywhere;
 }
 
 .activity-drawer-panel .status-select-btn .dot {
@@ -2451,8 +2452,8 @@ body {
   }
 
   .activity-drawer-panel {
-    width: min(100vw, 430px);
-    max-width: 430px;
+    width: 720px;
+    max-width: min(720px, calc(100vw - 48px));
     min-width: 0;
   }
 }

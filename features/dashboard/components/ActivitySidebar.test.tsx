@@ -43,6 +43,11 @@ describe("ActivitySidebar", () => {
     expect(screen.getByLabelText("Waktu")).toBeInTheDocument();
     expect(screen.getByLabelText("Kegiatan")).toBeInTheDocument();
     expect(screen.getByText("1 poin")).toBeInTheDocument();
+    expect(container.querySelector(".activity-field-grid-summary")).toBeInTheDocument();
+    expect(container.querySelector(".status-radio-group")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Selesai" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Proses" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Belum" })).toBeInTheDocument();
     expect(screen.getByLabelText("Catatan")).toBeInTheDocument();
     expect(screen.getByLabelText("Nasabah (Opsional)")).toBeInTheDocument();
     expect(screen.getByLabelText("Produk (Opsional)")).toBeInTheDocument();
