@@ -49,6 +49,18 @@ const activities: Activity[] = [
     produk: "",
   },
   {
+    id: "a6",
+    tanggal: "2026-02-06",
+    waktu: "09:00",
+    kegiatan: "Penjualan / Closing",
+    poin: 1,
+    status: "Selesai",
+    catatan: "",
+    nasabah: "",
+    produk: "",
+    api: 9000000,
+  },
+  {
     id: "a5",
     tanggal: "2026-01-08",
     waktu: "11:00",
@@ -59,6 +71,18 @@ const activities: Activity[] = [
     nasabah: "",
     produk: "",
     api: 10000000,
+  },
+  {
+    id: "a7",
+    tanggal: "2026-05-08",
+    waktu: "11:00",
+    kegiatan: "Penjualan / Closing",
+    poin: 1,
+    status: "Selesai",
+    catatan: "",
+    nasabah: "",
+    produk: "",
+    api: 70000000,
   }
 ];
 
@@ -91,9 +115,45 @@ describe("calculateDashboardTargets", () => {
     expect(targets.activeDays).toBe(0);
   });
 
-  it("accumulates total api from previous months of the current year", () => {
+  it("counts total api from the selected month only", () => {
     const targets = calculateDashboardTargets(activities, 1);
 
-    expect(targets.totalApi).toBe(25000000);
+    expect(targets.totalApi).toBe(9000000);
+    expect(targets.totalAccumulatedApi).toBe(34000000);
+  });
+
+  it("separates monthly api from accumulated api through the selected month", () => {
+    const targets = calculateDashboardTargets(
+      [
+        {
+          id: "feb-api",
+          tanggal: "2026-02-06",
+          waktu: "09:00",
+          kegiatan: "Penjualan / Closing",
+          poin: 1,
+          status: "Selesai",
+          catatan: "",
+          nasabah: "",
+          produk: "",
+          api: 9000000,
+        },
+        {
+          id: "may-api",
+          tanggal: "2026-05-08",
+          waktu: "11:00",
+          kegiatan: "Penjualan / Closing",
+          poin: 1,
+          status: "Selesai",
+          catatan: "",
+          nasabah: "",
+          produk: "",
+          api: 70000000,
+        },
+      ],
+      4
+    );
+
+    expect(targets.totalApi).toBe(70000000);
+    expect(targets.totalAccumulatedApi).toBe(79000000);
   });
 });

@@ -71,6 +71,7 @@ export default function LaporanAktivitas({ targets, activities, selectedMonth }:
   const salesPct = calculatePercentage(currentSales, targetSales);
 
   const currentApi = isWeekly ? weeklyMetrics.api : targets.totalApi;
+  const collectedApi = isWeekly ? weeklyMetrics.api : targets.totalAccumulatedApi;
   const activeDaysPct = calculatePercentage(targets.activeDays, targets.totalDays);
   
   const weeklyPointPct = calculatePercentage(targets.totalWeeklyPoints, targets.targetWeeklyPoints);
@@ -460,7 +461,7 @@ export default function LaporanAktivitas({ targets, activities, selectedMonth }:
           </div>
           <div className="kpi-card-footer">
             <span className="kpi-pct-attained">
-              {isWeekly ? "Total API terkumpul minggu ini" : "Total API terkumpul"}: Rp {currentApi.toLocaleString("id-ID")}
+              {isWeekly ? "Total API terkumpul minggu ini" : "Total API terkumpul"}: Rp {collectedApi.toLocaleString("id-ID")}
             </span>
           </div>
         </div>

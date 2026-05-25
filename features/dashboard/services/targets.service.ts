@@ -88,7 +88,10 @@ export function calculateDashboardTargets(
     totalWeeklyPoints: sumPoints(completedWeeklyActivities),
     totalWeeklyMeetings: countMeetings(completedWeeklyActivities),
     totalWeeklySales: countSales(completedWeeklyActivities),
-    totalApi: activitiesUpToMonth
+    totalApi: monthlyActivities
+      .filter((activity) => activity.kegiatan === "Penjualan / Closing")
+      .reduce((sum, activity) => sum + (activity.api || 0), 0),
+    totalAccumulatedApi: activitiesUpToMonth
       .filter((activity) => activity.kegiatan === "Penjualan / Closing")
       .reduce((sum, activity) => sum + (activity.api || 0), 0),
     totalWeeklyApi: weeklyActivities
@@ -112,4 +115,3 @@ function countSales(activities: Activity[]) {
 function getDaysInMonth(year: number, monthIndex: number) {
   return new Date(year, monthIndex + 1, 0).getDate();
 }
-

@@ -38,5 +38,6 @@ export interface DashboardTargets {
   targetWeeklySales: number;
   totalWeeklySales: number;
   totalApi: number;
+  totalAccumulatedApi: number;
   totalWeeklyApi: number;
 }
