@@ -16,11 +16,12 @@ import type { AgentTargets } from "../data/targets.repository";
 
 export async function saveActivityAction(
   activityData: Omit<Activity, "id"> & { id?: string }
-): Promise<void> {
+): Promise<Activity> {
   const user = await getRequiredCurrentUser();
 
-  await saveActivityForAgent(user.id, activityData);
+  const savedActivity = await saveActivityForAgent(user.id, activityData);
   revalidatePath("/dashboard");
+  return savedActivity;
 }
 
 export async function toggleActivityStatusAction(

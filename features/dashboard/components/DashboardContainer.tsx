@@ -182,7 +182,10 @@ export default function DashboardContainer({ initialKodeAgent, initialActivities
 
     startTransition(async () => {
       try {
-        await saveActivityAction(activityData);
+        const savedActivity = await saveActivityAction(activityData);
+        setActivities((prev) =>
+          prev.map((act) => (act.id === tempId ? savedActivity : act))
+        );
         showToast("Aktivitas berhasil disimpan", "success");
       } catch {
         setActivities(prevActivities);

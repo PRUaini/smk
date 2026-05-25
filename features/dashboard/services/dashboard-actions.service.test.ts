@@ -35,24 +35,28 @@ describe("dashboard action service", () => {
 
   it("creates new activities with server-derived points", async () => {
     const { createActivity } = await import("../data/activities.repository");
+    vi.mocked(createActivity).mockResolvedValue({ ...activityInput, id: "activity-1", poin: 2 });
 
-    await saveActivityForAgent("agent-1", activityInput);
+    const result = await saveActivityForAgent("agent-1", activityInput);
 
     expect(createActivity).toHaveBeenCalledWith("agent-1", {
       ...activityInput,
       poin: 2,
     });
+    expect(result).toEqual({ ...activityInput, id: "activity-1", poin: 2 });
   });
 
   it("updates existing activities with server-derived points", async () => {
     const { updateActivity } = await import("../data/activities.repository");
+    vi.mocked(updateActivity).mockResolvedValue({ ...activityInput, id: "activity-1", poin: 2 });
 
-    await saveActivityForAgent("agent-1", { ...activityInput, id: "activity-1" });
+    const result = await saveActivityForAgent("agent-1", { ...activityInput, id: "activity-1" });
 
     expect(updateActivity).toHaveBeenCalledWith("activity-1", "agent-1", {
       ...activityInput,
       poin: 2,
     });
+    expect(result).toEqual({ ...activityInput, id: "activity-1", poin: 2 });
   });
 
   it("toggles activity status for the authenticated agent", async () => {

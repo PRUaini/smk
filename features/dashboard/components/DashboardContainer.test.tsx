@@ -1,5 +1,6 @@
-import { act, fireEvent, render, screen } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { saveActivityAction } from "../actions";
 import type { Activity } from "../types";
 import DashboardContainer from "./DashboardContainer";
 
@@ -129,5 +130,47 @@ describe("DashboardContainer", () => {
     fireEvent.click(screen.getByRole("button", { name: "Add Activity" }));
 
     expect(screen.getByRole("heading", { name: "Tambah Aktivitas" })).toBeInTheDocument();
+  });
+
+  it("replaces a new optimistic activity id with the persisted id before editing", async () => {
+    vi.useRealTimers();
+    const savedActivity: Activity = {
+      ...activity,
+      id: "persisted-activity",
+      tanggal: "2026-05-04",
+      waktu: "08:00",
+    };
+    vi.mocked(saveActivityAction)
+      .mockResolvedValueOnce(savedActivity)
+      .mockResolvedValueOnce({ ...savedActivity, catatan: "Updated note" });
+
+    render(
+      <DashboardContainer
+        initialKodeAgent="Agent"
+        initialActivities={[]}
+        initialTargets={null}
+      />
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Add Activity" }));
+    fireEvent.click(screen.getByRole("button", { name: "Simpan Aktivitas" }));
+
+    await waitFor(() => {
+      expect(saveActivityAction).toHaveBeenCalledTimes(1);
+      expect(screen.getByText("Pendekatan")).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByText("Pendekatan"));
+    fireEvent.change(screen.getByLabelText("Catatan"), {
+      target: { value: "Updated note" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Simpan Aktivitas" }));
+
+    await waitFor(() => {
+      expect(saveActivityAction).toHaveBeenCalledTimes(2);
+      expect(saveActivityAction).toHaveBeenLastCalledWith(
+        expect.objectContaining({ id: "persisted-activity", catatan: "Updated note" })
+      );
+    });
   });
 });

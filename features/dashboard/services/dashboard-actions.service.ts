@@ -15,7 +15,7 @@ import type { Activity } from "../types";
 export async function saveActivityForAgent(
   agentId: string,
   activityData: Omit<Activity, "id"> & { id?: string }
-): Promise<void> {
+): Promise<Activity> {
   const validated = activityActionSchema.safeParse(activityData);
   if (!validated.success) {
     throw new Error("Invalid activity data");
@@ -26,11 +26,10 @@ export async function saveActivityForAgent(
 
   if (validatedData.id) {
     const { id, ...payload } = validatedData;
-    await updateActivity(id, agentId, { ...payload, poin });
-    return;
+    return updateActivity(id, agentId, { ...payload, poin });
   }
 
-  await createActivity(agentId, { ...validatedData, poin });
+  return createActivity(agentId, { ...validatedData, poin });
 }
 
 export async function toggleActivityStatusForAgent(
