@@ -103,6 +103,47 @@ describe("DashboardContainer", () => {
     expect(screen.getByRole("button", { name: "Edit Target" })).toBeInTheDocument();
   });
 
+  it("shows activity years plus the current year in the year selector", () => {
+    vi.setSystemTime(new Date("2026-05-25T00:00:00Z"));
+
+    render(
+      <DashboardContainer
+        initialKodeAgent="Agent"
+        initialActivities={[
+          activity,
+          { ...activity, id: "activity-2025", tanggal: "2025-04-10" },
+        ]}
+        initialTargets={null}
+      />
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Pilih tahun 2026" }));
+
+    expect(screen.getByRole("option", { name: "2026" })).toBeInTheDocument();
+    expect(screen.getByRole("option", { name: "2025" })).toBeInTheDocument();
+  });
+
+  it("changes dashboard dates when selecting a different year", () => {
+    vi.setSystemTime(new Date("2026-05-25T00:00:00Z"));
+
+    render(
+      <DashboardContainer
+        initialKodeAgent="Agent"
+        initialActivities={[
+          { ...activity, id: "activity-2027", tanggal: "2027-02-04" },
+        ]}
+        initialTargets={null}
+      />
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Pilih tahun 2026" }));
+    fireEvent.click(screen.getByRole("option", { name: "2027" }));
+    fireEvent.click(screen.getByRole("button", { name: "Januari" }));
+    fireEvent.click(screen.getAllByText("+ Tambah")[0].closest(".calendar-cell")!);
+
+    expect(screen.getByLabelText("Tanggal")).toHaveValue("2027-01-04");
+  });
+
   it("does not render fake activity titles when initial activities are empty", () => {
     render(
       <DashboardContainer

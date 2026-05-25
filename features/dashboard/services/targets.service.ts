@@ -25,13 +25,13 @@ export function calculateDashboardTargets(
       | "targetWeeklyMeetings"
       | "targetWeeklySales"
     >
-  >
+  >,
+  selectedYear = new Date().getFullYear()
 ): DashboardTargets {
   const monthNumber = selectedMonth + 1;
-  const currentYear = new Date().getFullYear();
   const activitiesUpToMonth = activities.filter((activity) => {
     const { yr, mo } = parseYearMonth(activity.tanggal);
-    return yr === currentYear && mo <= monthNumber;
+    return yr === selectedYear && mo <= monthNumber;
   });
   const monthlyActivities = activitiesUpToMonth.filter((activity) => {
     const { mo } = parseYearMonth(activity.tanggal);
@@ -41,7 +41,7 @@ export function calculateDashboardTargets(
     (activity) => activity.status === "Selesai"
   );
 
-  const weeks = getWeeksInMonth(selectedMonth);
+  const weeks = getWeeksInMonth(selectedMonth, selectedYear);
   const today = new Date();
   const todayString = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
   
@@ -84,7 +84,7 @@ export function calculateDashboardTargets(
     totalMeetings: countMeetings(completedMonthlyActivities),
     totalSales: countSales(completedMonthlyActivities),
     activeDays: new Set(completedMonthlyActivities.map((activity) => activity.tanggal)).size,
-    totalDays: getDaysInMonth(new Date().getFullYear(), selectedMonth),
+    totalDays: getDaysInMonth(selectedYear, selectedMonth),
     totalWeeklyPoints: sumPoints(completedWeeklyActivities),
     totalWeeklyMeetings: countMeetings(completedWeeklyActivities),
     totalWeeklySales: countSales(completedWeeklyActivities),

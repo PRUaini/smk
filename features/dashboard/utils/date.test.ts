@@ -20,6 +20,14 @@ describe("date utils", () => {
       expect(weeks[0]?.getDate()).toBe(2);
       expect(weeks[3]?.getDate()).toBe(23);
     });
+
+    it("returns weeks for the selected year", () => {
+      const weeks = getWeeksInMonth(0, 2027);
+
+      expect(weeks[0]?.getFullYear()).toBe(2027);
+      expect(weeks[0]?.getMonth()).toBe(0);
+      expect(weeks[0]?.getDate()).toBe(4);
+    });
   });
 
   describe("getWeekDates", () => {

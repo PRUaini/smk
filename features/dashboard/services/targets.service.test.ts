@@ -156,4 +156,42 @@ describe("calculateDashboardTargets", () => {
     expect(targets.totalApi).toBe(70000000);
     expect(targets.totalAccumulatedApi).toBe(79000000);
   });
+
+  it("uses the selected year for monthly and accumulated totals", () => {
+    const targets = calculateDashboardTargets(
+      [
+        {
+          id: "jan-2026",
+          tanggal: "2026-01-06",
+          waktu: "09:00",
+          kegiatan: "Penjualan / Closing",
+          poin: 1,
+          status: "Selesai",
+          catatan: "",
+          nasabah: "",
+          produk: "",
+          api: 9000000,
+        },
+        {
+          id: "jan-2027",
+          tanggal: "2027-01-06",
+          waktu: "09:00",
+          kegiatan: "Penjualan / Closing",
+          poin: 1,
+          status: "Selesai",
+          catatan: "",
+          nasabah: "",
+          produk: "",
+          api: 11000000,
+        },
+      ],
+      0,
+      undefined,
+      2027
+    );
+
+    expect(targets.totalPoints).toBe(1);
+    expect(targets.totalApi).toBe(11000000);
+    expect(targets.totalAccumulatedApi).toBe(11000000);
+  });
 });

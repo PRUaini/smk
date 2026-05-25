@@ -78,4 +78,23 @@ describe("WeeklyCalendar", () => {
 
     expect(onSelectTimeSlotMock).toHaveBeenCalledWith(expect.stringMatching(/^2026-01-/), "08:00");
   });
+
+  it("uses the selected year when selecting an empty calendar slot", () => {
+    const onSelectTimeSlotMock = vi.fn();
+    render(
+      <WeeklyCalendar
+        selectedMonth={0}
+        selectedYear={2027}
+        activities={[]}
+        selectedActivityId={null}
+        onSelectActivity={vi.fn()}
+        onSelectTimeSlot={onSelectTimeSlotMock}
+        onToggleComplete={vi.fn()}
+      />
+    );
+
+    fireEvent.click(screen.getAllByText("+ Tambah")[0].closest(".calendar-cell")!);
+
+    expect(onSelectTimeSlotMock).toHaveBeenCalledWith(expect.stringMatching(/^2027-01-/), "08:00");
+  });
 });

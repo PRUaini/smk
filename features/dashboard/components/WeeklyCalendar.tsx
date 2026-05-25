@@ -5,6 +5,7 @@ import { getWeeksInMonth } from "../utils/date";
 
 interface WeeklyCalendarProps {
   selectedMonth: number;
+  selectedYear?: number;
   activities: Activity[];
   selectedActivityId: string | null;
   onSelectActivity: (activity: Activity) => void;
@@ -15,6 +16,7 @@ interface WeeklyCalendarProps {
 
 export default function WeeklyCalendar({
   selectedMonth,
+  selectedYear = new Date().getFullYear(),
   activities,
   selectedActivityId,
   onSelectActivity,
@@ -22,13 +24,13 @@ export default function WeeklyCalendar({
   onToggleComplete,
   autoFocusToday,
 }: WeeklyCalendarProps) {
-  const [weekSelection, setWeekSelection] = React.useState({ month: selectedMonth, week: 0 });
+  const [weekSelection, setWeekSelection] = React.useState({ month: selectedMonth, year: selectedYear, week: 0 });
   const [expandedSlots, setExpandedSlots] = React.useState<Record<string, boolean>>({});
-  const weeks = getWeeksInMonth(selectedMonth);
+  const weeks = getWeeksInMonth(selectedMonth, selectedYear);
   const defaultWeek = React.useMemo(() => {
     if (autoFocusToday) {
       const today = new Date();
-      if (selectedMonth === today.getMonth()) {
+      if (selectedYear === today.getFullYear() && selectedMonth === today.getMonth()) {
         today.setHours(0, 0, 0, 0);
         for (let i = 0; i < weeks.length; i++) {
           const start = new Date(weeks[i]);
@@ -43,8 +45,8 @@ export default function WeeklyCalendar({
       }
     }
     return 0;
-  }, [selectedMonth, autoFocusToday, weeks]);
-  const selectedWeek = weekSelection.month === selectedMonth ? weekSelection.week : defaultWeek;
+  }, [selectedMonth, selectedYear, autoFocusToday, weeks]);
+  const selectedWeek = weekSelection.month === selectedMonth && weekSelection.year === selectedYear ? weekSelection.week : defaultWeek;
 
   // Helper: Get dates (Monday - Saturday) for the active week
   const getWeekDates = () => {
@@ -170,7 +172,7 @@ const getActivityTypeClass = (kegiatan: string) => {
             <button
               key={index}
               className={`month-tab-btn ${selectedWeek === index ? "active" : ""}`}
-              onClick={() => setWeekSelection({ month: selectedMonth, week: index })}
+              onClick={() => setWeekSelection({ month: selectedMonth, year: selectedYear, week: index })}
             >
               Minggu {index + 1}
             </button>

@@ -8,10 +8,10 @@ interface LaporanAktivitasProps {
   targets: DashboardTargets;
   activities: Activity[];
   selectedMonth: number; // 0-indexed
+  selectedYear: number;
 }
 
-export default function LaporanAktivitas({ targets, activities, selectedMonth }: LaporanAktivitasProps) {
-  const currentYear = new Date().getFullYear();
+export default function LaporanAktivitas({ targets, activities, selectedMonth, selectedYear }: LaporanAktivitasProps) {
   const monthsAbbr = getMonthsAbbr();
   const monthLabel = monthsAbbr[selectedMonth];
 
@@ -21,10 +21,10 @@ export default function LaporanAktivitas({ targets, activities, selectedMonth }:
   const [isDailyMenuOpen, setIsDailyMenuOpen] = useState(false);
   const [isBarMenuOpen, setIsBarMenuOpen] = useState(false);
   const [reportView, setReportView] = useState<"monthly" | "weekly">("monthly");
-  const [weekSelection, setWeekSelection] = useState({ month: selectedMonth, week: 0 });
-  const selectedWeek = weekSelection.month === selectedMonth ? weekSelection.week : 0;
+  const [weekSelection, setWeekSelection] = useState({ month: selectedMonth, year: selectedYear, week: 0 });
+  const selectedWeek = weekSelection.month === selectedMonth && weekSelection.year === selectedYear ? weekSelection.week : 0;
 
-  const weeks = useMemo(() => getWeeksInMonth(selectedMonth), [selectedMonth]);
+  const weeks = useMemo(() => getWeeksInMonth(selectedMonth, selectedYear), [selectedMonth, selectedYear]);
   const activeWeekIdx = Math.min(selectedWeek, weeks.length - 1);
 
   const weeklyMetrics = useMemo(() => {
@@ -82,7 +82,7 @@ export default function LaporanAktivitas({ targets, activities, selectedMonth }:
   const dailyData = useMemo(() => {
     const data = [];
     for (let d = 1; d <= targets.totalDays; d++) {
-      const dateString = `${currentYear}-${String(selectedMonth + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+      const dateString = `${selectedYear}-${String(selectedMonth + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
       const dayActivities = activities.filter(
         (act) => act.tanggal === dateString && act.status === "Selesai"
       );
@@ -90,7 +90,7 @@ export default function LaporanAktivitas({ targets, activities, selectedMonth }:
       data.push({ day: d, points });
     }
     return data;
-  }, [activities, selectedMonth, targets.totalDays, currentYear]);
+  }, [activities, selectedMonth, selectedYear, targets.totalDays]);
 
   // 2. Month-per-month (Monthly points in current year)
   const monthlyData = useMemo(() => {
@@ -100,18 +100,18 @@ export default function LaporanAktivitas({ targets, activities, selectedMonth }:
         const parts = act.tanggal.split("-");
         const yr = parseInt(parts[0], 10);
         const mo = parseInt(parts[1], 10);
-        return yr === currentYear && mo - 1 === m && act.status === "Selesai";
+        return yr === selectedYear && mo - 1 === m && act.status === "Selesai";
       });
       const points = monthActivities.reduce((sum, act) => sum + act.poin, 0);
       data.push({ month: m, points });
     }
     return data;
-  }, [activities, currentYear]);
+  }, [activities, selectedYear]);
 
   // 3. Year-to-year (Yearly points)
   const yearlyData = useMemo(() => {
     const data = [];
-    const targetRangeYears = [currentYear - 2, currentYear - 1, currentYear];
+    const targetRangeYears = [selectedYear - 2, selectedYear - 1, selectedYear];
     for (const yr of targetRangeYears) {
       const yearActivities = activities.filter((act) => {
         const yrPart = parseInt(act.tanggal.split("-")[0], 10);
@@ -121,13 +121,13 @@ export default function LaporanAktivitas({ targets, activities, selectedMonth }:
       data.push({ year: yr, points });
     }
     return data;
-  }, [activities, currentYear]);
+  }, [activities, selectedYear]);
 
   // Yearly target parameters (aggregated compare)
   const yearlyTargetData = useMemo(() => {
     const yearActivities = activities.filter((act) => {
       const yrPart = parseInt(act.tanggal.split("-")[0], 10);
-      return yrPart === currentYear && act.status === "Selesai";
+      return yrPart === selectedYear && act.status === "Selesai";
     });
 
     const MEETING_TYPES = new Set(["Pertemuan", "Wawancara Penutupan"]);
@@ -147,7 +147,7 @@ export default function LaporanAktivitas({ targets, activities, selectedMonth }:
       salesPct: calculatePercentage(yearSales, targetSalesYr),
       activeDaysPct: calculatePercentage(yearActiveDays, targetActiveDaysYr)
     };
-  }, [activities, currentYear, targets]);
+  }, [activities, selectedYear, targets]);
 
   // Select dynamic display metrics for the target comparisons chart
   const activePointPct = isWeekly
@@ -340,7 +340,7 @@ export default function LaporanAktivitas({ targets, activities, selectedMonth }:
                 <button
                   key={index}
                   className={`month-tab-btn ${activeWeekIdx === index ? "active" : ""}`}
-                  onClick={() => setWeekSelection({ month: selectedMonth, week: index })}
+                  onClick={() => setWeekSelection({ month: selectedMonth, year: selectedYear, week: index })}
                 >
                   Minggu {index + 1}
                 </button>

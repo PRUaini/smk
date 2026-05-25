@@ -26,6 +26,7 @@ export default function DashboardContainer({ initialKodeAgent, initialActivities
   const { toasts, showToast, dismissToast } = useToast();
   const [activities, setActivities] = useState<Activity[]>(initialActivities);
   const [targetsData, setTargetsData] = useState<AgentTargets | null>(initialTargets ?? null);
+  const [selectedYear, setSelectedYear] = useState<number>(() => new Date().getFullYear());
   const [selectedMonth, setSelectedMonth] = useState<number>(() => new Date().getMonth());
   const [autoFocusToday, setAutoFocusToday] = useState(true);
   const [selectedActivity, setSelectedActivity] = useState<Activity | null>(null);
@@ -35,10 +36,12 @@ export default function DashboardContainer({ initialKodeAgent, initialActivities
   const [isTargetsSidebarOpen, setIsTargetsSidebarOpen] = useState(false);
   const [isSidebarClosing, setIsSidebarClosing] = useState(false);
   const [isTargetsSidebarClosing, setIsTargetsSidebarClosing] = useState(false);
+  const [isYearMenuOpen, setIsYearMenuOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
   const [activeTab, setActiveTab] = useState<"agenda" | "laporan">("agenda");
   const sidebarCloseTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const targetsSidebarCloseTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const tempActivityIdCounter = useRef(0);
 
   const clearSidebarCloseTimer = () => {
     if (sidebarCloseTimer.current) {
@@ -112,12 +115,30 @@ export default function DashboardContainer({ initialKodeAgent, initialActivities
       targetWeeklyMeetings: targetsData.targetWeeklyMeetings,
       targetWeeklySales: targetsData.targetWeeklySales,
     } : undefined;
-    return calculateDashboardTargets(activities, selectedMonth, customTargets);
-  }, [activities, selectedMonth, targetsData]);
+    return calculateDashboardTargets(activities, selectedMonth, customTargets, selectedYear);
+  }, [activities, selectedMonth, selectedYear, targetsData]);
+
+  const availableYears = useMemo(() => {
+    const years = new Set<number>([new Date().getFullYear(), selectedYear]);
+    activities.forEach((activity) => {
+      const year = Number(activity.tanggal.split("-")[0]);
+      if (!Number.isNaN(year)) {
+        years.add(year);
+      }
+    });
+    return [...years].sort((a, b) => b - a);
+  }, [activities, selectedYear]);
 
   const handleMonthChange = (monthIdx: number) => {
     setAutoFocusToday(false);
     setSelectedMonth(monthIdx);
+    closeActivitySidebar();
+  };
+
+  const handleYearChange = (year: number) => {
+    setSelectedYear(year);
+    setAutoFocusToday(false);
+    setIsYearMenuOpen(false);
     closeActivitySidebar();
   };
 
@@ -164,7 +185,8 @@ export default function DashboardContainer({ initialKodeAgent, initialActivities
 
   const handleSaveActivity = (activityData: Omit<Activity, "id"> & { id?: string }) => {
     const isEdit = !!activityData.id;
-    const tempId = activityData.id || `temp-${Date.now()}`;
+    tempActivityIdCounter.current += 1;
+    const tempId = activityData.id || `temp-${tempActivityIdCounter.current}`;
     const prevActivities = [...activities];
 
     if (isEdit) {
@@ -265,9 +287,16 @@ export default function DashboardContainer({ initialKodeAgent, initialActivities
             </div>
           </div>
 
-          {activeTab === "laporan" && (
-            <div className="dashboard-tab-actions">
-              <div className="report-dropdown-selector" onClick={() => showToast("Fitur pemilih bulan/tahun segera hadir!", "info")}>
+          <div className="dashboard-tab-actions">
+            <div className="chart-filter-select-wrapper">
+              <button
+                type="button"
+                className="report-dropdown-selector"
+                aria-haspopup="listbox"
+                aria-expanded={isYearMenuOpen}
+                aria-label={`Pilih tahun ${selectedYear}`}
+                onClick={() => setIsYearMenuOpen((isOpen) => !isOpen)}
+              >
                 <svg className="calendar-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
                   <line x1="16" y1="2" x2="16" y2="6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
@@ -275,12 +304,30 @@ export default function DashboardContainer({ initialKodeAgent, initialActivities
                   <line x1="3" y1="10" x2="21" y2="10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>
                 <span>
-                  {new Date().getFullYear()}
+                  {selectedYear}
                 </span>
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M6 9l6 6 6-6" />
                 </svg>
-              </div>
+              </button>
+              {isYearMenuOpen && (
+                <div className="filter-dropdown-menu" role="listbox" aria-label="Tahun">
+                  {availableYears.map((year) => (
+                    <button
+                      key={year}
+                      type="button"
+                      role="option"
+                      aria-selected={selectedYear === year}
+                      className={`filter-option ${selectedYear === year ? "active" : ""}`}
+                      onClick={() => handleYearChange(year)}
+                    >
+                      {year}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+            {activeTab === "laporan" && (
               <button className="edit-targets-trigger-btn" onClick={openTargetsSidebar}>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <circle cx="12" cy="12" r="3" />
@@ -288,8 +335,8 @@ export default function DashboardContainer({ initialKodeAgent, initialActivities
                 </svg>
                 <span>Edit Target</span>
               </button>
-            </div>
-          )}
+            )}
+          </div>
         </div>
 
         <MonthTabs selectedMonth={selectedMonth} onMonthChange={handleMonthChange} />
@@ -298,6 +345,7 @@ export default function DashboardContainer({ initialKodeAgent, initialActivities
           <DashboardWidgetBoundary label="Kalender mingguan">
             <WeeklyCalendar
               selectedMonth={selectedMonth}
+              selectedYear={selectedYear}
               activities={activities}
               selectedActivityId={selectedActivity?.id || null}
               onSelectActivity={handleSelectActivity}
@@ -307,7 +355,7 @@ export default function DashboardContainer({ initialKodeAgent, initialActivities
             />
           </DashboardWidgetBoundary>
         ) : (
-          <LaporanAktivitas targets={targets} activities={activities} selectedMonth={selectedMonth} />
+          <LaporanAktivitas targets={targets} activities={activities} selectedMonth={selectedMonth} selectedYear={selectedYear} />
         )}
       </main>
 
@@ -340,7 +388,9 @@ export default function DashboardContainer({ initialKodeAgent, initialActivities
           onClick={() => {
             setSelectedActivity(null);
             const today = new Date();
-            const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+            const isCurrentPeriod = selectedYear === today.getFullYear() && selectedMonth === today.getMonth();
+            const selectedDateForPeriod = isCurrentPeriod ? today : new Date(selectedYear, selectedMonth, 1);
+            const todayStr = `${selectedDateForPeriod.getFullYear()}-${String(selectedDateForPeriod.getMonth() + 1).padStart(2, "0")}-${String(selectedDateForPeriod.getDate()).padStart(2, "0")}`;
             setSelectedDate(todayStr);
             setSelectedTime("08:00");
             openActivitySidebar();
