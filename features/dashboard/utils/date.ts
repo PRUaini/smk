@@ -1,3 +1,5 @@
+import { DAYS_OF_WEEK } from "../constants";
+
 export function getWeeksInMonth(selectedMonth: number, selectedYear = new Date().getFullYear()) {
   const weeks: Date[] = [];
   
@@ -18,7 +20,7 @@ export function getWeeksInMonth(selectedMonth: number, selectedYear = new Date()
 
 export function getWeekDates(startDate: Date) {
   const dates = [];
-  for (let i = 0; i < 6; i++) {
+  for (let i = 0; i < DAYS_OF_WEEK.length; i++) {
     const tempDate = new Date(startDate);
     tempDate.setDate(startDate.getDate() + i);
     dates.push(

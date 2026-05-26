@@ -1,7 +1,7 @@
 import React from "react";
 import { Activity } from "../types";
 import { DASHBOARD_TIME_SLOTS, DAYS_OF_WEEK } from "../constants";
-import { getWeeksInMonth } from "../utils/date";
+import { getWeekDates as getFormattedWeekDates, getWeeksInMonth } from "../utils/date";
 
 interface WeeklyCalendarProps {
   selectedMonth: number;
@@ -24,7 +24,7 @@ export default function WeeklyCalendar({
   onToggleComplete,
   autoFocusToday,
 }: WeeklyCalendarProps) {
-  const [weekSelection, setWeekSelection] = React.useState({ month: selectedMonth, year: selectedYear, week: 0 });
+  const [weekSelection, setWeekSelection] = React.useState<{ month: number; year: number; week: number } | null>(null);
   const [expandedSlots, setExpandedSlots] = React.useState<Record<string, boolean>>({});
   const weeks = getWeeksInMonth(selectedMonth, selectedYear);
   const defaultWeek = React.useMemo(() => {
@@ -46,27 +46,24 @@ export default function WeeklyCalendar({
     }
     return 0;
   }, [selectedMonth, selectedYear, autoFocusToday, weeks]);
-  const selectedWeek = weekSelection.month === selectedMonth && weekSelection.year === selectedYear ? weekSelection.week : defaultWeek;
+  const selectedWeek = weekSelection?.month === selectedMonth && weekSelection.year === selectedYear ? weekSelection.week : defaultWeek;
 
-  // Helper: Get dates (Monday - Saturday) for the active week
+  // Helper: Get dates (Monday - Sunday) for the active week
   const getWeekDates = () => {
     // Make sure selectedWeek is within bounds (in case it hasn't reset yet)
     const weekIndex = Math.min(selectedWeek, weeks.length - 1);
     const startDate = weeks[weekIndex] || new Date();
 
-    const weekDates = [];
-    for (let i = 0; i < 6; i++) {
-      const tempDate = new Date(startDate);
-      tempDate.setDate(startDate.getDate() + i);
-      weekDates.push({
+    return getFormattedWeekDates(startDate).map((formatted, i) => {
+      const tempDate = new Date(`${formatted}T00:00:00`);
+      return {
         dayName: DAYS_OF_WEEK[i],
         dayOfMonth: tempDate.getDate(),
         monthNum: tempDate.getMonth() + 1,
-        formatted: `${tempDate.getFullYear()}-${String(tempDate.getMonth() + 1).padStart(2, "0")}-${String(tempDate.getDate()).padStart(2, "0")}`,
+        formatted,
         label: `${String(tempDate.getDate()).padStart(2, "0")}/${String(tempDate.getMonth() + 1).padStart(2, "0")}`,
-      });
-    }
-    return weekDates;
+      };
+    });
   };
 
   const weekDates = getWeekDates();

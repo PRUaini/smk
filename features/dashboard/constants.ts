@@ -12,7 +12,7 @@ export const DASHBOARD_TIME_SLOTS = [
   "17:00",
 ] as const;
 
-export const DAYS_OF_WEEK = ["Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"] as const;
+export const DAYS_OF_WEEK = ["Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu", "Minggu"] as const;
 
 export const ACTIVITY_POINTS: Record<ActivityType, number> = {
   Pendekatan: 1,

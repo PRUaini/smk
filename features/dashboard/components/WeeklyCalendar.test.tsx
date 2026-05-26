@@ -1,8 +1,12 @@
 import { fireEvent, render, screen } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import WeeklyCalendar from "./WeeklyCalendar";
 
 describe("WeeklyCalendar", () => {
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
   it("shows an empty state when the selected week has no activities", () => {
     render(
       <WeeklyCalendar
@@ -57,6 +61,7 @@ describe("WeeklyCalendar", () => {
     expect(screen.getByRole("button", { name: "Minggu 1" })).toBeInTheDocument();
     expect(screen.getByText("Senin")).toBeInTheDocument();
     expect(screen.getByText("Sabtu")).toBeInTheDocument();
+    expect(screen.getByText("Minggu")).toBeInTheDocument();
     expect(screen.getByText("08:00")).toBeInTheDocument();
     expect(screen.getAllByText("Total Poin").length).toBeGreaterThan(0);
   });
@@ -96,5 +101,72 @@ describe("WeeklyCalendar", () => {
     fireEvent.click(screen.getAllByText("+ Tambah")[0].closest(".calendar-cell")!);
 
     expect(onSelectTimeSlotMock).toHaveBeenCalledWith(expect.stringMatching(/^2027-01-/), "08:00");
+  });
+
+  it("creates selectable Sunday slots", () => {
+    const onSelectTimeSlotMock = vi.fn();
+    render(
+      <WeeklyCalendar
+        selectedMonth={0}
+        selectedYear={2026}
+        activities={[]}
+        selectedActivityId={null}
+        onSelectActivity={vi.fn()}
+        onSelectTimeSlot={onSelectTimeSlotMock}
+        onToggleComplete={vi.fn()}
+      />
+    );
+
+    fireEvent.click(screen.getAllByText("+ Tambah")[6].closest(".calendar-cell")!);
+
+    expect(onSelectTimeSlotMock).toHaveBeenCalledWith("2026-01-11", "08:00");
+  });
+
+  it("auto-selects today's week before manual selection", () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date(2026, 0, 20, 9, 0, 0));
+    const onSelectTimeSlotMock = vi.fn();
+
+    render(
+      <WeeklyCalendar
+        selectedMonth={0}
+        selectedYear={2026}
+        activities={[]}
+        selectedActivityId={null}
+        onSelectActivity={vi.fn()}
+        onSelectTimeSlot={onSelectTimeSlotMock}
+        onToggleComplete={vi.fn()}
+        autoFocusToday
+      />
+    );
+
+    expect(screen.getByRole("button", { name: "Minggu 3" })).toHaveClass("active");
+    fireEvent.click(screen.getAllByText("+ Tambah")[0].closest(".calendar-cell")!);
+    expect(onSelectTimeSlotMock).toHaveBeenCalledWith("2026-01-19", "08:00");
+  });
+
+  it("keeps manual week selection after auto-focus", () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date(2026, 0, 20, 9, 0, 0));
+    const onSelectTimeSlotMock = vi.fn();
+
+    render(
+      <WeeklyCalendar
+        selectedMonth={0}
+        selectedYear={2026}
+        activities={[]}
+        selectedActivityId={null}
+        onSelectActivity={vi.fn()}
+        onSelectTimeSlot={onSelectTimeSlotMock}
+        onToggleComplete={vi.fn()}
+        autoFocusToday
+      />
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Minggu 1" }));
+    fireEvent.click(screen.getAllByText("+ Tambah")[0].closest(".calendar-cell")!);
+
+    expect(screen.getByRole("button", { name: "Minggu 1" })).toHaveClass("active");
+    expect(onSelectTimeSlotMock).toHaveBeenCalledWith("2026-01-05", "08:00");
   });
 });

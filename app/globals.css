@@ -1348,7 +1348,7 @@ body {
 
 .calendar-grid-header {
   display: grid;
-  grid-template-columns: 80px repeat(6, 1fr);
+  grid-template-columns: 80px repeat(7, 1fr);
   border-bottom: 1px solid var(--color-border);
   background: var(--color-surface-secondary);
 }
@@ -1408,7 +1408,7 @@ body {
 
 .calendar-grid-row {
   display: grid;
-  grid-template-columns: 80px repeat(6, 1fr);
+  grid-template-columns: 80px repeat(7, 1fr);
   border-bottom: 1px solid var(--color-surface-hover);
 }
 
@@ -1696,7 +1696,7 @@ body {
 /* Calendar Grid Footer */
 .calendar-grid-footer {
   display: grid;
-  grid-template-columns: 80px repeat(6, 1fr);
+  grid-template-columns: 80px repeat(7, 1fr);
   border-top: 1px solid var(--color-text-tertiary);
   background: var(--color-surface-secondary);
   font-weight: 700;
@@ -2489,8 +2489,8 @@ body {
   .calendar-grid-header,
   .calendar-grid-row,
   .calendar-grid-footer {
-    grid-template-columns: 56px repeat(6, minmax(104px, 1fr));
-    min-width: 680px;
+    grid-template-columns: 56px repeat(7, minmax(104px, 1fr));
+    min-width: 784px;
   }
 
   .weekly-grid-container {
@@ -2760,8 +2760,8 @@ body {
   .calendar-grid-header,
   .calendar-grid-row,
   .calendar-grid-footer {
-    grid-template-columns: 54px repeat(6, 104px);
-    min-width: 678px;
+    grid-template-columns: 54px repeat(7, 104px);
+    min-width: 782px;
   }
 
   .activity-sidebar-card {

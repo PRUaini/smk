@@ -225,6 +225,17 @@ export default function ActivitySidebar({
             </div>
 
             <div className="form-group">
+              <label className="form-label" htmlFor="activity-kontak">Kontak Nasabah (Opsional)</label>
+              <input
+                id="activity-nasabah"
+                type="text"
+                className="form-input"
+                placeholder="Kontak calon nasabah..."
+                {...form.register("nasabah")}
+              />
+            </div>
+
+            <div className="form-group">
               <label className="form-label" htmlFor="activity-produk">Produk (Opsional)</label>
               <input
                 id="activity-produk"

@@ -38,6 +38,17 @@ const activities: Activity[] = [
     api: 15000000,
   },
   {
+    id: "a8",
+    tanggal: "2026-01-11",
+    waktu: "11:00",
+    kegiatan: "Pendekatan",
+    poin: 1,
+    status: "Selesai",
+    catatan: "",
+    nasabah: "",
+    produk: "",
+  },
+  {
     id: "a4",
     tanggal: "2026-02-05",
     waktu: "08:00",
@@ -90,10 +101,10 @@ describe("calculateDashboardTargets", () => {
   it("counts completed monthly activity totals only", () => {
     const targets = calculateDashboardTargets(activities, 0);
 
-    expect(targets.totalPoints).toBe(4);
+    expect(targets.totalPoints).toBe(5);
     expect(targets.totalMeetings).toBe(1);
     expect(targets.totalSales).toBe(1);
-    expect(targets.activeDays).toBe(3);
+    expect(targets.activeDays).toBe(4);
     expect(targets.totalDays).toBe(31);
     expect(targets.totalApi).toBe(25000000);
   });
@@ -101,7 +112,7 @@ describe("calculateDashboardTargets", () => {
   it("calculates weekly totals from completed activities in the first displayed week", () => {
     const targets = calculateDashboardTargets(activities, 0);
 
-    expect(targets.totalWeeklyPoints).toBe(4);
+    expect(targets.totalWeeklyPoints).toBe(5);
     expect(targets.totalWeeklyMeetings).toBe(1);
     expect(targets.totalWeeklySales).toBe(1);
   });

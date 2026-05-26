@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from "react";
 import { Activity, DashboardTargets } from "../types";
+import { DAYS_OF_WEEK } from "../constants";
 import { calculatePercentage } from "../utils/percentage";
 import { getWeeksInMonth, getWeekDates } from "../utils/date";
 import { buildLineChartSvg, getMonthsAbbr, type ChartDatum } from "../utils/report";
@@ -14,6 +15,7 @@ interface LaporanAktivitasProps {
 export default function LaporanAktivitas({ targets, activities, selectedMonth, selectedYear }: LaporanAktivitasProps) {
   const monthsAbbr = getMonthsAbbr();
   const monthLabel = monthsAbbr[selectedMonth];
+  const weeklyDayLabels = useMemo(() => DAYS_OF_WEEK.map((day) => day.slice(0, 3)), []);
 
   // Interactive Filter States
   const [dailyFilter, setDailyFilter] = useState<"harian" | "bulanan" | "tahunan">("harian");
@@ -163,7 +165,7 @@ export default function LaporanAktivitas({ targets, activities, selectedMonth, s
     : (barFilter === "bulan" ? salesPct : yearlyTargetData.salesPct);
 
   const activeDaysPctForBar = isWeekly
-    ? (barFilter === "bulan" ? calculatePercentage(weeklyMetrics.activeDays || 0, 5) : activeDaysPct)
+    ? (barFilter === "bulan" ? calculatePercentage(weeklyMetrics.activeDays || 0, DAYS_OF_WEEK.length) : activeDaysPct)
     : (barFilter === "bulan" ? activeDaysPct : yearlyTargetData.activeDaysPct);
 
   // Compute cumulative points (monthly or weekly cumulative)
@@ -173,14 +175,13 @@ export default function LaporanAktivitas({ targets, activities, selectedMonth, s
       if (weekStartDate) {
         const dates = getWeekDates(weekStartDate);
         let runningSum = 0;
-        const dayNames = ["Sen", "Sel", "Rab", "Kam", "Jum", "Sab"];
         return dates.map((dateStr, idx) => {
           const dayActivities = activities.filter(
             (act) => act.tanggal === dateStr && act.status === "Selesai"
           );
           const points = dayActivities.reduce((sum, act) => sum + act.poin, 0);
           runningSum += points;
-          return { day: dayNames[idx], points: runningSum };
+          return { day: weeklyDayLabels[idx], points: runningSum };
         });
       }
       return [];
@@ -191,7 +192,7 @@ export default function LaporanAktivitas({ targets, activities, selectedMonth, s
         return { day: String(d.day), points: runningSum };
       });
     }
-  }, [isWeekly, weeks, activeWeekIdx, activities, dailyData]);
+  }, [isWeekly, weeks, activeWeekIdx, activities, dailyData, weeklyDayLabels]);
 
   // SVG dimensions & scales for Tren Poin Harian
   const dailyChartSvg = useMemo(() => {
@@ -200,14 +201,13 @@ export default function LaporanAktivitas({ targets, activities, selectedMonth, s
       const weekStartDate = weeks[activeWeekIdx];
       if (weekStartDate) {
         const dates = getWeekDates(weekStartDate);
-        const dayNames = ["Sen", "Sel", "Rab", "Kam", "Jum", "Sab"];
         dataset = dates.map((dateStr, idx) => {
           const dayActivities = activities.filter(
             (act) => act.tanggal === dateStr && act.status === "Selesai"
           );
           const points = dayActivities.reduce((sum, act) => sum + act.poin, 0);
           return {
-            label: dayNames[idx] || "",
+            label: weeklyDayLabels[idx] || "",
             points
           };
         });
@@ -235,7 +235,7 @@ export default function LaporanAktivitas({ targets, activities, selectedMonth, s
       100,
       !isWeekly && dailyFilter === "harian" ? 5 : 1
     );
-  }, [isWeekly, weeks, activeWeekIdx, activities, dailyFilter, dailyData, monthlyData, yearlyData, monthLabel, monthsAbbr]);
+  }, [isWeekly, weeks, activeWeekIdx, activities, dailyFilter, dailyData, monthlyData, yearlyData, monthLabel, monthsAbbr, weeklyDayLabels]);
 
   // SVG dimensions & scales for Akumulasi Poin
   const cumulativeChartSvg = useMemo(() => {
@@ -922,7 +922,7 @@ export default function LaporanAktivitas({ targets, activities, selectedMonth, s
 
           <div className="side-metric-item">
             <span className="side-label">Hari Aktif</span>
-            <span className="side-value">{isWeekly ? weeklyMetrics.activeDays : targets.activeDays} / {isWeekly ? 5 : targets.totalDays} <span className="unit">hari</span></span>
+            <span className="side-value">{isWeekly ? weeklyMetrics.activeDays : targets.activeDays} / {isWeekly ? DAYS_OF_WEEK.length : targets.totalDays} <span className="unit">hari</span></span>
           </div>
         </div>
       </div>

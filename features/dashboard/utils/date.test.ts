@@ -31,7 +31,7 @@ describe("date utils", () => {
   });
 
   describe("getWeekDates", () => {
-    it("returns 6 days starting from the given Monday", () => {
+    it("returns 7 days starting from the given Monday through Sunday", () => {
       const monday = new Date(2026, 2, 2); // March 2, 2026
       const dates = getWeekDates(monday);
       expect(dates).toEqual([
@@ -41,6 +41,7 @@ describe("date utils", () => {
         "2026-03-05",
         "2026-03-06",
         "2026-03-07",
+        "2026-03-08",
       ]);
     });
   });

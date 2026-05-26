@@ -178,7 +178,7 @@ describe("DashboardContainer", () => {
     const savedActivity: Activity = {
       ...activity,
       id: "persisted-activity",
-      tanggal: "2026-05-04",
+      tanggal: "2026-05-25",
       waktu: "08:00",
     };
     vi.mocked(saveActivityAction)
