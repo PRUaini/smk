@@ -133,10 +133,6 @@ export default function LoginForm() {
           </form>
         </div>
       </div>
-      
-      <p className="login-split-footer">
-        &copy; 2026 PRUaini Group
-      </p>
     </div>
   );
 }
