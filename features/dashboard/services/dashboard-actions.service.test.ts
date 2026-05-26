@@ -24,7 +24,8 @@ const activityInput: Omit<Activity, "id"> = {
   poin: 99,
   status: "Belum",
   catatan: "",
-  nasabah: "",
+  nasabah: "Budi",
+  kontakNasabah: "08123456789",
   produk: "",
 };
 

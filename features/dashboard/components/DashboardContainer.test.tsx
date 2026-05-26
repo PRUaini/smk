@@ -24,6 +24,7 @@ const activity: Activity = {
   status: "Belum",
   catatan: "",
   nasabah: "Budi",
+  kontakNasabah: "",
   produk: "Produk A",
 };
 
@@ -194,6 +195,9 @@ describe("DashboardContainer", () => {
     );
 
     fireEvent.click(screen.getByRole("button", { name: "Add Activity" }));
+    fireEvent.change(screen.getByLabelText("Nama Nasabah"), {
+      target: { value: "Budi" },
+    });
     fireEvent.click(screen.getByRole("button", { name: "Simpan Aktivitas" }));
 
     await waitFor(() => {

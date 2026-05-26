@@ -131,12 +131,18 @@ const getActivityTypeClass = (kegiatan: string) => {
           </span>
         </div>
 
-        {(activity.nasabah || activity.produk || activity.catatan) && (
+        {(activity.nasabah || activity.kontakNasabah || activity.produk || activity.catatan) && (
           <div className="activity-card-meta-list">
             {activity.nasabah && (
               <div className="activity-card-meta-item">
                 <span className="meta-label">Nasabah:</span>
                 <span className="meta-value font-semibold">{activity.nasabah}</span>
+              </div>
+            )}
+            {activity.kontakNasabah && (
+              <div className="activity-card-meta-item">
+                <span className="meta-label">Kontak:</span>
+                <span className="meta-value">{activity.kontakNasabah}</span>
               </div>
             )}
             {activity.produk && (

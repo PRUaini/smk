@@ -12,6 +12,7 @@ const activity: Activity = {
   status: "Belum",
   catatan: "Follow up",
   nasabah: "Budi",
+  kontakNasabah: "08123456789",
   produk: "Produk A",
   api: 10000000,
 };
@@ -49,7 +50,8 @@ describe("ActivitySidebar", () => {
     expect(screen.getByRole("button", { name: "Proses" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Belum" })).toBeInTheDocument();
     expect(screen.getByLabelText("Catatan")).toBeInTheDocument();
-    expect(screen.getByLabelText("Nasabah (Opsional)")).toBeInTheDocument();
+    expect(screen.getByLabelText("Nama Nasabah")).toBeInTheDocument();
+    expect(screen.getByLabelText("Kontak Nasabah (Opsional)")).toBeInTheDocument();
     expect(screen.getByLabelText("Produk (Opsional)")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Simpan Aktivitas" })).toBeInTheDocument();
   });
@@ -72,7 +74,27 @@ describe("ActivitySidebar", () => {
     expect(screen.getByRole("button", { name: "Hapus" })).toBeInTheDocument();
   });
 
-  it("submits the existing activity payload", async () => {
+  it("blocks submit when customer name is empty", async () => {
+    const onSave = vi.fn();
+    render(
+      <ActivitySidebar
+        selectedActivity={null}
+        selectedDate="2026-05-21"
+        selectedTime="08:00"
+        onSave={onSave}
+        onDelete={vi.fn()}
+        isPending={false}
+        onClose={vi.fn()}
+      />
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Simpan Aktivitas" }));
+
+    expect(await screen.findByText("Nama Nasabah wajib diisi")).toBeInTheDocument();
+    expect(onSave).not.toHaveBeenCalled();
+  });
+
+  it("submits the existing activity payload with separate customer contact", async () => {
     const onSave = vi.fn();
     render(
       <ActivitySidebar
@@ -89,6 +111,12 @@ describe("ActivitySidebar", () => {
     fireEvent.change(screen.getByLabelText("Catatan"), {
       target: { value: "Meeting pertama" },
     });
+    fireEvent.change(screen.getByLabelText("Nama Nasabah"), {
+      target: { value: "Budi" },
+    });
+    fireEvent.change(screen.getByLabelText("Kontak Nasabah (Opsional)"), {
+      target: { value: "08123456789" },
+    });
     fireEvent.click(screen.getByRole("button", { name: "Simpan Aktivitas" }));
 
     await waitFor(() => {
@@ -100,6 +128,8 @@ describe("ActivitySidebar", () => {
           poin: 1,
           status: "Belum",
           catatan: "Meeting pertama",
+          nasabah: "Budi",
+          kontakNasabah: "08123456789",
         })
       );
     });

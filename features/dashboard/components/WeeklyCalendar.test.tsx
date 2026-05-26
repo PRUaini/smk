@@ -66,6 +66,38 @@ describe("WeeklyCalendar", () => {
     expect(screen.getAllByText("Total Poin").length).toBeGreaterThan(0);
   });
 
+  it("shows customer contact below customer name when present", () => {
+    render(
+      <WeeklyCalendar
+        selectedMonth={0}
+        selectedYear={2026}
+        activities={[
+          {
+            id: "activity-1",
+            tanggal: "2026-01-05",
+            waktu: "08:00",
+            kegiatan: "Pertemuan",
+            poin: 2,
+            status: "Belum",
+            catatan: "",
+            nasabah: "Budi",
+            kontakNasabah: "08123456789",
+            produk: "",
+          },
+        ]}
+        selectedActivityId={null}
+        onSelectActivity={vi.fn()}
+        onSelectTimeSlot={vi.fn()}
+        onToggleComplete={vi.fn()}
+      />
+    );
+
+    expect(screen.getByText("Nasabah:")).toBeInTheDocument();
+    expect(screen.getByText("Budi")).toBeInTheDocument();
+    expect(screen.getByText("Kontak:")).toBeInTheDocument();
+    expect(screen.getByText("08123456789")).toBeInTheDocument();
+  });
+
   it("calls onSelectTimeSlot when clicking an empty calendar slot", () => {
     const onSelectTimeSlotMock = vi.fn();
     render(

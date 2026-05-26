@@ -16,7 +16,8 @@ export const activityFormSchema = z.object({
   kegiatan: z.enum(activityTypes),
   status: z.enum(activityStatuses),
   catatan: z.string().max(200, "Catatan maksimal 200 karakter"),
-  nasabah: z.string(),
+  nasabah: z.string().trim().min(1, "Nama Nasabah wajib diisi"),
+  kontakNasabah: z.string(),
   produk: z.string(),
   api: z
     .string()
@@ -43,6 +44,7 @@ export function buildActivityPayload(
     status: formData.status,
     catatan: formData.catatan,
     nasabah: formData.nasabah,
+    kontakNasabah: formData.kontakNasabah,
     produk: formData.produk,
     api: formData.api ? Number(formData.api) : undefined,
   };
@@ -60,7 +62,8 @@ export const activityActionSchema = z.object({
   kegiatan: z.enum(activityTypes),
   status: z.enum(activityStatuses),
   catatan: z.string().max(200, "Catatan maksimal 200 karakter"),
-  nasabah: z.string(),
+  nasabah: z.string().trim().min(1, "Nama Nasabah wajib diisi"),
+  kontakNasabah: z.string(),
   produk: z.string(),
   api: z.number().nonnegative("API tidak boleh negatif").optional(),
 });

@@ -1,6 +1,33 @@
 import { createClient } from "@/lib/supabase/server";
 import type { Activity } from "../types";
 
+type ActivityRow = Omit<Activity, "kontakNasabah"> & {
+  kontak_nasabah?: string | null;
+};
+
+function mapActivityRow(row: ActivityRow): Activity {
+  return {
+    id: row.id,
+    tanggal: row.tanggal,
+    waktu: row.waktu,
+    kegiatan: row.kegiatan,
+    poin: row.poin,
+    status: row.status,
+    catatan: row.catatan,
+    nasabah: row.nasabah,
+    kontakNasabah: row.kontak_nasabah ?? "",
+    produk: row.produk,
+    api: row.api,
+  };
+}
+
+function mapActivityPayload(activity: Partial<Omit<Activity, "id">>) {
+  const { kontakNasabah, ...payload } = activity;
+  return kontakNasabah === undefined
+    ? payload
+    : { ...payload, kontak_nasabah: kontakNasabah };
+}
+
 export async function getActivitiesByAgent(agentId: string): Promise<Activity[]> {
   const supabase = await createClient();
   const { data, error } = await supabase
@@ -15,18 +42,7 @@ export async function getActivitiesByAgent(agentId: string): Promise<Activity[]>
     throw new Error("Failed to fetch activities. Please try again later.");
   }
 
-  return (data || []).map((row) => ({
-    id: row.id,
-    tanggal: row.tanggal,
-    waktu: row.waktu,
-    kegiatan: row.kegiatan,
-    poin: row.poin,
-    status: row.status,
-    catatan: row.catatan,
-    nasabah: row.nasabah,
-    produk: row.produk,
-    api: row.api,
-  }));
+  return (data || []).map(mapActivityRow);
 }
 
 export async function createActivity(
@@ -38,15 +54,7 @@ export async function createActivity(
     .from("activities")
     .insert({
       agent_id: agentId,
-      tanggal: activity.tanggal,
-      waktu: activity.waktu,
-      kegiatan: activity.kegiatan,
-      poin: activity.poin,
-      status: activity.status,
-      catatan: activity.catatan,
-      nasabah: activity.nasabah,
-      produk: activity.produk,
-      api: activity.api,
+      ...mapActivityPayload(activity),
     })
     .select()
     .single();
@@ -56,18 +64,7 @@ export async function createActivity(
     throw new Error("Failed to create activity. Please try again later.");
   }
 
-  return {
-    id: data.id,
-    tanggal: data.tanggal,
-    waktu: data.waktu,
-    kegiatan: data.kegiatan,
-    poin: data.poin,
-    status: data.status,
-    catatan: data.catatan,
-    nasabah: data.nasabah,
-    produk: data.produk,
-    api: data.api,
-  };
+  return mapActivityRow(data);
 }
 
 export async function updateActivity(
@@ -78,7 +75,7 @@ export async function updateActivity(
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("activities")
-    .update(activity)
+    .update(mapActivityPayload(activity))
     .eq("id", id)
     .eq("agent_id", agentId)
     .select()
@@ -89,18 +86,7 @@ export async function updateActivity(
     throw new Error("Failed to update activity. Please try again later.");
   }
 
-  return {
-    id: data.id,
-    tanggal: data.tanggal,
-    waktu: data.waktu,
-    kegiatan: data.kegiatan,
-    poin: data.poin,
-    status: data.status,
-    catatan: data.catatan,
-    nasabah: data.nasabah,
-    produk: data.produk,
-    api: data.api,
-  };
+  return mapActivityRow(data);
 }
 
 export async function deleteActivity(id: string, agentId: string): Promise<void> {

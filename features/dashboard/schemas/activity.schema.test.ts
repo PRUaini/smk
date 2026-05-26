@@ -15,6 +15,7 @@ describe("activityFormSchema", () => {
       status: "Selesai",
       catatan: "Meeting",
       nasabah: "Bapak Andi",
+      kontakNasabah: "08123456789",
       produk: "PRULink",
     });
 
@@ -29,6 +30,7 @@ describe("activityFormSchema", () => {
       status: "Selesai",
       catatan: "",
       nasabah: "",
+      kontakNasabah: "",
       produk: "",
     });
 
@@ -42,12 +44,57 @@ describe("activityFormSchema", () => {
       kegiatan: "Pendekatan",
       status: "Belum",
       catatan: "",
-      nasabah: "",
+      nasabah: "Bapak Andi",
+      kontakNasabah: "08123456789",
       produk: "",
     });
 
     expect(payload.poin).toBe(1);
     expect(payload.catatan).toBe("");
+    expect(payload.kontakNasabah).toBe("08123456789");
+  });
+
+  it("rejects empty or whitespace-only customer names", () => {
+    const emptyResult = activityFormSchema.safeParse({
+      tanggal: "2026-01-05",
+      waktu: "08:00",
+      kegiatan: "Pertemuan",
+      status: "Selesai",
+      catatan: "",
+      nasabah: "",
+      kontakNasabah: "",
+      produk: "",
+    });
+    const whitespaceResult = activityFormSchema.safeParse({
+      tanggal: "2026-01-05",
+      waktu: "08:00",
+      kegiatan: "Pertemuan",
+      status: "Selesai",
+      catatan: "",
+      nasabah: "   ",
+      kontakNasabah: "",
+      produk: "",
+    });
+
+    expect(emptyResult.success).toBe(false);
+    expect(emptyResult.error?.issues[0]?.message).toBe("Nama Nasabah wajib diisi");
+    expect(whitespaceResult.success).toBe(false);
+    expect(whitespaceResult.error?.issues[0]?.message).toBe("Nama Nasabah wajib diisi");
+  });
+
+  it("accepts optional customer contact", () => {
+    const result = activityFormSchema.safeParse({
+      tanggal: "2026-01-05",
+      waktu: "08:00",
+      kegiatan: "Pertemuan",
+      status: "Selesai",
+      catatan: "",
+      nasabah: "Bapak Andi",
+      kontakNasabah: "",
+      produk: "",
+    });
+
+    expect(result.success).toBe(true);
   });
 
   it("handles valid and invalid API numbers", () => {
@@ -58,6 +105,7 @@ describe("activityFormSchema", () => {
       status: "Selesai",
       catatan: "Sales",
       nasabah: "Ibu Rina",
+      kontakNasabah: "",
       produk: "PRUWarisan",
       api: "15000000",
     });
@@ -74,6 +122,7 @@ describe("activityFormSchema", () => {
       status: "Selesai",
       catatan: "Sales",
       nasabah: "Ibu Rina",
+      kontakNasabah: "",
       produk: "PRUWarisan",
       api: "-5000",
     });
@@ -90,6 +139,7 @@ describe("activityActionSchema", () => {
       status: "Selesai",
       catatan: "Meeting",
       nasabah: "Bapak Andi",
+      kontakNasabah: "08123456789",
       produk: "PRULink",
       api: 15000000,
     });
@@ -104,6 +154,7 @@ describe("activityActionSchema", () => {
       status: "Selesai",
       catatan: "Sales",
       nasabah: "Ibu Rina",
+      kontakNasabah: "",
       produk: "PRUWarisan",
       api: -5000,
     });

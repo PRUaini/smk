@@ -18,6 +18,7 @@ export interface Activity {
   status: ActivityStatus;
   catatan: string;
   nasabah: string;
+  kontakNasabah: string;
   produk: string;
   api?: number;
 }

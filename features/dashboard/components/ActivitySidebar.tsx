@@ -67,6 +67,7 @@ export default function ActivitySidebar({
       status: selectedActivity?.status ?? "Belum",
       catatan: selectedActivity?.catatan ?? "",
       nasabah: selectedActivity?.nasabah ?? "",
+      kontakNasabah: selectedActivity?.kontakNasabah ?? "",
       produk: selectedActivity?.produk ?? "",
       api: selectedActivity?.api !== undefined && selectedActivity?.api !== null ? String(selectedActivity.api) : "",
     },
@@ -214,7 +215,7 @@ export default function ActivitySidebar({
             </div>
 
             <div className="form-group">
-              <label className="form-label" htmlFor="activity-nasabah">Nasabah (Opsional)</label>
+              <label className="form-label" htmlFor="activity-nasabah">Nama Nasabah</label>
               <input
                 id="activity-nasabah"
                 type="text"
@@ -222,16 +223,17 @@ export default function ActivitySidebar({
                 placeholder="Nama calon nasabah..."
                 {...form.register("nasabah")}
               />
+              <FieldError message={form.formState.errors.nasabah?.message} />
             </div>
 
             <div className="form-group">
               <label className="form-label" htmlFor="activity-kontak">Kontak Nasabah (Opsional)</label>
               <input
-                id="activity-nasabah"
+                id="activity-kontak"
                 type="text"
                 className="form-input"
                 placeholder="Kontak calon nasabah..."
-                {...form.register("nasabah")}
+                {...form.register("kontakNasabah")}
               />
             </div>
 
