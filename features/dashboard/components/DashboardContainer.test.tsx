@@ -174,12 +174,57 @@ describe("DashboardContainer", () => {
     expect(screen.getByRole("heading", { name: "Tambah Aktivitas" })).toBeInTheDocument();
   });
 
+  it("opens the activity panel from a notification item", () => {
+    vi.setSystemTime(new Date(2026, 4, 25, 9, 0, 0));
+
+    render(
+      <DashboardContainer
+        initialKodeAgent="Agent"
+        initialActivities={[activity]}
+        initialTargets={null}
+      />
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Buka notifikasi" }));
+    fireEvent.click(screen.getByRole("menuitem", { name: /Pendekatan/ }));
+
+    expect(screen.getByRole("heading", { name: "Edit Aktivitas" })).toBeInTheDocument();
+    expect(screen.getByLabelText("Nama Nasabah")).toHaveValue("Budi");
+  });
+
+  it("marks all notifications as read from the notification menu", () => {
+    vi.setSystemTime(new Date(2026, 4, 25, 9, 0, 0));
+
+    render(
+      <DashboardContainer
+        initialKodeAgent="Agent"
+        initialActivities={[activity]}
+        initialTargets={null}
+      />
+    );
+
+    expect(screen.getByText("1")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Buka notifikasi" }));
+    fireEvent.click(screen.getByRole("button", { name: "Tandai Semua" }));
+
+    expect(screen.getByRole("menu", { name: "Notifikasi aktivitas" })).toHaveClass("marking-read");
+    expect(screen.getByText("1")).toBeInTheDocument();
+
+    act(() => {
+      vi.advanceTimersByTime(180);
+    });
+
+    expect(screen.queryByText("1")).not.toBeInTheDocument();
+    expect(screen.getByText("Tidak ada notifikasi")).toBeInTheDocument();
+  });
+
   it("replaces a new optimistic activity id with the persisted id before editing", async () => {
     vi.useRealTimers();
     const savedActivity: Activity = {
       ...activity,
       id: "persisted-activity",
-      tanggal: "2026-05-25",
+      tanggal: "2026-06-08",
       waktu: "08:00",
     };
     vi.mocked(saveActivityAction)

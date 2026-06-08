@@ -14,6 +14,8 @@ import type { AgentTargets } from "../data/targets.repository";
 import TargetsSidebar from "./TargetsSidebar";
 import { useToast } from "../utils/useToast";
 import ToastContainer from "./ToastContainer";
+import NotificationMenu from "./NotificationMenu";
+import { buildActivityNotifications } from "../services/notifications.service";
 const SIDEBAR_TRANSITION_MS = 250;
 
 interface DashboardContainerProps {
@@ -37,6 +39,9 @@ export default function DashboardContainer({ initialKodeAgent, initialActivities
   const [isSidebarClosing, setIsSidebarClosing] = useState(false);
   const [isTargetsSidebarClosing, setIsTargetsSidebarClosing] = useState(false);
   const [isYearMenuOpen, setIsYearMenuOpen] = useState(false);
+  const [readNotificationIds, setReadNotificationIds] = useState<Set<string>>(
+    () => new Set()
+  );
   const [isPending, startTransition] = useTransition();
   const [activeTab, setActiveTab] = useState<"agenda" | "laporan">("agenda");
   const sidebarCloseTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -118,6 +123,16 @@ export default function DashboardContainer({ initialKodeAgent, initialActivities
     return calculateDashboardTargets(activities, selectedMonth, customTargets, selectedYear);
   }, [activities, selectedMonth, selectedYear, targetsData]);
 
+  const allNotifications = useMemo(
+    () => buildActivityNotifications(activities),
+    [activities]
+  );
+
+  const notifications = useMemo(
+    () => allNotifications.filter((notification) => !readNotificationIds.has(notification.id)),
+    [allNotifications, readNotificationIds]
+  );
+
   const availableYears = useMemo(() => {
     const years = new Set<number>([new Date().getFullYear(), selectedYear]);
     activities.forEach((activity) => {
@@ -147,6 +162,22 @@ export default function DashboardContainer({ initialKodeAgent, initialActivities
     setSelectedDate(null);
     setSelectedTime(null);
     openActivitySidebar();
+  };
+
+  const handleSelectNotification = (activityId: string) => {
+    const activity = activities.find((item) => item.id === activityId);
+    if (!activity) return;
+
+    closeTargetsSidebar();
+    handleSelectActivity(activity);
+  };
+
+  const handleMarkAllNotificationsRead = () => {
+    setReadNotificationIds((current) => {
+      const next = new Set(current);
+      allNotifications.forEach((notification) => next.add(notification.id));
+      return next;
+    });
   };
 
   const handleSelectTimeSlot = (dateStr: string, timeStr: string) => {
@@ -382,26 +413,34 @@ export default function DashboardContainer({ initialKodeAgent, initialActivities
         />
       )}
 
-      {activeTab === "agenda" && (
-        <button
-          className="fab-add-activity"
-          onClick={() => {
-            setSelectedActivity(null);
-            const today = new Date();
-            const isCurrentPeriod = selectedYear === today.getFullYear() && selectedMonth === today.getMonth();
-            const selectedDateForPeriod = isCurrentPeriod ? today : new Date(selectedYear, selectedMonth, 1);
-            const todayStr = `${selectedDateForPeriod.getFullYear()}-${String(selectedDateForPeriod.getMonth() + 1).padStart(2, "0")}-${String(selectedDateForPeriod.getDate()).padStart(2, "0")}`;
-            setSelectedDate(todayStr);
-            setSelectedTime("08:00");
-            openActivitySidebar();
-          }}
-          aria-label="Add Activity"
-        >
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M12 5V19M5 12H19" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
-          </svg>
-        </button>
-      )}
+      <div className="floating-action-stack">
+        <NotificationMenu
+          notifications={notifications}
+          onSelectNotification={handleSelectNotification}
+          onMarkAllRead={handleMarkAllNotificationsRead}
+        />
+
+        {activeTab === "agenda" && (
+          <button
+            className="fab-add-activity"
+            onClick={() => {
+              setSelectedActivity(null);
+              const today = new Date();
+              const isCurrentPeriod = selectedYear === today.getFullYear() && selectedMonth === today.getMonth();
+              const selectedDateForPeriod = isCurrentPeriod ? today : new Date(selectedYear, selectedMonth, 1);
+              const todayStr = `${selectedDateForPeriod.getFullYear()}-${String(selectedDateForPeriod.getMonth() + 1).padStart(2, "0")}-${String(selectedDateForPeriod.getDate()).padStart(2, "0")}`;
+              setSelectedDate(todayStr);
+              setSelectedTime("08:00");
+              openActivitySidebar();
+            }}
+            aria-label="Add Activity"
+          >
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12 5V19M5 12H19" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </button>
+        )}
+      </div>
 
       <ToastContainer toasts={toasts} onDismiss={dismissToast} />
     </div>
