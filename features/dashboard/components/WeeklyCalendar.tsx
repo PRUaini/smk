@@ -119,7 +119,10 @@ const getActivityTypeClass = (kegiatan: string) => {
               />
               <span className="checkmark" />
             </label>
-            <span className="activity-card-title">{activity.kegiatan}</span>
+            <div className="activity-card-copy">
+              <span className="activity-card-title">{activity.kegiatan}</span>
+              <span className="activity-card-time">{activity.waktu}</span>
+            </div>
           </div>
           
           <span
@@ -200,7 +203,6 @@ const getActivityTypeClass = (kegiatan: string) => {
 
         {/* Grid Header */}
         <div className="calendar-grid-header">
-          <div className="time-col-header" />
           {weekDates.map((d) => (
             <div
               key={d.formatted}
@@ -216,9 +218,6 @@ const getActivityTypeClass = (kegiatan: string) => {
         <div className="calendar-grid-body">
           {DASHBOARD_TIME_SLOTS.map((time) => (
             <div key={time} className="calendar-grid-row">
-              {/* Time Label */}
-              <div className="time-cell">{time}</div>
-
               {/* Day Cells */}
               {weekDates.map((d) => {
                 const slotActivities = getActivitiesForSlot(d.formatted, time);
@@ -295,7 +294,6 @@ const getActivityTypeClass = (kegiatan: string) => {
 
         {/* Grid Footer (Daily Point Totals) */}
         <div className="calendar-grid-footer">
-          <div className="time-col-footer">Total Poin</div>
           {weekDates.map((d) => (
             <div
               key={`footer-${d.formatted}`}

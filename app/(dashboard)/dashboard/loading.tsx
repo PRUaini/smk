@@ -37,8 +37,7 @@ export default function DashboardLoading() {
 
         {/* Weekly Calendar Grid Skeleton */}
         <div className="weekly-calendar-card" style={{ background: "white", border: "1px solid rgba(0, 0, 0, 0.03)" }}>
-          <div className="calendar-grid-header" style={{ display: "grid", gridTemplateColumns: `80px repeat(${DAYS_OF_WEEK.length}, 1fr)`, borderBottom: "1px solid var(--color-border)" }}>
-            <div className="time-col-header" style={{ height: "60px" }} />
+          <div className="calendar-grid-header" style={{ display: "grid", gridTemplateColumns: `repeat(${DAYS_OF_WEEK.length}, 1fr)`, borderBottom: "1px solid var(--color-border)" }}>
             {DAYS_OF_WEEK.map((_, i) => (
               <div key={i} className="day-col-header" style={{ height: "60px", display: "flex", flexDirection: "column", gap: "6px", justifyContent: "center", alignItems: "center" }}>
                 <div className="skeleton-pulse" style={{ width: "40px", height: "12px", borderRadius: "3px" }} />
@@ -48,12 +47,9 @@ export default function DashboardLoading() {
           </div>
           <div>
             {Array.from({ length: 5 }).map((_, rowIndex) => (
-              <div key={rowIndex} style={{ display: "grid", gridTemplateColumns: `80px repeat(${DAYS_OF_WEEK.length}, 1fr)`, borderBottom: "1px solid var(--color-border)" }}>
-                <div style={{ height: "80px", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                  <div className="skeleton-pulse" style={{ width: "40px", height: "14px", borderRadius: "3px" }} />
-                </div>
+              <div key={rowIndex} style={{ display: "grid", gridTemplateColumns: `repeat(${DAYS_OF_WEEK.length}, 1fr)` }}>
                 {DAYS_OF_WEEK.map((_, colIndex) => (
-                  <div key={colIndex} style={{ height: "80px", borderRight: "1px solid var(--color-border)", padding: "8px", position: "relative" }}>
+                  <div key={colIndex} style={{ height: "80px", borderRight: colIndex === DAYS_OF_WEEK.length - 1 ? "none" : "1px solid var(--color-border)", padding: "8px", position: "relative" }}>
                     {rowIndex === 1 && colIndex === 2 && (
                       <div className="skeleton-pulse" style={{ width: "80%", height: "45px", borderRadius: "6px" }} />
                     )}

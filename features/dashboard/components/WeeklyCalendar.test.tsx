@@ -47,7 +47,7 @@ describe("WeeklyCalendar", () => {
   });
 
   it("renders week chips and grid labels for an empty weekly calendar", () => {
-    render(
+    const { container } = render(
       <WeeklyCalendar
         selectedMonth={0}
         activities={[]}
@@ -62,8 +62,14 @@ describe("WeeklyCalendar", () => {
     expect(screen.getByText("Senin")).toBeInTheDocument();
     expect(screen.getByText("Sabtu")).toBeInTheDocument();
     expect(screen.getByText("Minggu")).toBeInTheDocument();
-    expect(screen.getByText("08:00")).toBeInTheDocument();
-    expect(screen.getAllByText("Total Poin").length).toBeGreaterThan(0);
+    expect(screen.queryByText("08:00")).not.toBeInTheDocument();
+    expect(container.querySelector(".time-col-header")).not.toBeInTheDocument();
+    expect(container.querySelector(".time-cell")).not.toBeInTheDocument();
+    expect(container.querySelector(".time-col-footer")).not.toBeInTheDocument();
+    expect(container.querySelectorAll(".calendar-grid-header .day-col-header")).toHaveLength(7);
+    expect(container.querySelectorAll(".calendar-grid-row:first-child .calendar-cell")).toHaveLength(7);
+    expect(container.querySelectorAll(".calendar-grid-footer .footer-point-cell")).toHaveLength(7);
+    expect(screen.getAllByText("Total Poin")).toHaveLength(7);
   });
 
   it("shows customer contact below customer name when present", () => {
@@ -94,6 +100,7 @@ describe("WeeklyCalendar", () => {
 
     expect(screen.getByText("Nasabah:")).toBeInTheDocument();
     expect(screen.getByText("Budi")).toBeInTheDocument();
+    expect(screen.getByText("08:00")).toBeInTheDocument();
     expect(screen.getByText("Kontak:")).toBeInTheDocument();
     expect(screen.getByText("08123456789")).toBeInTheDocument();
   });
