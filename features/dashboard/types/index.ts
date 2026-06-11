@@ -13,7 +13,7 @@ export type ActivityType =
   | "Coaching / Meeting Leader"
   | "Bawa teman ke BOP";
 
-export type ActivityStatus = "Selesai" | "Proses" | "Belum";
+export type ActivityStatus = "Selesai" | "Belum";
 
 export interface Activity {
   id: string;

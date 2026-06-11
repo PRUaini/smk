@@ -3,7 +3,7 @@ import { ACTIVITY_POINTS, CLOSING_TYPES, DASHBOARD_TIME_SLOTS, calculateActivity
 import type { Activity, ActivityStatus, ActivityType } from "../types";
 
 const activityTypes = Object.keys(ACTIVITY_POINTS) as [ActivityType, ...ActivityType[]];
-const activityStatuses: [ActivityStatus, ...ActivityStatus[]] = ["Selesai", "Proses", "Belum"];
+const activityStatuses: [ActivityStatus, ...ActivityStatus[]] = ["Selesai", "Belum"];
 
 export const activityFormSchema = z.object({
   tanggal: z.string().min(1, "Tanggal wajib diisi"),
@@ -14,7 +14,6 @@ export const activityFormSchema = z.object({
       message: "Waktu tidak valid",
     }),
   kegiatan: z.array(z.enum(activityTypes)).min(1, "Pilih minimal satu kegiatan"),
-  status: z.enum(activityStatuses),
   catatan: z.string().max(200, "Catatan maksimal 200 karakter"),
   nasabah: z.string().trim().min(1, "Nama Nasabah wajib diisi"),
   kontakNasabah: z.string(),
@@ -42,6 +41,7 @@ export type ActivityFormData = z.infer<typeof activityFormSchema>;
 
 export function buildActivityPayload(
   formData: ActivityFormData,
+  currentStatus?: ActivityStatus,
   id?: string
 ): Omit<Activity, "id"> & { id?: string } {
   return {
@@ -50,7 +50,7 @@ export function buildActivityPayload(
     waktu: formData.waktu,
     kegiatan: formData.kegiatan as ActivityType[],
     poin: calculateActivityPoints(formData.kegiatan as ActivityType[]),
-    status: formData.status,
+    status: currentStatus ?? "Belum",
     catatan: formData.catatan,
     nasabah: formData.nasabah,
     kontakNasabah: formData.kontakNasabah,

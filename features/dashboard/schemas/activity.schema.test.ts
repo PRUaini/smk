@@ -12,7 +12,6 @@ describe("activityFormSchema", () => {
       tanggal: "2026-01-05",
       waktu: "08:00",
       kegiatan: ["Approach / Fact Finding"],
-      status: "Selesai",
       catatan: "Meeting",
       nasabah: "Bapak Andi",
       kontakNasabah: "08123456789",
@@ -27,7 +26,6 @@ describe("activityFormSchema", () => {
       tanggal: "",
       waktu: "",
       kegiatan: ["Approach / Fact Finding"],
-      status: "Selesai",
       catatan: "",
       nasabah: "",
       kontakNasabah: "",
@@ -42,15 +40,15 @@ describe("activityFormSchema", () => {
       tanggal: "2026-01-05",
       waktu: "08:00",
       kegiatan: ["Chat Calon Nasabah"],
-      status: "Belum",
       catatan: "",
       nasabah: "Bapak Andi",
       kontakNasabah: "08123456789",
       produk: "",
-    });
+    }, "Belum");
 
     expect(payload.poin).toBe(1);
     expect(payload.catatan).toBe("");
+    expect(payload.status).toBe("Belum");
     expect(payload.kontakNasabah).toBe("08123456789");
   });
 
@@ -59,12 +57,11 @@ describe("activityFormSchema", () => {
       tanggal: "2026-01-05",
       waktu: "08:00",
       kegiatan: ["Chat Calon Nasabah", "Approach / Fact Finding"], // 1 + 4 = 5
-      status: "Belum",
       catatan: "",
       nasabah: "Bapak Andi",
       kontakNasabah: "08123456789",
       produk: "",
-    });
+    }, "Belum");
 
     expect(payload.poin).toBe(5);
   });
@@ -74,7 +71,6 @@ describe("activityFormSchema", () => {
       tanggal: "2026-01-05",
       waktu: "08:00",
       kegiatan: ["Approach / Fact Finding"],
-      status: "Selesai",
       catatan: "",
       nasabah: "",
       kontakNasabah: "",
@@ -84,7 +80,6 @@ describe("activityFormSchema", () => {
       tanggal: "2026-01-05",
       waktu: "08:00",
       kegiatan: ["Approach / Fact Finding"],
-      status: "Selesai",
       catatan: "",
       nasabah: "   ",
       kontakNasabah: "",
@@ -102,7 +97,6 @@ describe("activityFormSchema", () => {
       tanggal: "2026-01-05",
       waktu: "08:00",
       kegiatan: ["Approach / Fact Finding"],
-      status: "Selesai",
       catatan: "",
       nasabah: "Bapak Andi",
       kontakNasabah: "",
@@ -117,7 +111,6 @@ describe("activityFormSchema", () => {
       tanggal: "2026-01-05",
       waktu: "08:00",
       kegiatan: ["Closing Prospek"],
-      status: "Selesai",
       catatan: "Sales",
       nasabah: "Ibu Rina",
       kontakNasabah: "",
@@ -127,14 +120,14 @@ describe("activityFormSchema", () => {
     expect(validResult.success).toBe(true);
     expect(validResult.data?.api).toBe("15000000");
 
-    const payload = buildActivityPayload(validResult.data as ActivityFormData);
+    const payload = buildActivityPayload(validResult.data as ActivityFormData, "Selesai");
     expect(payload.api).toBe(15000000);
+    expect(payload.status).toBe("Selesai");
 
     const invalidResult = activityFormSchema.safeParse({
       tanggal: "2026-01-05",
       waktu: "08:00",
       kegiatan: ["Closing Prospek"],
-      status: "Selesai",
       catatan: "Sales",
       nasabah: "Ibu Rina",
       kontakNasabah: "",
@@ -149,7 +142,6 @@ describe("activityFormSchema", () => {
       tanggal: "2026-01-05",
       waktu: "08:00",
       kegiatan: ["Closing Prospek"],
-      status: "Selesai",
       catatan: "Sales",
       nasabah: "Ibu Rina",
       kontakNasabah: "",

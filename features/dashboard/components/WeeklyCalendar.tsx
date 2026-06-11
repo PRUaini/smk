@@ -167,12 +167,6 @@ export default function WeeklyCalendar({
             )}
           </div>
         )}
-
-        {activity.status === "Proses" && (
-          <div className="activity-card-footer">
-            <span className="badge-proses">Proses</span>
-          </div>
-        )}
       </div>
     );
   };

@@ -3,7 +3,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, useWatch } from "react-hook-form";
 import { ACTIVITY_POINTS, CLOSING_TYPES, DASHBOARD_TIME_SLOTS, calculateActivityPoints } from "../constants";
 import { activityFormSchema, buildActivityPayload, type ActivityFormData } from "../schemas/activity.schema";
-import { Activity, ActivityStatus, ActivityType } from "../types";
+import { Activity, ActivityType } from "../types";
 
 type SectionIconType = "time" | "detail" | "info";
 
@@ -69,7 +69,6 @@ export default function ActivitySidebar({
       tanggal: selectedActivity?.tanggal ?? selectedDate ?? "",
       waktu: selectedActivity?.waktu ?? selectedTime ?? "08:00",
       kegiatan: selectedActivity?.kegiatan ?? [],
-      status: selectedActivity?.status ?? "Belum",
       catatan: selectedActivity?.catatan ?? "",
       nasabah: selectedActivity?.nasabah ?? "",
       kontakNasabah: selectedActivity?.kontakNasabah ?? "",
@@ -79,7 +78,6 @@ export default function ActivitySidebar({
   });
 
   const kegiatan = useWatch({ control: form.control, name: "kegiatan" }) as ActivityType[];
-  const status = useWatch({ control: form.control, name: "status" });
   const catatan = useWatch({ control: form.control, name: "catatan" });
 
   const hasClosing = kegiatan.some((k) => CLOSING_TYPES.has(k as ActivityType));
@@ -107,7 +105,7 @@ export default function ActivitySidebar({
   }, [isDropdownOpen]);
 
   const handleSubmit = (data: ActivityFormData) => {
-    onSave(buildActivityPayload(data, selectedActivity?.id));
+    onSave(buildActivityPayload(data, selectedActivity?.status, selectedActivity?.id));
   };
 
   const triggerLabel = kegiatan.length > 0
@@ -252,24 +250,6 @@ export default function ActivitySidebar({
                   <span className="point-badge-icon" aria-hidden="true">+</span>
                   <span>{totalPoints} poin</span>
                 </div>
-              </div>
-
-              <div className="form-group">
-                <label className="form-label">Status</label>
-                <div className="status-radio-group">
-                  {(["Selesai", "Proses", "Belum"] as ActivityStatus[]).map((s) => (
-                    <button
-                      key={s}
-                      type="button"
-                      className={`status-select-btn ${s.toLowerCase()} ${status === s ? "active" : ""}`}
-                      onClick={() => form.setValue("status", s, { shouldValidate: true })}
-                    >
-                      <span className="dot" />
-                      {s}
-                    </button>
-                  ))}
-                </div>
-                <FieldError message={form.formState.errors.status?.message} />
               </div>
             </div>
 
