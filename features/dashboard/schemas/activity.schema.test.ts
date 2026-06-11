@@ -11,7 +11,7 @@ describe("activityFormSchema", () => {
     const result = activityFormSchema.safeParse({
       tanggal: "2026-01-05",
       waktu: "08:00",
-      kegiatan: "Pertemuan",
+      kegiatan: ["Approach / Fact Finding"],
       status: "Selesai",
       catatan: "Meeting",
       nasabah: "Bapak Andi",
@@ -26,7 +26,7 @@ describe("activityFormSchema", () => {
     const result = activityFormSchema.safeParse({
       tanggal: "",
       waktu: "",
-      kegiatan: "Pertemuan",
+      kegiatan: ["Approach / Fact Finding"],
       status: "Selesai",
       catatan: "",
       nasabah: "",
@@ -41,7 +41,7 @@ describe("activityFormSchema", () => {
     const payload = buildActivityPayload({
       tanggal: "2026-01-05",
       waktu: "08:00",
-      kegiatan: "Pendekatan",
+      kegiatan: ["Chat Calon Nasabah"],
       status: "Belum",
       catatan: "",
       nasabah: "Bapak Andi",
@@ -54,11 +54,26 @@ describe("activityFormSchema", () => {
     expect(payload.kontakNasabah).toBe("08123456789");
   });
 
+  it("derives summed points for multiple activities in saved payloads", () => {
+    const payload = buildActivityPayload({
+      tanggal: "2026-01-05",
+      waktu: "08:00",
+      kegiatan: ["Chat Calon Nasabah", "Approach / Fact Finding"], // 1 + 4 = 5
+      status: "Belum",
+      catatan: "",
+      nasabah: "Bapak Andi",
+      kontakNasabah: "08123456789",
+      produk: "",
+    });
+
+    expect(payload.poin).toBe(5);
+  });
+
   it("rejects empty or whitespace-only customer names", () => {
     const emptyResult = activityFormSchema.safeParse({
       tanggal: "2026-01-05",
       waktu: "08:00",
-      kegiatan: "Pertemuan",
+      kegiatan: ["Approach / Fact Finding"],
       status: "Selesai",
       catatan: "",
       nasabah: "",
@@ -68,7 +83,7 @@ describe("activityFormSchema", () => {
     const whitespaceResult = activityFormSchema.safeParse({
       tanggal: "2026-01-05",
       waktu: "08:00",
-      kegiatan: "Pertemuan",
+      kegiatan: ["Approach / Fact Finding"],
       status: "Selesai",
       catatan: "",
       nasabah: "   ",
@@ -86,7 +101,7 @@ describe("activityFormSchema", () => {
     const result = activityFormSchema.safeParse({
       tanggal: "2026-01-05",
       waktu: "08:00",
-      kegiatan: "Pertemuan",
+      kegiatan: ["Approach / Fact Finding"],
       status: "Selesai",
       catatan: "",
       nasabah: "Bapak Andi",
@@ -97,11 +112,11 @@ describe("activityFormSchema", () => {
     expect(result.success).toBe(true);
   });
 
-  it("handles valid and invalid API numbers", () => {
+  it("handles valid and invalid API numbers for closing", () => {
     const validResult = activityFormSchema.safeParse({
       tanggal: "2026-01-05",
       waktu: "08:00",
-      kegiatan: "Penjualan / Closing",
+      kegiatan: ["Closing Prospek"],
       status: "Selesai",
       catatan: "Sales",
       nasabah: "Ibu Rina",
@@ -118,7 +133,7 @@ describe("activityFormSchema", () => {
     const invalidResult = activityFormSchema.safeParse({
       tanggal: "2026-01-05",
       waktu: "08:00",
-      kegiatan: "Penjualan / Closing",
+      kegiatan: ["Closing Prospek"],
       status: "Selesai",
       catatan: "Sales",
       nasabah: "Ibu Rina",
@@ -128,6 +143,22 @@ describe("activityFormSchema", () => {
     });
     expect(invalidResult.success).toBe(false);
   });
+
+  it("requires API number when a closing activity is selected", () => {
+    const result = activityFormSchema.safeParse({
+      tanggal: "2026-01-05",
+      waktu: "08:00",
+      kegiatan: ["Closing Prospek"],
+      status: "Selesai",
+      catatan: "Sales",
+      nasabah: "Ibu Rina",
+      kontakNasabah: "",
+      produk: "PRUWarisan",
+      api: "",
+    });
+    expect(result.success).toBe(false);
+    expect(result.error?.issues[0]?.message).toBe("API wajib diisi untuk kegiatan Closing");
+  });
 });
 
 describe("activityActionSchema", () => {
@@ -135,7 +166,7 @@ describe("activityActionSchema", () => {
     const result = activityActionSchema.safeParse({
       tanggal: "2026-01-05",
       waktu: "08:00",
-      kegiatan: "Pertemuan",
+      kegiatan: ["Approach / Fact Finding"],
       status: "Selesai",
       catatan: "Meeting",
       nasabah: "Bapak Andi",
@@ -150,7 +181,7 @@ describe("activityActionSchema", () => {
     const result = activityActionSchema.safeParse({
       tanggal: "2026-01-05",
       waktu: "08:00",
-      kegiatan: "Penjualan / Closing",
+      kegiatan: ["Closing Prospek"],
       status: "Selesai",
       catatan: "Sales",
       nasabah: "Ibu Rina",
@@ -159,5 +190,20 @@ describe("activityActionSchema", () => {
       api: -5000,
     });
     expect(result.success).toBe(false);
+  });
+
+  it("requires API number for closing activity", () => {
+    const result = activityActionSchema.safeParse({
+      tanggal: "2026-01-05",
+      waktu: "08:00",
+      kegiatan: ["Closing Prospek"],
+      status: "Selesai",
+      catatan: "Sales",
+      nasabah: "Ibu Rina",
+      kontakNasabah: "",
+      produk: "PRUWarisan",
+    });
+    expect(result.success).toBe(false);
+    expect(result.error?.issues[0]?.message).toBe("API wajib diisi untuk kegiatan Closing");
   });
 });

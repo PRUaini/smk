@@ -15,24 +15,50 @@ export const DASHBOARD_TIME_SLOTS = [
 export const DAYS_OF_WEEK = ["Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu", "Minggu"] as const;
 
 export const ACTIVITY_POINTS: Record<ActivityType, number> = {
-  Pendekatan: 1,
-  Pertemuan: 2,
-  "Fact Finding": 2,
-  "Mendapatkan 3 Referensi": 4,
-  "Wawancara Penutupan": 4,
-  "Penjualan / Closing": 1,
-  "Penyerahan Polis / Servicing": 1,
+  "Chat Calon Nasabah": 1,
+  "Approach / Fact Finding": 4,
+  "Follow Up": 2,
+  Presentasi: 8,
+  "Closing Prospek": 10,
+  NPA: 10,
+  "Agen FLC": 10,
+  "Dapat referensi": 3,
+  Servicing: 3,
+  Training: 3,
+  "S3 / Motivasi": 3,
+  "Coaching / Meeting Leader": 3,
+  "Bawa teman ke BOP": 3,
 };
 
 export const ACTIVITY_DESCRIPTIONS: Record<ActivityType, string> = {
-  Pendekatan: "Melakukan pendekatan awal dengan calon nasabah",
-  Pertemuan: "Melakukan pertemuan atau janji temu dengan nasabah",
-  "Fact Finding": "Menggali kebutuhan dan potensi nasabah",
-  "Mendapatkan 3 Referensi": "Meminta referensi dari nasabah atau kontak terkait",
-  "Wawancara Penutupan": "Melakukan wawancara untuk penutupan polis",
-  "Penjualan / Closing": "Melakukan penjualan atau presentasi produk",
-  "Penyerahan Polis / Servicing": "Menyerahkan polis atau memberikan layanan kepada nasabah",
+  "Chat Calon Nasabah": "Chat atau kontak awal dengan calon nasabah baru",
+  "Approach / Fact Finding": "Pendekatan, fact finding, dan mendapatkan janji temu",
+  "Follow Up": "Follow up nasabah yang sudah dihubungi sebelumnya",
+  Presentasi: "Presentasi prospek/NPA dan pengiriman proposal",
+  "Closing Prospek": "Closing penjualan kepada prospek baru",
+  NPA: "Closing penjualan kepada Nasabah Prudential Aktif",
+  "Agen FLC": "Aktivitas sebagai Agen Financial Life Consultant",
+  "Dapat referensi": "Mendapatkan referensi dari nasabah atau kontak",
+  Servicing: "Memberikan layanan kepada nasabah yang sudah ada",
+  Training: "Mengikuti atau menyelenggarakan pelatihan",
+  "S3 / Motivasi": "Sesi S3 atau kegiatan motivasi tim",
+  "Coaching / Meeting Leader": "Coaching atau meeting dengan leader",
+  "Bawa teman ke BOP": "Membawa teman atau prospek ke Business Opportunity Presentation",
 };
+
+export const CLOSING_TYPES: ReadonlySet<ActivityType> = new Set([
+  "Closing Prospek",
+  "NPA",
+]);
+
+export const MEETING_TYPES: ReadonlySet<ActivityType> = new Set([
+  "Approach / Fact Finding",
+]);
+
+/** Calculate total points for a multi-select kegiatan array */
+export function calculateActivityPoints(kegiatan: ActivityType[]): number {
+  return kegiatan.reduce((sum, k) => sum + (ACTIVITY_POINTS[k] ?? 0), 0);
+}
 
 export const DEFAULT_TARGETS: Pick<
   DashboardTargets,

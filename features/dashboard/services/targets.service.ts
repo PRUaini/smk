@@ -1,8 +1,6 @@
-import { DEFAULT_TARGETS } from "../constants";
+import { CLOSING_TYPES, DEFAULT_TARGETS, MEETING_TYPES } from "../constants";
 import type { Activity, DashboardTargets } from "../types";
 import { getWeeksInMonth, getWeekDates } from "../utils/date";
-
-const MEETING_TYPES = new Set(["Pertemuan", "Wawancara Penutupan"]);
 
 function parseYearMonth(dateStr: string) {
   const parts = dateStr.split("-");
@@ -89,13 +87,13 @@ export function calculateDashboardTargets(
     totalWeeklyMeetings: countMeetings(completedWeeklyActivities),
     totalWeeklySales: countSales(completedWeeklyActivities),
     totalApi: monthlyActivities
-      .filter((activity) => activity.kegiatan === "Penjualan / Closing")
+      .filter((activity) => activity.kegiatan.some((k) => CLOSING_TYPES.has(k)))
       .reduce((sum, activity) => sum + (activity.api || 0), 0),
     totalAccumulatedApi: activitiesUpToMonth
-      .filter((activity) => activity.kegiatan === "Penjualan / Closing")
+      .filter((activity) => activity.kegiatan.some((k) => CLOSING_TYPES.has(k)))
       .reduce((sum, activity) => sum + (activity.api || 0), 0),
     totalWeeklyApi: weeklyActivities
-      .filter((activity) => activity.kegiatan === "Penjualan / Closing")
+      .filter((activity) => activity.kegiatan.some((k) => CLOSING_TYPES.has(k)))
       .reduce((sum, activity) => sum + (activity.api || 0), 0),
   };
 }
@@ -105,11 +103,11 @@ function sumPoints(activities: Activity[]) {
 }
 
 function countMeetings(activities: Activity[]) {
-  return activities.filter((activity) => MEETING_TYPES.has(activity.kegiatan)).length;
+  return activities.filter((activity) => activity.kegiatan.some((k) => MEETING_TYPES.has(k))).length;
 }
 
 function countSales(activities: Activity[]) {
-  return activities.filter((activity) => activity.kegiatan === "Penjualan / Closing").length;
+  return activities.filter((activity) => activity.kegiatan.some((k) => CLOSING_TYPES.has(k))).length;
 }
 
 function getDaysInMonth(year: number, monthIndex: number) {

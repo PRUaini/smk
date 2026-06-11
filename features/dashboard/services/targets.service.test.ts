@@ -7,7 +7,7 @@ const activities: Activity[] = [
     id: "a1",
     tanggal: "2026-01-05",
     waktu: "08:00",
-    kegiatan: "Pendekatan",
+    kegiatan: ["Chat Calon Nasabah"],
     poin: 1,
     status: "Selesai",
     catatan: "",
@@ -19,8 +19,8 @@ const activities: Activity[] = [
     id: "a2",
     tanggal: "2026-01-06",
     waktu: "09:00",
-    kegiatan: "Pertemuan",
-    poin: 2,
+    kegiatan: ["Approach / Fact Finding"],
+    poin: 4,
     status: "Selesai",
     catatan: "",
     nasabah: "",
@@ -31,8 +31,8 @@ const activities: Activity[] = [
     id: "a3",
     tanggal: "2026-01-07",
     waktu: "10:00",
-    kegiatan: "Penjualan / Closing",
-    poin: 1,
+    kegiatan: ["Closing Prospek"],
+    poin: 10,
     status: "Belum",
     catatan: "",
     nasabah: "",
@@ -44,7 +44,7 @@ const activities: Activity[] = [
     id: "a8",
     tanggal: "2026-01-11",
     waktu: "11:00",
-    kegiatan: "Pendekatan",
+    kegiatan: ["Chat Calon Nasabah"],
     poin: 1,
     status: "Selesai",
     catatan: "",
@@ -56,8 +56,8 @@ const activities: Activity[] = [
     id: "a4",
     tanggal: "2026-02-05",
     waktu: "08:00",
-    kegiatan: "Wawancara Penutupan",
-    poin: 4,
+    kegiatan: ["Presentasi"],
+    poin: 8,
     status: "Selesai",
     catatan: "",
     nasabah: "",
@@ -68,8 +68,8 @@ const activities: Activity[] = [
     id: "a6",
     tanggal: "2026-02-06",
     waktu: "09:00",
-    kegiatan: "Penjualan / Closing",
-    poin: 1,
+    kegiatan: ["Closing Prospek"],
+    poin: 10,
     status: "Selesai",
     catatan: "",
     nasabah: "",
@@ -81,8 +81,8 @@ const activities: Activity[] = [
     id: "a5",
     tanggal: "2026-01-08",
     waktu: "11:00",
-    kegiatan: "Penjualan / Closing",
-    poin: 1,
+    kegiatan: ["Closing Prospek"],
+    poin: 10,
     status: "Selesai",
     catatan: "",
     nasabah: "",
@@ -94,8 +94,8 @@ const activities: Activity[] = [
     id: "a7",
     tanggal: "2026-05-08",
     waktu: "11:00",
-    kegiatan: "Penjualan / Closing",
-    poin: 1,
+    kegiatan: ["Closing Prospek"],
+    poin: 10,
     status: "Selesai",
     catatan: "",
     nasabah: "",
@@ -109,18 +109,18 @@ describe("calculateDashboardTargets", () => {
   it("counts completed monthly activity totals only", () => {
     const targets = calculateDashboardTargets(activities, 0);
 
-    expect(targets.totalPoints).toBe(5);
-    expect(targets.totalMeetings).toBe(1);
-    expect(targets.totalSales).toBe(1);
+    expect(targets.totalPoints).toBe(16); // 1 (a1) + 4 (a2) + 1 (a8) + 10 (a5)
+    expect(targets.totalMeetings).toBe(1); // a2
+    expect(targets.totalSales).toBe(1); // a5
     expect(targets.activeDays).toBe(4);
     expect(targets.totalDays).toBe(31);
-    expect(targets.totalApi).toBe(25000000);
+    expect(targets.totalApi).toBe(25000000); // a3 + a5
   });
 
   it("calculates weekly totals from completed activities in the first displayed week", () => {
     const targets = calculateDashboardTargets(activities, 0);
 
-    expect(targets.totalWeeklyPoints).toBe(5);
+    expect(targets.totalWeeklyPoints).toBe(16);
     expect(targets.totalWeeklyMeetings).toBe(1);
     expect(targets.totalWeeklySales).toBe(1);
   });
@@ -148,8 +148,8 @@ describe("calculateDashboardTargets", () => {
           id: "feb-api",
           tanggal: "2026-02-06",
           waktu: "09:00",
-          kegiatan: "Penjualan / Closing",
-          poin: 1,
+          kegiatan: ["Closing Prospek"],
+          poin: 10,
           status: "Selesai",
           catatan: "",
           nasabah: "",
@@ -161,8 +161,8 @@ describe("calculateDashboardTargets", () => {
           id: "may-api",
           tanggal: "2026-05-08",
           waktu: "11:00",
-          kegiatan: "Penjualan / Closing",
-          poin: 1,
+          kegiatan: ["Closing Prospek"],
+          poin: 10,
           status: "Selesai",
           catatan: "",
           nasabah: "",
@@ -185,8 +185,8 @@ describe("calculateDashboardTargets", () => {
           id: "jan-2026",
           tanggal: "2026-01-06",
           waktu: "09:00",
-          kegiatan: "Penjualan / Closing",
-          poin: 1,
+          kegiatan: ["Closing Prospek"],
+          poin: 10,
           status: "Selesai",
           catatan: "",
           nasabah: "",
@@ -198,8 +198,8 @@ describe("calculateDashboardTargets", () => {
           id: "jan-2027",
           tanggal: "2027-01-06",
           waktu: "09:00",
-          kegiatan: "Penjualan / Closing",
-          poin: 1,
+          kegiatan: ["Closing Prospek"],
+          poin: 10,
           status: "Selesai",
           catatan: "",
           nasabah: "",
@@ -213,7 +213,7 @@ describe("calculateDashboardTargets", () => {
       2027
     );
 
-    expect(targets.totalPoints).toBe(1);
+    expect(targets.totalPoints).toBe(10);
     expect(targets.totalApi).toBe(11000000);
     expect(targets.totalAccumulatedApi).toBe(11000000);
   });

@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from "react";
 import { Activity, DashboardTargets } from "../types";
-import { DAYS_OF_WEEK } from "../constants";
+import { CLOSING_TYPES, DAYS_OF_WEEK, MEETING_TYPES } from "../constants";
 import { calculatePercentage } from "../utils/percentage";
 import { getWeeksInMonth, getWeekDates } from "../utils/date";
 import { buildLineChartSvg, getMonthsAbbr, type ChartDatum } from "../utils/report";
@@ -42,10 +42,10 @@ export default function LaporanAktivitas({ targets, activities, selectedMonth, s
       (act) => dates.includes(act.tanggal)
     );
     const points = completedWeeklyActivities.reduce((sum, act) => sum + act.poin, 0);
-    const meetings = completedWeeklyActivities.filter((act) => act.kegiatan === "Pertemuan" || act.kegiatan === "Wawancara Penutupan").length;
-    const sales = completedWeeklyActivities.filter((act) => act.kegiatan === "Penjualan / Closing").length;
+    const meetings = completedWeeklyActivities.filter((act) => act.kegiatan.some((k) => MEETING_TYPES.has(k))).length;
+    const sales = completedWeeklyActivities.filter((act) => act.kegiatan.some((k) => CLOSING_TYPES.has(k))).length;
     const api = weeklyActivities
-      .filter((act) => act.kegiatan === "Penjualan / Closing")
+      .filter((act) => act.kegiatan.some((k) => CLOSING_TYPES.has(k)))
       .reduce((sum, act) => sum + (act.api || 0), 0);
     const activeDays = new Set(completedWeeklyActivities.map((act) => act.tanggal)).size;
     return { points, meetings, sales, api, activeDays };
@@ -132,9 +132,8 @@ export default function LaporanAktivitas({ targets, activities, selectedMonth, s
       return yrPart === selectedYear && act.status === "Selesai";
     });
 
-    const MEETING_TYPES = new Set(["Pertemuan", "Wawancara Penutupan"]);
-    const yearMeetings = yearActivities.filter((act) => MEETING_TYPES.has(act.kegiatan)).length;
-    const yearSales = yearActivities.filter((act) => act.kegiatan === "Penjualan / Closing").length;
+    const yearMeetings = yearActivities.filter((act) => act.kegiatan.some((k) => MEETING_TYPES.has(k))).length;
+    const yearSales = yearActivities.filter((act) => act.kegiatan.some((k) => CLOSING_TYPES.has(k))).length;
     const yearPoints = yearActivities.reduce((sum, act) => sum + act.poin, 0);
     const yearActiveDays = new Set(yearActivities.map((act) => act.tanggal)).size;
 

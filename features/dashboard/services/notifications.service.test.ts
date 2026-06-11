@@ -6,7 +6,7 @@ const baseActivity: Activity = {
   id: "activity-1",
   tanggal: "2026-05-21",
   waktu: "08:00",
-  kegiatan: "Pendekatan",
+  kegiatan: ["Chat Calon Nasabah"],
   poin: 1,
   status: "Belum",
   catatan: "",

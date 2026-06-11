@@ -1,11 +1,17 @@
 export type ActivityType =
-  | "Pendekatan"
-  | "Pertemuan"
-  | "Fact Finding"
-  | "Mendapatkan 3 Referensi"
-  | "Wawancara Penutupan"
-  | "Penjualan / Closing"
-  | "Penyerahan Polis / Servicing";
+  | "Chat Calon Nasabah"
+  | "Approach / Fact Finding"
+  | "Follow Up"
+  | "Presentasi"
+  | "Closing Prospek"
+  | "NPA"
+  | "Agen FLC"
+  | "Dapat referensi"
+  | "Servicing"
+  | "Training"
+  | "S3 / Motivasi"
+  | "Coaching / Meeting Leader"
+  | "Bawa teman ke BOP";
 
 export type ActivityStatus = "Selesai" | "Proses" | "Belum";
 
@@ -13,7 +19,7 @@ export interface Activity {
   id: string;
   tanggal: string;
   waktu: string;
-  kegiatan: ActivityType;
+  kegiatan: ActivityType[];
   poin: number;
   status: ActivityStatus;
   catatan: string;

@@ -9,8 +9,8 @@ import {
 } from "../data/targets.repository";
 import { activityActionSchema } from "../schemas/activity.schema";
 import { targetsFormSchema } from "../schemas/targets.schema";
-import { ACTIVITY_POINTS } from "../constants";
-import type { Activity } from "../types";
+import { calculateActivityPoints } from "../constants";
+import type { Activity, ActivityType } from "../types";
 
 export async function saveActivityForAgent(
   agentId: string,
@@ -22,7 +22,7 @@ export async function saveActivityForAgent(
   }
 
   const validatedData = validated.data;
-  const poin = ACTIVITY_POINTS[validatedData.kegiatan];
+  const poin = calculateActivityPoints(validatedData.kegiatan as ActivityType[]);
 
   if (validatedData.id) {
     const { id, ...payload } = validatedData;

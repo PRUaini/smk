@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { ACTIVITY_POINTS, DASHBOARD_TIME_SLOTS } from "../constants";
+import { ACTIVITY_POINTS, CLOSING_TYPES, DASHBOARD_TIME_SLOTS, calculateActivityPoints } from "../constants";
 import type { Activity, ActivityStatus, ActivityType } from "../types";
 
 const activityTypes = Object.keys(ACTIVITY_POINTS) as [ActivityType, ...ActivityType[]];
@@ -13,7 +13,7 @@ export const activityFormSchema = z.object({
     .refine((value) => DASHBOARD_TIME_SLOTS.includes(value as (typeof DASHBOARD_TIME_SLOTS)[number]), {
       message: "Waktu tidak valid",
     }),
-  kegiatan: z.enum(activityTypes),
+  kegiatan: z.array(z.enum(activityTypes)).min(1, "Pilih minimal satu kegiatan"),
   status: z.enum(activityStatuses),
   catatan: z.string().max(200, "Catatan maksimal 200 karakter"),
   nasabah: z.string().trim().min(1, "Nama Nasabah wajib diisi"),
@@ -27,6 +27,15 @@ export const activityFormSchema = z.object({
       return !isNaN(num) && num >= 0;
     }, "API tidak boleh negatif")
     .optional(),
+}).superRefine((data, ctx) => {
+  const hasClosing = data.kegiatan.some((k) => CLOSING_TYPES.has(k as ActivityType));
+  if (hasClosing && !data.api) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "API wajib diisi untuk kegiatan Closing",
+      path: ["api"],
+    });
+  }
 });
 
 export type ActivityFormData = z.infer<typeof activityFormSchema>;
@@ -39,8 +48,8 @@ export function buildActivityPayload(
     id,
     tanggal: formData.tanggal,
     waktu: formData.waktu,
-    kegiatan: formData.kegiatan,
-    poin: ACTIVITY_POINTS[formData.kegiatan],
+    kegiatan: formData.kegiatan as ActivityType[],
+    poin: calculateActivityPoints(formData.kegiatan as ActivityType[]),
     status: formData.status,
     catatan: formData.catatan,
     nasabah: formData.nasabah,
@@ -59,11 +68,20 @@ export const activityActionSchema = z.object({
     .refine((value) => DASHBOARD_TIME_SLOTS.includes(value as (typeof DASHBOARD_TIME_SLOTS)[number]), {
       message: "Waktu tidak valid",
     }),
-  kegiatan: z.enum(activityTypes),
+  kegiatan: z.array(z.enum(activityTypes)).min(1, "Pilih minimal satu kegiatan"),
   status: z.enum(activityStatuses),
   catatan: z.string().max(200, "Catatan maksimal 200 karakter"),
   nasabah: z.string().trim().min(1, "Nama Nasabah wajib diisi"),
   kontakNasabah: z.string(),
   produk: z.string(),
   api: z.number().nonnegative("API tidak boleh negatif").optional(),
+}).superRefine((data, ctx) => {
+  const hasClosing = data.kegiatan.some((k) => CLOSING_TYPES.has(k as ActivityType));
+  if (hasClosing && !data.api && data.api !== 0) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "API wajib diisi untuk kegiatan Closing",
+      path: ["api"],
+    });
+  }
 });

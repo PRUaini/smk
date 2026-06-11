@@ -14,6 +14,23 @@ interface WeeklyCalendarProps {
   autoFocusToday?: boolean;
 }
 
+const getActivityTypeClass = (kegiatan: string[]) => {
+  const primary = kegiatan[0] || "";
+  if (primary.includes("Chat")) return "act-type-pendekatan";
+  if (primary.includes("Approach")) return "act-type-pertemuan";
+  if (primary.includes("Follow Up")) return "act-type-pertemuan";
+  if (primary.includes("Presentasi")) return "act-type-wawancara";
+  if (primary.includes("Closing") || primary === "NPA") return "act-type-penjualan";
+  if (primary.includes("Agen FLC")) return "act-type-penjualan";
+  if (primary.includes("Coaching") || primary.includes("Meeting")) return "act-type-meeting";
+  return "act-type-admin";
+};
+
+const formatKegiatanLabel = (kegiatan: string[]) => {
+  if (kegiatan.length <= 2) return kegiatan.join(", ");
+  return `${kegiatan[0]} +${kegiatan.length - 1}`;
+};
+
 export default function WeeklyCalendar({
   selectedMonth,
   selectedYear = new Date().getFullYear(),
@@ -90,15 +107,6 @@ export default function WeeklyCalendar({
     return dateStr === formattedToday;
   };
 
-const getActivityTypeClass = (kegiatan: string) => {
-  if (kegiatan.includes("Pendekatan")) return "act-type-pendekatan";
-  if (kegiatan.includes("Pertemuan")) return "act-type-pertemuan";
-  if (kegiatan.includes("Wawancara")) return "act-type-wawancara";
-  if (kegiatan.includes("Penjualan")) return "act-type-penjualan";
-  if (kegiatan.includes("Meeting")) return "act-type-meeting";
-  return "act-type-admin";
-};
-
   const renderActivityCard = (activity: Activity) => {
     return (
       <div
@@ -120,7 +128,7 @@ const getActivityTypeClass = (kegiatan: string) => {
               <span className="checkmark" />
             </label>
             <div className="activity-card-copy">
-              <span className="activity-card-title">{activity.kegiatan}</span>
+              <span className="activity-card-title">{formatKegiatanLabel(activity.kegiatan)}</span>
               <span className="activity-card-time">{activity.waktu}</span>
             </div>
           </div>

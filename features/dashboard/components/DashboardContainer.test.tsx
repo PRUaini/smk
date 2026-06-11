@@ -19,7 +19,7 @@ const activity: Activity = {
   id: "activity-1",
   tanggal: "2026-05-21",
   waktu: "08:00",
-  kegiatan: "Pendekatan",
+  kegiatan: ["Chat Calon Nasabah"],
   poin: 1,
   status: "Belum",
   catatan: "",
@@ -154,10 +154,10 @@ describe("DashboardContainer", () => {
       />
     );
 
-    expect(screen.queryByText("Pendekatan")).not.toBeInTheDocument();
-    expect(screen.queryByText("Pertemuan")).not.toBeInTheDocument();
-    expect(screen.queryByText("Wawancara")).not.toBeInTheDocument();
-    expect(screen.queryByText("Penjualan")).not.toBeInTheDocument();
+    expect(screen.queryByText("Chat Calon Nasabah")).not.toBeInTheDocument();
+    expect(screen.queryByText("Approach / Fact Finding")).not.toBeInTheDocument();
+    expect(screen.queryByText("Presentasi")).not.toBeInTheDocument();
+    expect(screen.queryByText("Closing Prospek")).not.toBeInTheDocument();
   });
 
   it("opens the add activity panel from the floating add button", () => {
@@ -186,7 +186,7 @@ describe("DashboardContainer", () => {
     );
 
     fireEvent.click(screen.getByRole("button", { name: "Buka notifikasi" }));
-    fireEvent.click(screen.getByRole("menuitem", { name: /Pendekatan/ }));
+    fireEvent.click(screen.getByRole("menuitem", { name: /Chat Calon Nasabah/ }));
 
     expect(screen.getByRole("heading", { name: "Edit Aktivitas" })).toBeInTheDocument();
     expect(screen.getByLabelText("Nama Nasabah")).toHaveValue("Budi");
@@ -240,6 +240,8 @@ describe("DashboardContainer", () => {
     );
 
     fireEvent.click(screen.getByRole("button", { name: "Add Activity" }));
+    fireEvent.click(screen.getByLabelText("Kegiatan"));
+    fireEvent.click(screen.getByText("Chat Calon Nasabah"));
     fireEvent.change(screen.getByLabelText("Nama Nasabah"), {
       target: { value: "Budi" },
     });
@@ -247,10 +249,10 @@ describe("DashboardContainer", () => {
 
     await waitFor(() => {
       expect(saveActivityAction).toHaveBeenCalledTimes(1);
-      expect(screen.getByText("Pendekatan")).toBeInTheDocument();
+      expect(screen.getByText("Chat Calon Nasabah")).toBeInTheDocument();
     });
 
-    fireEvent.click(screen.getByText("Pendekatan"));
+    fireEvent.click(screen.getByText("Chat Calon Nasabah"));
     fireEvent.change(screen.getByLabelText("Catatan"), {
       target: { value: "Updated note" },
     });

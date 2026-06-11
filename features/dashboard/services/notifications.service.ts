@@ -60,7 +60,7 @@ export function buildActivityNotifications(
       return {
         id: `notification-${activity.id}`,
         activityId: activity.id,
-        title: activity.kegiatan,
+        title: activity.kegiatan.join(", "),
         description: `${activity.nasabah || "Tanpa nasabah"} - ${formatNotificationDate(scheduledDate)}, ${activity.waktu}`,
         kind,
         statusLabel: getStatusLabel(kind),

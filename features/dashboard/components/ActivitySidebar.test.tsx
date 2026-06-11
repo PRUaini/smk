@@ -7,8 +7,8 @@ const activity: Activity = {
   id: "activity-1",
   tanggal: "2026-05-21",
   waktu: "08:00",
-  kegiatan: "Penjualan / Closing",
-  poin: 1,
+  kegiatan: ["Closing Prospek"],
+  poin: 10,
   status: "Belum",
   catatan: "Follow up",
   nasabah: "Budi",
@@ -43,7 +43,7 @@ describe("ActivitySidebar", () => {
     expect(screen.getByLabelText("Tanggal")).toBeInTheDocument();
     expect(screen.getByLabelText("Waktu")).toBeInTheDocument();
     expect(screen.getByLabelText("Kegiatan")).toBeInTheDocument();
-    expect(screen.getByText("1 poin")).toBeInTheDocument();
+    expect(screen.getByText("0 poin")).toBeInTheDocument();
     expect(container.querySelector(".activity-field-grid-summary")).toBeInTheDocument();
     expect(container.querySelector(".status-radio-group")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Selesai" })).toBeInTheDocument();
@@ -70,7 +70,7 @@ describe("ActivitySidebar", () => {
     );
 
     expect(screen.getByRole("heading", { name: "Edit Aktivitas" })).toBeInTheDocument();
-    expect(screen.getByLabelText("Annualized Premium Income (API) (Opsional)")).toBeInTheDocument();
+    expect(screen.getByLabelText("Annualized Premium Income (API) (Wajib)")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Hapus" })).toBeInTheDocument();
   });
 
@@ -88,13 +88,17 @@ describe("ActivitySidebar", () => {
       />
     );
 
+    // Open dropdown and select a kegiatan first
+    fireEvent.click(screen.getByLabelText("Kegiatan"));
+    fireEvent.click(screen.getByText("Chat Calon Nasabah"));
+
     fireEvent.click(screen.getByRole("button", { name: "Simpan Aktivitas" }));
 
     expect(await screen.findByText("Nama Nasabah wajib diisi")).toBeInTheDocument();
     expect(onSave).not.toHaveBeenCalled();
   });
 
-  it("submits the existing activity payload with separate customer contact", async () => {
+  it("submits the activity payload after selecting activities", async () => {
     const onSave = vi.fn();
     render(
       <ActivitySidebar
@@ -107,6 +111,13 @@ describe("ActivitySidebar", () => {
         onClose={vi.fn()}
       />
     );
+
+    // Select "Chat Calon Nasabah" (1 pt) and "Approach / Fact Finding" (4 pts)
+    fireEvent.click(screen.getByLabelText("Kegiatan"));
+    fireEvent.click(screen.getByText("Chat Calon Nasabah"));
+    fireEvent.click(screen.getByText("Approach / Fact Finding"));
+
+    expect(screen.getByText("5 poin")).toBeInTheDocument();
 
     fireEvent.change(screen.getByLabelText("Catatan"), {
       target: { value: "Meeting pertama" },
@@ -124,8 +135,8 @@ describe("ActivitySidebar", () => {
         expect.objectContaining({
           tanggal: "2026-05-21",
           waktu: "08:00",
-          kegiatan: "Pendekatan",
-          poin: 1,
+          kegiatan: ["Chat Calon Nasabah", "Approach / Fact Finding"],
+          poin: 5,
           status: "Belum",
           catatan: "Meeting pertama",
           nasabah: "Budi",

@@ -20,7 +20,7 @@ vi.mock("../data/targets.repository", () => ({
 const activityInput: Omit<Activity, "id"> = {
   tanggal: "2026-05-21",
   waktu: "08:00",
-  kegiatan: "Pertemuan",
+  kegiatan: ["Approach / Fact Finding"],
   poin: 99,
   status: "Belum",
   catatan: "",
@@ -36,28 +36,28 @@ describe("dashboard action service", () => {
 
   it("creates new activities with server-derived points", async () => {
     const { createActivity } = await import("../data/activities.repository");
-    vi.mocked(createActivity).mockResolvedValue({ ...activityInput, id: "activity-1", poin: 2 });
+    vi.mocked(createActivity).mockResolvedValue({ ...activityInput, id: "activity-1", poin: 4 });
 
     const result = await saveActivityForAgent("agent-1", activityInput);
 
     expect(createActivity).toHaveBeenCalledWith("agent-1", {
       ...activityInput,
-      poin: 2,
+      poin: 4,
     });
-    expect(result).toEqual({ ...activityInput, id: "activity-1", poin: 2 });
+    expect(result).toEqual({ ...activityInput, id: "activity-1", poin: 4 });
   });
 
   it("updates existing activities with server-derived points", async () => {
     const { updateActivity } = await import("../data/activities.repository");
-    vi.mocked(updateActivity).mockResolvedValue({ ...activityInput, id: "activity-1", poin: 2 });
+    vi.mocked(updateActivity).mockResolvedValue({ ...activityInput, id: "activity-1", poin: 4 });
 
     const result = await saveActivityForAgent("agent-1", { ...activityInput, id: "activity-1" });
 
     expect(updateActivity).toHaveBeenCalledWith("activity-1", "agent-1", {
       ...activityInput,
-      poin: 2,
+      poin: 4,
     });
-    expect(result).toEqual({ ...activityInput, id: "activity-1", poin: 2 });
+    expect(result).toEqual({ ...activityInput, id: "activity-1", poin: 4 });
   });
 
   it("toggles activity status for the authenticated agent", async () => {

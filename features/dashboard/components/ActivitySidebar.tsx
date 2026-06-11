@@ -1,7 +1,7 @@
 import React from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, useWatch } from "react-hook-form";
-import { ACTIVITY_POINTS, DASHBOARD_TIME_SLOTS } from "../constants";
+import { ACTIVITY_POINTS, CLOSING_TYPES, DASHBOARD_TIME_SLOTS, calculateActivityPoints } from "../constants";
 import { activityFormSchema, buildActivityPayload, type ActivityFormData } from "../schemas/activity.schema";
 import { Activity, ActivityStatus, ActivityType } from "../types";
 
@@ -48,6 +48,8 @@ function SectionIcon({ type }: { type: SectionIconType }) {
   );
 }
 
+const ACTIVITY_TYPE_LIST = Object.keys(ACTIVITY_POINTS) as ActivityType[];
+
 export default function ActivitySidebar({
   selectedActivity,
   selectedDate,
@@ -58,12 +60,15 @@ export default function ActivitySidebar({
   onClose,
   className = "",
 }: ActivitySidebarProps) {
+  const [isDropdownOpen, setIsDropdownOpen] = React.useState(false);
+  const dropdownRef = React.useRef<HTMLDivElement>(null);
+
   const form = useForm<ActivityFormData>({
     resolver: zodResolver(activityFormSchema),
     values: {
       tanggal: selectedActivity?.tanggal ?? selectedDate ?? "",
       waktu: selectedActivity?.waktu ?? selectedTime ?? "08:00",
-      kegiatan: selectedActivity?.kegiatan ?? "Pendekatan",
+      kegiatan: selectedActivity?.kegiatan ?? [],
       status: selectedActivity?.status ?? "Belum",
       catatan: selectedActivity?.catatan ?? "",
       nasabah: selectedActivity?.nasabah ?? "",
@@ -73,17 +78,43 @@ export default function ActivitySidebar({
     },
   });
 
-  const kegiatan = useWatch({ control: form.control, name: "kegiatan" });
+  const kegiatan = useWatch({ control: form.control, name: "kegiatan" }) as ActivityType[];
   const status = useWatch({ control: form.control, name: "status" });
   const catatan = useWatch({ control: form.control, name: "catatan" });
 
-  const handleKegiatanChange = (value: ActivityType) => {
-    form.setValue("kegiatan", value, { shouldValidate: true });
+  const hasClosing = kegiatan.some((k) => CLOSING_TYPES.has(k as ActivityType));
+  const totalPoints = calculateActivityPoints(kegiatan);
+
+  const toggleKegiatan = (type: ActivityType) => {
+    const current = form.getValues("kegiatan") as ActivityType[];
+    const updated = current.includes(type)
+      ? current.filter((k) => k !== type)
+      : [...current, type];
+    form.setValue("kegiatan", updated, { shouldValidate: true });
   };
+
+  // Close dropdown on outside click
+  React.useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setIsDropdownOpen(false);
+      }
+    };
+    if (isDropdownOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [isDropdownOpen]);
 
   const handleSubmit = (data: ActivityFormData) => {
     onSave(buildActivityPayload(data, selectedActivity?.id));
   };
+
+  const triggerLabel = kegiatan.length > 0
+    ? kegiatan.length <= 2
+      ? kegiatan.join(", ")
+      : `${kegiatan[0]} +${kegiatan.length - 1} lainnya`
+    : "Pilih kegiatan...";
 
   return (
     <aside className={`activity-sidebar-card activity-drawer-panel ${className}`.trim()}>
@@ -146,21 +177,72 @@ export default function ActivitySidebar({
 
             <div className="form-group">
               <label className="form-label" htmlFor="activity-kegiatan">Kegiatan</label>
-              <select
-                id="activity-kegiatan"
-                className="form-input"
-                value={kegiatan}
-                onChange={(e) => handleKegiatanChange(e.target.value as ActivityType)}
-              >
-                <option value="Pendekatan">Pendekatan (1 poin)</option>
-                <option value="Pertemuan">Pertemuan (2 poin)</option>
-                <option value="Fact Finding">Fact Finding (2 poin)</option>
-                <option value="Mendapatkan 3 Referensi">Mendapatkan 3 Referensi (4 poin)</option>
-                <option value="Wawancara Penutupan">Wawancara Penutupan (4 poin)</option>
-                <option value="Penjualan / Closing">Penjualan / Closing (1 poin)</option>
-                <option value="Penyerahan Polis / Servicing">Penyerahan Polis / Servicing (1 poin)</option>
-              </select>
+              <div className="multi-select-container" ref={dropdownRef}>
+                <button
+                  id="activity-kegiatan"
+                  type="button"
+                  className={`multi-select-trigger form-input ${isDropdownOpen ? "open" : ""}`}
+                  onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                  aria-expanded={isDropdownOpen}
+                  aria-haspopup="listbox"
+                >
+                  <span className="multi-select-trigger-label">{triggerLabel}</span>
+                  <svg
+                    className={`multi-select-chevron ${isDropdownOpen ? "rotated" : ""}`}
+                    width="12"
+                    height="12"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.5"
+                  >
+                    <path d="M6 9l6 6 6-6" />
+                  </svg>
+                </button>
+                {isDropdownOpen && (
+                  <div className="multi-select-dropdown" role="listbox" aria-label="Pilih kegiatan">
+                    {ACTIVITY_TYPE_LIST.map((type) => {
+                      const isChecked = kegiatan.includes(type);
+                      return (
+                        <label
+                          key={type}
+                          className={`multi-select-option ${isChecked ? "selected" : ""}`}
+                          role="option"
+                          aria-selected={isChecked}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={isChecked}
+                            onChange={() => toggleKegiatan(type)}
+                            className="multi-select-checkbox"
+                          />
+                          <span className="multi-select-option-label">{type}</span>
+                          <span className="multi-select-option-points">{ACTIVITY_POINTS[type]} poin</span>
+                        </label>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
               <FieldError message={form.formState.errors.kegiatan?.message} />
+
+              {kegiatan.length > 0 && (
+                <div className="selected-tags-row">
+                  {kegiatan.map((k) => (
+                    <span key={k} className="selected-tag">
+                      {k}
+                      <button
+                        type="button"
+                        className="selected-tag-remove"
+                        onClick={() => toggleKegiatan(k)}
+                        aria-label={`Hapus ${k}`}
+                      >
+                        ×
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              )}
             </div>
 
             <div className="activity-field-grid activity-field-grid-summary">
@@ -168,7 +250,7 @@ export default function ActivitySidebar({
                 <label className="form-label">Poin Didapat</label>
                 <div className="point-badge-display">
                   <span className="point-badge-icon" aria-hidden="true">+</span>
-                  <span>{ACTIVITY_POINTS[kegiatan]} poin</span>
+                  <span>{totalPoints} poin</span>
                 </div>
               </div>
 
@@ -248,19 +330,19 @@ export default function ActivitySidebar({
               />
             </div>
 
-            {kegiatan === "Penjualan / Closing" && (
-              <div className="form-group">
-                <label className="form-label" htmlFor="activity-api">Annualized Premium Income (API) (Opsional)</label>
-                <input
-                  id="activity-api"
-                  type="number"
-                  className="form-input"
-                  placeholder="Contoh: 10000000"
-                  {...form.register("api")}
-                />
-                <FieldError message={form.formState.errors.api?.message} />
-              </div>
-            )}
+            <div className="form-group">
+              <label className="form-label" htmlFor="activity-api">
+                Annualized Premium Income (API) {hasClosing ? "(Wajib)" : "(Opsional)"}
+              </label>
+              <input
+                id="activity-api"
+                type="number"
+                className="form-input"
+                placeholder="Contoh: 10000000"
+                {...form.register("api")}
+              />
+              <FieldError message={form.formState.errors.api?.message} />
+            </div>
           </section>
         </div>
 
