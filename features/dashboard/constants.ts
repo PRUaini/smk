@@ -12,6 +12,28 @@ export const DASHBOARD_TIME_SLOTS = [
   "17:00",
 ] as const;
 
+export const DASHBOARD_END_TIME_SLOTS = [
+  ...DASHBOARD_TIME_SLOTS,
+  "18:00",
+] as const;
+
+export function getNextDashboardTimeSlot(startTime: string): string {
+  const startIndex = DASHBOARD_END_TIME_SLOTS.indexOf(
+    startTime as (typeof DASHBOARD_END_TIME_SLOTS)[number]
+  );
+  return startIndex >= 0 ? DASHBOARD_END_TIME_SLOTS[startIndex + 1] ?? "" : "";
+}
+
+export function isValidDashboardTimeRange(startTime: string, endTime: string): boolean {
+  const startIndex = DASHBOARD_END_TIME_SLOTS.indexOf(
+    startTime as (typeof DASHBOARD_END_TIME_SLOTS)[number]
+  );
+  const endIndex = DASHBOARD_END_TIME_SLOTS.indexOf(
+    endTime as (typeof DASHBOARD_END_TIME_SLOTS)[number]
+  );
+  return startIndex >= 0 && endIndex > startIndex;
+}
+
 export const DAYS_OF_WEEK = ["Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu", "Minggu"] as const;
 
 export const ACTIVITY_POINTS: Record<ActivityType, number> = {

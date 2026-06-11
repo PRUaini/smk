@@ -1,7 +1,15 @@
 import React from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, useWatch } from "react-hook-form";
-import { ACTIVITY_POINTS, CLOSING_TYPES, DASHBOARD_TIME_SLOTS, calculateActivityPoints } from "../constants";
+import {
+  ACTIVITY_POINTS,
+  CLOSING_TYPES,
+  DASHBOARD_END_TIME_SLOTS,
+  DASHBOARD_TIME_SLOTS,
+  calculateActivityPoints,
+  getNextDashboardTimeSlot,
+  isValidDashboardTimeRange,
+} from "../constants";
 import { activityFormSchema, buildActivityPayload, type ActivityFormData } from "../schemas/activity.schema";
 import { Activity, ActivityType } from "../types";
 
@@ -68,6 +76,7 @@ export default function ActivitySidebar({
     values: {
       tanggal: selectedActivity?.tanggal ?? selectedDate ?? "",
       waktu: selectedActivity?.waktu ?? selectedTime ?? "08:00",
+      waktuSelesai: selectedActivity?.waktuSelesai ?? getNextDashboardTimeSlot(selectedTime ?? "08:00"),
       kegiatan: selectedActivity?.kegiatan ?? [],
       catatan: selectedActivity?.catatan ?? "",
       nasabah: selectedActivity?.nasabah ?? "",
@@ -79,9 +88,15 @@ export default function ActivitySidebar({
 
   const kegiatan = useWatch({ control: form.control, name: "kegiatan" }) as ActivityType[];
   const catatan = useWatch({ control: form.control, name: "catatan" });
+  const waktu = useWatch({ control: form.control, name: "waktu" });
+  const waktuSelesai = useWatch({ control: form.control, name: "waktuSelesai" });
 
   const hasClosing = kegiatan.some((k) => CLOSING_TYPES.has(k as ActivityType));
   const totalPoints = calculateActivityPoints(kegiatan);
+  const endTimeOptions = React.useMemo(
+    () => DASHBOARD_END_TIME_SLOTS.filter((time) => !waktu || isValidDashboardTimeRange(waktu, time)),
+    [waktu]
+  );
 
   const toggleKegiatan = (type: ActivityType) => {
     const current = form.getValues("kegiatan") as ActivityType[];
@@ -103,6 +118,13 @@ export default function ActivitySidebar({
     }
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [isDropdownOpen]);
+
+  React.useEffect(() => {
+    if (!waktu) return;
+    if (!waktuSelesai || !isValidDashboardTimeRange(waktu, waktuSelesai)) {
+      form.setValue("waktuSelesai", getNextDashboardTimeSlot(waktu), { shouldValidate: true });
+    }
+  }, [form, waktu, waktuSelesai]);
 
   const handleSubmit = (data: ActivityFormData) => {
     onSave(buildActivityPayload(data, selectedActivity?.status, selectedActivity?.id));
@@ -151,18 +173,33 @@ export default function ActivitySidebar({
               </div>
 
               <div className="form-group">
-                <label className="form-label" htmlFor="activity-waktu">Waktu</label>
+                <label className="form-label" htmlFor="activity-waktu">Waktu Mulai</label>
                 <select
                   id="activity-waktu"
                   className="form-input"
                   {...form.register("waktu")}
                 >
-                  <option value="" disabled>Pilih Waktu</option>
+                  <option value="" disabled>Pilih Waktu Mulai</option>
                   {DASHBOARD_TIME_SLOTS.map((t) => (
                     <option key={t} value={t}>{t}</option>
                   ))}
                 </select>
                 <FieldError message={form.formState.errors.waktu?.message} />
+              </div>
+
+              <div className="form-group">
+                <label className="form-label" htmlFor="activity-waktu-selesai">Waktu Selesai</label>
+                <select
+                  id="activity-waktu-selesai"
+                  className="form-input"
+                  {...form.register("waktuSelesai")}
+                >
+                  <option value="" disabled>Pilih Waktu Selesai</option>
+                  {endTimeOptions.map((t) => (
+                    <option key={t} value={t}>{t}</option>
+                  ))}
+                </select>
+                <FieldError message={form.formState.errors.waktuSelesai?.message} />
               </div>
             </div>
           </section>

@@ -11,6 +11,7 @@ describe("activityFormSchema", () => {
     const result = activityFormSchema.safeParse({
       tanggal: "2026-01-05",
       waktu: "08:00",
+      waktuSelesai: "09:00",
       kegiatan: ["Approach / Fact Finding"],
       catatan: "Meeting",
       nasabah: "Bapak Andi",
@@ -25,6 +26,7 @@ describe("activityFormSchema", () => {
     const result = activityFormSchema.safeParse({
       tanggal: "",
       waktu: "",
+      waktuSelesai: "",
       kegiatan: ["Approach / Fact Finding"],
       catatan: "",
       nasabah: "",
@@ -39,6 +41,7 @@ describe("activityFormSchema", () => {
     const payload = buildActivityPayload({
       tanggal: "2026-01-05",
       waktu: "08:00",
+      waktuSelesai: "09:00",
       kegiatan: ["Chat Calon Nasabah"],
       catatan: "",
       nasabah: "Bapak Andi",
@@ -50,12 +53,14 @@ describe("activityFormSchema", () => {
     expect(payload.catatan).toBe("");
     expect(payload.status).toBe("Belum");
     expect(payload.kontakNasabah).toBe("08123456789");
+    expect(payload.waktuSelesai).toBe("09:00");
   });
 
   it("derives summed points for multiple activities in saved payloads", () => {
     const payload = buildActivityPayload({
       tanggal: "2026-01-05",
       waktu: "08:00",
+      waktuSelesai: "09:00",
       kegiatan: ["Chat Calon Nasabah", "Approach / Fact Finding"], // 1 + 4 = 5
       catatan: "",
       nasabah: "Bapak Andi",
@@ -70,6 +75,7 @@ describe("activityFormSchema", () => {
     const emptyResult = activityFormSchema.safeParse({
       tanggal: "2026-01-05",
       waktu: "08:00",
+      waktuSelesai: "09:00",
       kegiatan: ["Approach / Fact Finding"],
       catatan: "",
       nasabah: "",
@@ -79,6 +85,7 @@ describe("activityFormSchema", () => {
     const whitespaceResult = activityFormSchema.safeParse({
       tanggal: "2026-01-05",
       waktu: "08:00",
+      waktuSelesai: "09:00",
       kegiatan: ["Approach / Fact Finding"],
       catatan: "",
       nasabah: "   ",
@@ -96,6 +103,7 @@ describe("activityFormSchema", () => {
     const result = activityFormSchema.safeParse({
       tanggal: "2026-01-05",
       waktu: "08:00",
+      waktuSelesai: "09:00",
       kegiatan: ["Approach / Fact Finding"],
       catatan: "",
       nasabah: "Bapak Andi",
@@ -110,6 +118,7 @@ describe("activityFormSchema", () => {
     const validResult = activityFormSchema.safeParse({
       tanggal: "2026-01-05",
       waktu: "08:00",
+      waktuSelesai: "09:00",
       kegiatan: ["Closing Prospek"],
       catatan: "Sales",
       nasabah: "Ibu Rina",
@@ -127,6 +136,7 @@ describe("activityFormSchema", () => {
     const invalidResult = activityFormSchema.safeParse({
       tanggal: "2026-01-05",
       waktu: "08:00",
+      waktuSelesai: "09:00",
       kegiatan: ["Closing Prospek"],
       catatan: "Sales",
       nasabah: "Ibu Rina",
@@ -141,6 +151,7 @@ describe("activityFormSchema", () => {
     const result = activityFormSchema.safeParse({
       tanggal: "2026-01-05",
       waktu: "08:00",
+      waktuSelesai: "09:00",
       kegiatan: ["Closing Prospek"],
       catatan: "Sales",
       nasabah: "Ibu Rina",
@@ -151,6 +162,22 @@ describe("activityFormSchema", () => {
     expect(result.success).toBe(false);
     expect(result.error?.issues[0]?.message).toBe("API wajib diisi untuk kegiatan Closing");
   });
+
+  it("requires end time after start time", () => {
+    const result = activityFormSchema.safeParse({
+      tanggal: "2026-01-05",
+      waktu: "09:00",
+      waktuSelesai: "09:00",
+      kegiatan: ["Approach / Fact Finding"],
+      catatan: "",
+      nasabah: "Bapak Andi",
+      kontakNasabah: "",
+      produk: "",
+    });
+
+    expect(result.success).toBe(false);
+    expect(result.error?.issues[0]?.message).toBe("Waktu selesai harus setelah waktu mulai");
+  });
 });
 
 describe("activityActionSchema", () => {
@@ -158,6 +185,7 @@ describe("activityActionSchema", () => {
     const result = activityActionSchema.safeParse({
       tanggal: "2026-01-05",
       waktu: "08:00",
+      waktuSelesai: "09:00",
       kegiatan: ["Approach / Fact Finding"],
       status: "Selesai",
       catatan: "Meeting",
@@ -173,6 +201,7 @@ describe("activityActionSchema", () => {
     const result = activityActionSchema.safeParse({
       tanggal: "2026-01-05",
       waktu: "08:00",
+      waktuSelesai: "09:00",
       kegiatan: ["Closing Prospek"],
       status: "Selesai",
       catatan: "Sales",
@@ -188,6 +217,7 @@ describe("activityActionSchema", () => {
     const result = activityActionSchema.safeParse({
       tanggal: "2026-01-05",
       waktu: "08:00",
+      waktuSelesai: "09:00",
       kegiatan: ["Closing Prospek"],
       status: "Selesai",
       catatan: "Sales",
@@ -197,5 +227,22 @@ describe("activityActionSchema", () => {
     });
     expect(result.success).toBe(false);
     expect(result.error?.issues[0]?.message).toBe("API wajib diisi untuk kegiatan Closing");
+  });
+
+  it("rejects action payload when end time is before start time", () => {
+    const result = activityActionSchema.safeParse({
+      tanggal: "2026-01-05",
+      waktu: "10:00",
+      waktuSelesai: "09:00",
+      kegiatan: ["Approach / Fact Finding"],
+      status: "Belum",
+      catatan: "",
+      nasabah: "Bapak Andi",
+      kontakNasabah: "",
+      produk: "",
+    });
+
+    expect(result.success).toBe(false);
+    expect(result.error?.issues[0]?.message).toBe("Waktu selesai harus setelah waktu mulai");
   });
 });

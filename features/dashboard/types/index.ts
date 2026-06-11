@@ -19,6 +19,7 @@ export interface Activity {
   id: string;
   tanggal: string;
   waktu: string;
+  waktuSelesai: string;
   kegiatan: ActivityType[];
   poin: number;
   status: ActivityStatus;

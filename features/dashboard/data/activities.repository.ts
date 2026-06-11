@@ -1,8 +1,9 @@
 import { createClient } from "@/lib/supabase/server";
 import type { Activity } from "../types";
 
-type ActivityRow = Omit<Activity, "kontakNasabah"> & {
+type ActivityRow = Omit<Activity, "kontakNasabah" | "waktuSelesai"> & {
   kontak_nasabah?: string | null;
+  waktu_selesai?: string | null;
 };
 
 function mapActivityRow(row: ActivityRow): Activity {
@@ -10,6 +11,7 @@ function mapActivityRow(row: ActivityRow): Activity {
     id: row.id,
     tanggal: row.tanggal,
     waktu: row.waktu,
+    waktuSelesai: row.waktu_selesai ?? "",
     kegiatan: row.kegiatan,
     poin: row.poin,
     status: row.status,
@@ -22,10 +24,12 @@ function mapActivityRow(row: ActivityRow): Activity {
 }
 
 function mapActivityPayload(activity: Partial<Omit<Activity, "id">>) {
-  const { kontakNasabah, ...payload } = activity;
-  return kontakNasabah === undefined
-    ? payload
-    : { ...payload, kontak_nasabah: kontakNasabah };
+  const { kontakNasabah, waktuSelesai, ...payload } = activity;
+  return {
+    ...payload,
+    ...(kontakNasabah === undefined ? {} : { kontak_nasabah: kontakNasabah }),
+    ...(waktuSelesai === undefined ? {} : { waktu_selesai: waktuSelesai }),
+  };
 }
 
 export async function getActivitiesByAgent(agentId: string): Promise<Activity[]> {
@@ -35,7 +39,8 @@ export async function getActivitiesByAgent(agentId: string): Promise<Activity[]>
     .select("*")
     .eq("agent_id", agentId)
     .order("tanggal", { ascending: true })
-    .order("waktu", { ascending: true });
+    .order("waktu", { ascending: true })
+    .order("waktu_selesai", { ascending: true });
 
   if (error) {
     console.error("Failed to fetch activities:", error);

@@ -1,18 +1,48 @@
 import { z } from "zod";
-import { ACTIVITY_POINTS, CLOSING_TYPES, DASHBOARD_TIME_SLOTS, calculateActivityPoints } from "../constants";
+import {
+  ACTIVITY_POINTS,
+  CLOSING_TYPES,
+  DASHBOARD_END_TIME_SLOTS,
+  DASHBOARD_TIME_SLOTS,
+  calculateActivityPoints,
+  isValidDashboardTimeRange,
+} from "../constants";
 import type { Activity, ActivityStatus, ActivityType } from "../types";
 
 const activityTypes = Object.keys(ACTIVITY_POINTS) as [ActivityType, ...ActivityType[]];
 const activityStatuses: [ActivityStatus, ...ActivityStatus[]] = ["Selesai", "Belum"];
 
+const startTimeField = z
+  .string()
+  .min(1, "Waktu mulai wajib dipilih")
+  .refine((value) => DASHBOARD_TIME_SLOTS.includes(value as (typeof DASHBOARD_TIME_SLOTS)[number]), {
+    message: "Waktu mulai tidak valid",
+  });
+
+const endTimeField = z
+  .string()
+  .min(1, "Waktu selesai wajib dipilih")
+  .refine((value) => DASHBOARD_END_TIME_SLOTS.includes(value as (typeof DASHBOARD_END_TIME_SLOTS)[number]), {
+    message: "Waktu selesai tidak valid",
+  });
+
+function addTimeRangeIssue(
+  data: { waktu: string; waktuSelesai: string },
+  ctx: z.RefinementCtx
+) {
+  if (!isValidDashboardTimeRange(data.waktu, data.waktuSelesai)) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "Waktu selesai harus setelah waktu mulai",
+      path: ["waktuSelesai"],
+    });
+  }
+}
+
 export const activityFormSchema = z.object({
   tanggal: z.string().min(1, "Tanggal wajib diisi"),
-  waktu: z
-    .string()
-    .min(1, "Waktu wajib dipilih")
-    .refine((value) => DASHBOARD_TIME_SLOTS.includes(value as (typeof DASHBOARD_TIME_SLOTS)[number]), {
-      message: "Waktu tidak valid",
-    }),
+  waktu: startTimeField,
+  waktuSelesai: endTimeField,
   kegiatan: z.array(z.enum(activityTypes)).min(1, "Pilih minimal satu kegiatan"),
   catatan: z.string().max(200, "Catatan maksimal 200 karakter"),
   nasabah: z.string().trim().min(1, "Nama Nasabah wajib diisi"),
@@ -27,6 +57,8 @@ export const activityFormSchema = z.object({
     }, "API tidak boleh negatif")
     .optional(),
 }).superRefine((data, ctx) => {
+  addTimeRangeIssue(data, ctx);
+
   const hasClosing = data.kegiatan.some((k) => CLOSING_TYPES.has(k as ActivityType));
   if (hasClosing && !data.api) {
     ctx.addIssue({
@@ -48,6 +80,7 @@ export function buildActivityPayload(
     id,
     tanggal: formData.tanggal,
     waktu: formData.waktu,
+    waktuSelesai: formData.waktuSelesai,
     kegiatan: formData.kegiatan as ActivityType[],
     poin: calculateActivityPoints(formData.kegiatan as ActivityType[]),
     status: currentStatus ?? "Belum",
@@ -62,12 +95,8 @@ export function buildActivityPayload(
 export const activityActionSchema = z.object({
   id: z.string().optional(),
   tanggal: z.string().min(1, "Tanggal wajib diisi"),
-  waktu: z
-    .string()
-    .min(1, "Waktu wajib dipilih")
-    .refine((value) => DASHBOARD_TIME_SLOTS.includes(value as (typeof DASHBOARD_TIME_SLOTS)[number]), {
-      message: "Waktu tidak valid",
-    }),
+  waktu: startTimeField,
+  waktuSelesai: endTimeField,
   kegiatan: z.array(z.enum(activityTypes)).min(1, "Pilih minimal satu kegiatan"),
   status: z.enum(activityStatuses),
   catatan: z.string().max(200, "Catatan maksimal 200 karakter"),
@@ -76,6 +105,8 @@ export const activityActionSchema = z.object({
   produk: z.string(),
   api: z.number().nonnegative("API tidak boleh negatif").optional(),
 }).superRefine((data, ctx) => {
+  addTimeRangeIssue(data, ctx);
+
   const hasClosing = data.kegiatan.some((k) => CLOSING_TYPES.has(k as ActivityType));
   if (hasClosing && !data.api && data.api !== 0) {
     ctx.addIssue({

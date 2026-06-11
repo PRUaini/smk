@@ -51,6 +51,7 @@ describe("activities.repository mapping", () => {
       id: "activity-1",
       tanggal: "2026-05-21",
       waktu: "08:00",
+      waktu_selesai: "09:00",
       kegiatan: ["Approach / Fact Finding"],
       poin: 4,
       status: "Belum",
@@ -69,6 +70,7 @@ describe("activities.repository mapping", () => {
     const result = await createActivity("agent-1", {
       tanggal: "2026-05-21",
       waktu: "08:00",
+      waktuSelesai: "09:00",
       kegiatan: ["Approach / Fact Finding"],
       poin: 4,
       status: "Belum",
@@ -80,9 +82,13 @@ describe("activities.repository mapping", () => {
     });
 
     expect(mockInsert).toHaveBeenCalledWith(
-      expect.objectContaining({ kontak_nasabah: "08123456789" })
+      expect.objectContaining({
+        kontak_nasabah: "08123456789",
+        waktu_selesai: "09:00",
+      })
     );
     expect(result.kontakNasabah).toBe("08123456789");
+    expect(result.waktuSelesai).toBe("09:00");
   });
 
   it("maps kontakNasabah to kontak_nasabah on update", async () => {
@@ -90,6 +96,7 @@ describe("activities.repository mapping", () => {
       id: "activity-1",
       tanggal: "2026-05-21",
       waktu: "08:00",
+      waktu_selesai: "09:00",
       kegiatan: ["Approach / Fact Finding"],
       poin: 4,
       status: "Belum",
@@ -111,9 +118,14 @@ describe("activities.repository mapping", () => {
 
     const result = await updateActivity("activity-1", "agent-1", {
       kontakNasabah: "08123456789",
+      waktuSelesai: "09:00",
     });
 
-    expect(mockUpdate).toHaveBeenCalledWith({ kontak_nasabah: "08123456789" });
+    expect(mockUpdate).toHaveBeenCalledWith({
+      kontak_nasabah: "08123456789",
+      waktu_selesai: "09:00",
+    });
     expect(result.kontakNasabah).toBe("08123456789");
+    expect(result.waktuSelesai).toBe("09:00");
   });
 });

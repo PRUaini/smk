@@ -7,6 +7,7 @@ const activity: Activity = {
   id: "activity-1",
   tanggal: "2026-05-21",
   waktu: "08:00",
+  waktuSelesai: "09:00",
   kegiatan: ["Closing Prospek"],
   poin: 10,
   status: "Belum",
@@ -41,7 +42,8 @@ describe("ActivitySidebar", () => {
     expect(screen.getByText("Detail Aktivitas")).toBeInTheDocument();
     expect(screen.getByText("Informasi Tambahan")).toBeInTheDocument();
     expect(screen.getByLabelText("Tanggal")).toBeInTheDocument();
-    expect(screen.getByLabelText("Waktu")).toBeInTheDocument();
+    expect(screen.getByLabelText("Waktu Mulai")).toBeInTheDocument();
+    expect(screen.getByLabelText("Waktu Selesai")).toBeInTheDocument();
     expect(screen.getByLabelText("Kegiatan")).toBeInTheDocument();
     expect(screen.getByText("0 poin")).toBeInTheDocument();
     expect(container.querySelector(".activity-field-grid-summary")).toBeInTheDocument();
@@ -131,6 +133,7 @@ describe("ActivitySidebar", () => {
         expect.objectContaining({
           tanggal: "2026-05-21",
           waktu: "08:00",
+          waktuSelesai: "09:00",
           kegiatan: ["Chat Calon Nasabah", "Approach / Fact Finding"],
           poin: 5,
           status: "Belum",

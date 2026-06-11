@@ -19,6 +19,7 @@ const activity: Activity = {
   id: "activity-1",
   tanggal: "2026-05-21",
   waktu: "08:00",
+  waktuSelesai: "09:00",
   kegiatan: ["Chat Calon Nasabah"],
   poin: 1,
   status: "Belum",
@@ -226,6 +227,7 @@ describe("DashboardContainer", () => {
       id: "persisted-activity",
       tanggal: "2026-06-08",
       waktu: "08:00",
+      waktuSelesai: "09:00",
     };
     vi.mocked(saveActivityAction)
       .mockResolvedValueOnce(savedActivity)

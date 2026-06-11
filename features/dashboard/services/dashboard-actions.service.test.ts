@@ -20,6 +20,7 @@ vi.mock("../data/targets.repository", () => ({
 const activityInput: Omit<Activity, "id"> = {
   tanggal: "2026-05-21",
   waktu: "08:00",
+  waktuSelesai: "09:00",
   kegiatan: ["Approach / Fact Finding"],
   poin: 99,
   status: "Belum",

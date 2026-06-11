@@ -82,6 +82,7 @@ describe("WeeklyCalendar", () => {
             id: "activity-1",
             tanggal: "2026-01-05",
             waktu: "08:00",
+            waktuSelesai: "09:00",
             kegiatan: ["Approach / Fact Finding"],
             poin: 4,
             status: "Belum",
@@ -100,9 +101,56 @@ describe("WeeklyCalendar", () => {
 
     expect(screen.getByText("Nasabah:")).toBeInTheDocument();
     expect(screen.getByText("Budi")).toBeInTheDocument();
-    expect(screen.getByText("08:00")).toBeInTheDocument();
+    expect(screen.getByText("08:00 - 09:00")).toBeInTheDocument();
     expect(screen.getByText("Kontak:")).toBeInTheDocument();
     expect(screen.getByText("08123456789")).toBeInTheDocument();
+  });
+
+  it("sorts activities by start time then end time", () => {
+    render(
+      <WeeklyCalendar
+        selectedMonth={0}
+        selectedYear={2026}
+        activities={[
+          {
+            id: "activity-late-end",
+            tanggal: "2026-01-05",
+            waktu: "08:00",
+            waktuSelesai: "10:00",
+            kegiatan: ["Follow Up"],
+            poin: 2,
+            status: "Belum",
+            catatan: "",
+            nasabah: "Budi",
+            kontakNasabah: "",
+            produk: "",
+          },
+          {
+            id: "activity-early-end",
+            tanggal: "2026-01-05",
+            waktu: "08:00",
+            waktuSelesai: "09:00",
+            kegiatan: ["Chat Calon Nasabah"],
+            poin: 1,
+            status: "Belum",
+            catatan: "",
+            nasabah: "Andi",
+            kontakNasabah: "",
+            produk: "",
+          },
+        ]}
+        selectedActivityId={null}
+        onSelectActivity={vi.fn()}
+        onSelectTimeSlot={vi.fn()}
+        onToggleComplete={vi.fn()}
+      />
+    );
+
+    const cards = screen.getAllByText(/Chat Calon Nasabah|Follow Up/);
+    expect(cards.map((card) => card.textContent)).toEqual([
+      "Chat Calon Nasabah",
+      "Follow Up",
+    ]);
   });
 
   it("calls onSelectTimeSlot when clicking an empty calendar slot", () => {

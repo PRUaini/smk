@@ -61,7 +61,7 @@ export function buildActivityNotifications(
         id: `notification-${activity.id}`,
         activityId: activity.id,
         title: activity.kegiatan.join(", "),
-        description: `${activity.nasabah || "Tanpa nasabah"} - ${formatNotificationDate(scheduledDate)}, ${activity.waktu}`,
+        description: `${activity.nasabah || "Tanpa nasabah"} - ${formatNotificationDate(scheduledDate)}, ${activity.waktu} - ${activity.waktuSelesai}`,
         kind,
         statusLabel: getStatusLabel(kind),
         scheduledAt: scheduledDate.getTime(),

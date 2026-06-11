@@ -31,6 +31,15 @@ const formatKegiatanLabel = (kegiatan: string[]) => {
   return `${kegiatan[0]} +${kegiatan.length - 1}`;
 };
 
+const formatActivityTimeRange = (activity: Activity) => {
+  return `${activity.waktu} - ${activity.waktuSelesai}`;
+};
+
+const compareActivityTime = (a: Activity, b: Activity) => {
+  const startDiff = a.waktu.localeCompare(b.waktu);
+  return startDiff === 0 ? a.waktuSelesai.localeCompare(b.waktuSelesai) : startDiff;
+};
+
 export default function WeeklyCalendar({
   selectedMonth,
   selectedYear = new Date().getFullYear(),
@@ -119,7 +128,7 @@ export default function WeeklyCalendar({
             </label>
             <div className="activity-card-copy">
               <span className="activity-card-title">{formatKegiatanLabel(activity.kegiatan)}</span>
-              <span className="activity-card-time">{activity.waktu}</span>
+              <span className="activity-card-time">{formatActivityTimeRange(activity)}</span>
             </div>
           </div>
           
@@ -209,7 +218,7 @@ export default function WeeklyCalendar({
             {weekDates.map((d) => {
               const dayActivities = weeklyActivities
                 .filter((act) => act.tanggal === d.formatted)
-                .sort((a, b) => a.waktu.localeCompare(b.waktu));
+                .sort(compareActivityTime);
               const isActiveDay = isToday(d.formatted);
 
               return (
