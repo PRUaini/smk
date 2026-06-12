@@ -12,6 +12,10 @@ interface LaporanAktivitasProps {
   selectedYear: number;
 }
 
+type ReportPeriod = "yearly" | "monthly" | "weekly";
+
+const YEARLY_ACTIVE_DAYS_TARGET = 150;
+
 export default function LaporanAktivitas({ targets, activities, selectedMonth, selectedYear }: LaporanAktivitasProps) {
   const monthsAbbr = getMonthsAbbr();
   const monthLabel = monthsAbbr[selectedMonth];
@@ -19,10 +23,8 @@ export default function LaporanAktivitas({ targets, activities, selectedMonth, s
 
   // Interactive Filter States
   const [dailyFilter, setDailyFilter] = useState<"harian" | "bulanan" | "tahunan">("harian");
-  const [barFilter, setBarFilter] = useState<"bulan" | "tahun">("bulan");
   const [isDailyMenuOpen, setIsDailyMenuOpen] = useState(false);
-  const [isBarMenuOpen, setIsBarMenuOpen] = useState(false);
-  const [reportView, setReportView] = useState<"monthly" | "weekly">("monthly");
+  const [reportPeriod, setReportPeriod] = useState<ReportPeriod>("yearly");
   const [weekSelection, setWeekSelection] = useState({ month: selectedMonth, year: selectedYear, week: 0 });
   const selectedWeek = weekSelection.month === selectedMonth && weekSelection.year === selectedYear ? weekSelection.week : 0;
 
@@ -51,31 +53,9 @@ export default function LaporanAktivitas({ targets, activities, selectedMonth, s
     return { points, meetings, sales, api, activeDays };
   }, [activities, weeks, activeWeekIdx]);
 
-  // Selected report metrics based on view mode (monthly vs weekly)
-  const isWeekly = reportView === "weekly";
-  const barFilterLabel = useMemo(() => {
-    if (isWeekly) {
-      return barFilter === "bulan" ? "Minggu Ini" : "Bulan Ini";
-    } else {
-      return barFilter === "bulan" ? "Bulan Ini" : "Tahun Ini";
-    }
-  }, [isWeekly, barFilter]);
-  const currentPoints = isWeekly ? weeklyMetrics.points : targets.totalPoints;
-  const targetPoints = isWeekly ? targets.targetWeeklyPoints : targets.targetPoints;
-  const pointPct = calculatePercentage(currentPoints, targetPoints);
-
-  const currentMeetings = isWeekly ? weeklyMetrics.meetings : targets.totalMeetings;
-  const targetMeetings = isWeekly ? targets.targetWeeklyMeetings : targets.targetMeetings;
-  const meetingPct = calculatePercentage(currentMeetings, targetMeetings);
-
-  const currentSales = isWeekly ? weeklyMetrics.sales : targets.totalSales;
-  const targetSales = isWeekly ? targets.targetWeeklySales : targets.targetSales;
-  const salesPct = calculatePercentage(currentSales, targetSales);
-
-  const currentApi = isWeekly ? weeklyMetrics.api : targets.totalApi;
-  const collectedApi = isWeekly ? weeklyMetrics.api : targets.totalAccumulatedApi;
-  const activeDaysPct = calculatePercentage(targets.activeDays, targets.totalDays);
-  
+  // Selected report metrics based on view mode (yearly vs monthly vs weekly)
+  const isYearly = reportPeriod === "yearly";
+  const isWeekly = reportPeriod === "weekly";
   const weeklyPointPct = calculatePercentage(targets.totalWeeklyPoints, targets.targetWeeklyPoints);
   const weeklyMeetingPct = calculatePercentage(targets.totalWeeklyMeetings, targets.targetWeeklyMeetings);
   const weeklySalesPct = calculatePercentage(targets.totalWeeklySales, targets.targetWeeklySales);
@@ -125,47 +105,77 @@ export default function LaporanAktivitas({ targets, activities, selectedMonth, s
     return data;
   }, [activities, selectedYear]);
 
-  // Yearly target parameters (aggregated compare)
-  const yearlyTargetData = useMemo(() => {
-    const yearActivities = activities.filter((act) => {
+  const yearlyMetrics = useMemo(() => {
+    const completedYearActivities = activities.filter((act) => {
       const yrPart = parseInt(act.tanggal.split("-")[0], 10);
       return yrPart === selectedYear && act.status === "Selesai";
     });
+    const yearActivities = activities.filter((act) => {
+      const yrPart = parseInt(act.tanggal.split("-")[0], 10);
+      return yrPart === selectedYear;
+    });
 
-    const yearMeetings = yearActivities.filter((act) => act.kegiatan.some((k) => MEETING_TYPES.has(k))).length;
-    const yearSales = yearActivities.filter((act) => act.kegiatan.some((k) => CLOSING_TYPES.has(k))).length;
-    const yearPoints = yearActivities.reduce((sum, act) => sum + act.poin, 0);
-    const yearActiveDays = new Set(yearActivities.map((act) => act.tanggal)).size;
+    return {
+      points: completedYearActivities.reduce((sum, act) => sum + act.poin, 0),
+      meetings: completedYearActivities.filter((act) => act.kegiatan.some((k) => MEETING_TYPES.has(k))).length,
+      sales: completedYearActivities.filter((act) => act.kegiatan.some((k) => CLOSING_TYPES.has(k))).length,
+      api: yearActivities
+        .filter((act) => act.kegiatan.some((k) => CLOSING_TYPES.has(k)))
+        .reduce((sum, act) => sum + (act.api || 0), 0),
+      activeDays: new Set(completedYearActivities.map((act) => act.tanggal)).size,
+    };
+  }, [activities, selectedYear]);
 
+  // Yearly target parameters (aggregated compare)
+  const yearlyTargetData = useMemo(() => {
     const targetPointsYr = targets.targetPoints * 12;
     const targetMeetingsYr = targets.targetMeetings * 12;
     const targetSalesYr = targets.targetSales * 12;
-    const targetActiveDaysYr = 150; // Reference target for a year
 
     return {
-      pointPct: calculatePercentage(yearPoints, targetPointsYr),
-      meetingPct: calculatePercentage(yearMeetings, targetMeetingsYr),
-      salesPct: calculatePercentage(yearSales, targetSalesYr),
-      activeDaysPct: calculatePercentage(yearActiveDays, targetActiveDaysYr)
+      pointPct: calculatePercentage(yearlyMetrics.points, targetPointsYr),
+      meetingPct: calculatePercentage(yearlyMetrics.meetings, targetMeetingsYr),
+      salesPct: calculatePercentage(yearlyMetrics.sales, targetSalesYr),
+      activeDaysPct: calculatePercentage(yearlyMetrics.activeDays, YEARLY_ACTIVE_DAYS_TARGET)
     };
-  }, [activities, selectedYear, targets]);
+  }, [targets, yearlyMetrics]);
+
+  const currentPoints = isWeekly ? weeklyMetrics.points : isYearly ? yearlyMetrics.points : targets.totalPoints;
+  const targetPoints = isWeekly ? targets.targetWeeklyPoints : isYearly ? targets.targetPoints * 12 : targets.targetPoints;
+  const pointPct = calculatePercentage(currentPoints, targetPoints);
+
+  const currentMeetings = isWeekly ? weeklyMetrics.meetings : isYearly ? yearlyMetrics.meetings : targets.totalMeetings;
+  const targetMeetings = isWeekly ? targets.targetWeeklyMeetings : isYearly ? targets.targetMeetings * 12 : targets.targetMeetings;
+  const meetingPct = calculatePercentage(currentMeetings, targetMeetings);
+
+  const currentSales = isWeekly ? weeklyMetrics.sales : isYearly ? yearlyMetrics.sales : targets.totalSales;
+  const targetSales = isWeekly ? targets.targetWeeklySales : isYearly ? targets.targetSales * 12 : targets.targetSales;
+  const salesPct = calculatePercentage(currentSales, targetSales);
+
+  const currentApi = isWeekly ? weeklyMetrics.api : isYearly ? yearlyMetrics.api : targets.totalApi;
+  const collectedApi = isWeekly ? weeklyMetrics.api : isYearly ? yearlyMetrics.api : targets.totalAccumulatedApi;
+  const activeDaysPct = calculatePercentage(targets.activeDays, targets.totalDays);
 
   // Select dynamic display metrics for the target comparisons chart
-  const activePointPct = isWeekly
-    ? (barFilter === "bulan" ? pointPct : calculatePercentage(targets.totalPoints, targets.targetPoints))
-    : (barFilter === "bulan" ? pointPct : yearlyTargetData.pointPct);
+  const activePointPct =
+    reportPeriod === "weekly" ? weeklyPointPct :
+    reportPeriod === "monthly" ? calculatePercentage(targets.totalPoints, targets.targetPoints) :
+    yearlyTargetData.pointPct;
 
-  const activeMeetingPct = isWeekly
-    ? (barFilter === "bulan" ? meetingPct : calculatePercentage(targets.totalMeetings, targets.targetMeetings))
-    : (barFilter === "bulan" ? meetingPct : yearlyTargetData.meetingPct);
+  const activeMeetingPct =
+    reportPeriod === "weekly" ? weeklyMeetingPct :
+    reportPeriod === "monthly" ? calculatePercentage(targets.totalMeetings, targets.targetMeetings) :
+    yearlyTargetData.meetingPct;
 
-  const activeSalesPct = isWeekly
-    ? (barFilter === "bulan" ? salesPct : calculatePercentage(targets.totalSales, targets.targetSales))
-    : (barFilter === "bulan" ? salesPct : yearlyTargetData.salesPct);
+  const activeSalesPct =
+    reportPeriod === "weekly" ? weeklySalesPct :
+    reportPeriod === "monthly" ? calculatePercentage(targets.totalSales, targets.targetSales) :
+    yearlyTargetData.salesPct;
 
-  const activeDaysPctForBar = isWeekly
-    ? (barFilter === "bulan" ? calculatePercentage(weeklyMetrics.activeDays || 0, DAYS_OF_WEEK.length) : activeDaysPct)
-    : (barFilter === "bulan" ? activeDaysPct : yearlyTargetData.activeDaysPct);
+  const activeDaysPctForBar =
+    reportPeriod === "weekly" ? calculatePercentage(weeklyMetrics.activeDays || 0, DAYS_OF_WEEK.length) :
+    reportPeriod === "monthly" ? activeDaysPct :
+    yearlyTargetData.activeDaysPct;
 
   // Compute cumulative points (monthly or weekly cumulative)
   const cumulativeData = useMemo(() => {
@@ -184,14 +194,20 @@ export default function LaporanAktivitas({ targets, activities, selectedMonth, s
         });
       }
       return [];
-    } else {
+    }
+    if (isYearly) {
       let runningSum = 0;
-      return dailyData.map((d) => {
+      return monthlyData.map((d) => {
         runningSum += d.points;
-        return { day: String(d.day), points: runningSum };
+        return { day: monthsAbbr[d.month], points: runningSum };
       });
     }
-  }, [isWeekly, weeks, activeWeekIdx, activities, dailyData, weeklyDayLabels]);
+    let runningSum = 0;
+    return dailyData.map((d) => {
+      runningSum += d.points;
+      return { day: String(d.day), points: runningSum };
+    });
+  }, [isWeekly, isYearly, weeks, activeWeekIdx, activities, dailyData, monthlyData, monthsAbbr, weeklyDayLabels]);
 
   // SVG dimensions & scales for Tren Poin Harian
   const dailyChartSvg = useMemo(() => {
@@ -211,6 +227,11 @@ export default function LaporanAktivitas({ targets, activities, selectedMonth, s
           };
         });
       }
+    } else if (isYearly) {
+      dataset = monthlyData.map((m) => ({
+        label: monthsAbbr[m.month],
+        points: m.points
+      }));
     } else if (dailyFilter === "harian") {
       dataset = dailyData.map((d) => ({
         label: `${d.day} ${monthLabel}`,
@@ -232,9 +253,9 @@ export default function LaporanAktivitas({ targets, activities, selectedMonth, s
       dataset,
       { width: 600, height: 220, padding: { top: 20, right: 20, bottom: 35, left: 40 } },
       100,
-      !isWeekly && dailyFilter === "harian" ? 5 : 1
+      !isWeekly && !isYearly && dailyFilter === "harian" ? 5 : 1
     );
-  }, [isWeekly, weeks, activeWeekIdx, activities, dailyFilter, dailyData, monthlyData, yearlyData, monthLabel, monthsAbbr, weeklyDayLabels]);
+  }, [isWeekly, isYearly, weeks, activeWeekIdx, activities, dailyFilter, dailyData, monthlyData, yearlyData, monthLabel, monthsAbbr, weeklyDayLabels]);
 
   // SVG dimensions & scales for Akumulasi Poin
   const cumulativeChartSvg = useMemo(() => {
@@ -245,7 +266,7 @@ export default function LaporanAktivitas({ targets, activities, selectedMonth, s
     const chartWidth = width - padding.left - padding.right;
     const chartHeight = height - padding.top - padding.bottom;
     
-    const activeTarget = isWeekly ? targets.targetWeeklyPoints : targets.targetPoints;
+    const activeTarget = targetPoints;
     const maxVal = Math.max(activeTarget, 100, ...cumulativeData.map((d) => d.points));
     
     // Points coordinates
@@ -275,7 +296,7 @@ export default function LaporanAktivitas({ targets, activities, selectedMonth, s
 
     // X axis labels
     const xLabels = [];
-    if (isWeekly) {
+    if (isWeekly || isYearly) {
       for (let i = 0; i < cumulativeData.length; i++) {
         xLabels.push({
           x: points[i].x,
@@ -300,11 +321,13 @@ export default function LaporanAktivitas({ targets, activities, selectedMonth, s
     }
 
     return { width, height, points, linePath, areaPath, gridLines, xLabels, targetY };
-  }, [isWeekly, cumulativeData, targets.targetPoints, targets.targetWeeklyPoints, monthLabel]);
+  }, [isWeekly, isYearly, cumulativeData, targetPoints, monthLabel]);
 
   // Average points per day calculation
   const averagePoints = isWeekly
     ? (weeklyMetrics.activeDays ? (weeklyMetrics.points / weeklyMetrics.activeDays).toFixed(1) : "0")
+    : isYearly
+      ? (yearlyMetrics.activeDays ? (yearlyMetrics.points / yearlyMetrics.activeDays).toFixed(1) : "0")
     : (targets.activeDays ? (targets.totalPoints / targets.activeDays).toFixed(1) : "0");
 
   // Circular gauge config
@@ -319,20 +342,26 @@ export default function LaporanAktivitas({ targets, activities, selectedMonth, s
       <div className="laporan-view-switcher" style={{ marginBottom: "1.5rem", display: "flex", flexDirection: "column", gap: "1rem" }}>
         <div className="segmented-control" style={{ alignSelf: "flex-start" }}>
           <button
-            className={`segmented-tab ${reportView === "monthly" ? "active" : ""}`}
-            onClick={() => setReportView("monthly")}
+            className={`segmented-tab ${reportPeriod === "yearly" ? "active" : ""}`}
+            onClick={() => setReportPeriod("yearly")}
+          >
+            Tahunan
+          </button>
+          <button
+            className={`segmented-tab ${reportPeriod === "monthly" ? "active" : ""}`}
+            onClick={() => setReportPeriod("monthly")}
           >
             Bulanan
           </button>
           <button
-            className={`segmented-tab ${reportView === "weekly" ? "active" : ""}`}
-            onClick={() => setReportView("weekly")}
+            className={`segmented-tab ${reportPeriod === "weekly" ? "active" : ""}`}
+            onClick={() => setReportPeriod("weekly")}
           >
             Mingguan
           </button>
         </div>
 
-        {reportView === "weekly" && (
+        {reportPeriod === "weekly" && (
           <div className="month-tabs-container week-tabs-container" style={{ marginTop: 0 }}>
             <div className="month-tabs-scroll">
               {weeks.map((_, index) => (
@@ -451,7 +480,7 @@ export default function LaporanAktivitas({ targets, activities, selectedMonth, s
               <span className="kpi-label">Total API</span>
               <div className="kpi-value-row-stacked">
                 <span className="kpi-value">Rp {currentApi.toLocaleString("id-ID")}</span>
-                <span className="kpi-target-label">{isWeekly ? "akumulasi minggu ini" : "akumulasi bulan ini"}</span>
+                <span className="kpi-target-label">{isWeekly ? "akumulasi minggu ini" : isYearly ? "akumulasi tahun ini" : "akumulasi bulan ini"}</span>
               </div>
             </div>
           </div>
@@ -460,7 +489,7 @@ export default function LaporanAktivitas({ targets, activities, selectedMonth, s
           </div>
           <div className="kpi-card-footer">
             <span className="kpi-pct-attained">
-              {isWeekly ? "Total API terkumpul minggu ini" : "Total API terkumpul"}: Rp {collectedApi.toLocaleString("id-ID")}
+              {isWeekly ? "Total API terkumpul minggu ini" : isYearly ? "Total API terkumpul tahun ini" : "Total API terkumpul"}: Rp {collectedApi.toLocaleString("id-ID")}
             </span>
           </div>
         </div>
@@ -471,8 +500,8 @@ export default function LaporanAktivitas({ targets, activities, selectedMonth, s
         {/* Line Chart Card */}
         <div className="report-chart-card">
           <div className="chart-card-header">
-            <h3 className="chart-title">{isWeekly ? "Tren Poin Mingguan" : "Tren Poin Harian"}</h3>
-            {!isWeekly && (
+            <h3 className="chart-title">{isWeekly ? "Tren Poin Mingguan" : isYearly ? "Tren Poin Tahunan" : "Tren Poin Harian"}</h3>
+            {!isWeekly && !isYearly && (
               <div className="chart-filter-select-wrapper">
                 <div className="chart-filter-select" onClick={(e) => { e.stopPropagation(); setIsDailyMenuOpen(!isDailyMenuOpen); }}>
                   <span>{dailyFilter === "harian" ? "Harian" : dailyFilter === "bulanan" ? "Bulanan" : "Tahunan"}</span>
@@ -584,24 +613,6 @@ export default function LaporanAktivitas({ targets, activities, selectedMonth, s
         <div className="report-chart-card">
           <div className="chart-card-header">
             <h3 className="chart-title">Pencapaian vs Target</h3>
-            <div className="chart-filter-select-wrapper">
-              <div className="chart-filter-select" onClick={(e) => { e.stopPropagation(); setIsBarMenuOpen(!isBarMenuOpen); }}>
-                <span>{barFilterLabel}</span>
-                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M6 9l6 6 6-6" />
-                </svg>
-              </div>
-              {isBarMenuOpen && (
-                <div className="filter-dropdown-menu">
-                  <div className={`filter-option ${barFilter === "bulan" ? "active" : ""}`} onClick={() => { setBarFilter("bulan"); setIsBarMenuOpen(false); }}>
-                    {isWeekly ? "Minggu Ini" : "Bulan Ini"}
-                  </div>
-                  <div className={`filter-option ${barFilter === "tahun" ? "active" : ""}`} onClick={() => { setBarFilter("tahun"); setIsBarMenuOpen(false); }}>
-                    {isWeekly ? "Bulan Ini" : "Tahun Ini"}
-                  </div>
-                </div>
-              )}
-            </div>
           </div>
 
           <div className="chart-body flex-col">
@@ -746,7 +757,7 @@ export default function LaporanAktivitas({ targets, activities, selectedMonth, s
       <div className="monthly-progress-summary-row">
         {/* Main Progress Card */}
         <div className="monthly-progress-main-card">
-          <h4 className="progress-section-heading">{isWeekly ? "Ringkasan Progres Mingguan" : "Ringkasan Progres Bulanan"}</h4>
+          <h4 className="progress-section-heading">{isWeekly ? "Ringkasan Progres Mingguan" : isYearly ? "Ringkasan Progres Tahunan" : "Ringkasan Progres Bulanan"}</h4>
           
           <div className="progress-card-grid">
             {/* Column 1: Target Stats */}
@@ -759,7 +770,7 @@ export default function LaporanAktivitas({ targets, activities, selectedMonth, s
                 </svg>
               </div>
               <div className="progress-mini-item">
-                <span className="lbl">{isWeekly ? "Target Poin Minggu Ini" : "Target Poin Bulan Ini"}</span>
+                <span className="lbl">{isWeekly ? "Target Poin Minggu Ini" : isYearly ? "Target Poin Tahun Ini" : "Target Poin Bulan Ini"}</span>
                 <span className="val">{targetPoints}</span>
               </div>
               <div className="progress-mini-item">
@@ -807,7 +818,7 @@ export default function LaporanAktivitas({ targets, activities, selectedMonth, s
             <div className="progress-line-chart-col">
               <span className="cumulative-chart-title">
                 <span className="legend-line border-red" />
-                Akumulasi Poin ({isWeekly ? `Minggu ${activeWeekIdx + 1}` : `${monthLabel} Ini`})
+                Akumulasi Poin ({isWeekly ? `Minggu ${activeWeekIdx + 1}` : isYearly ? `${selectedYear}` : `${monthLabel} Ini`})
               </span>
 
               <div className="cumulative-chart-container">
@@ -861,7 +872,7 @@ export default function LaporanAktivitas({ targets, activities, selectedMonth, s
                     fill="var(--color-text-secondary)"
                     fontWeight="600"
                   >
-                    Target {isWeekly ? targets.targetWeeklyPoints : targets.targetPoints}
+                    Target {targetPoints}
                   </text>
 
                   {/* Filled Area */}
@@ -921,7 +932,7 @@ export default function LaporanAktivitas({ targets, activities, selectedMonth, s
 
           <div className="side-metric-item">
             <span className="side-label">Hari Aktif</span>
-            <span className="side-value">{isWeekly ? weeklyMetrics.activeDays : targets.activeDays} / {isWeekly ? DAYS_OF_WEEK.length : targets.totalDays} <span className="unit">hari</span></span>
+            <span className="side-value">{isWeekly ? weeklyMetrics.activeDays : isYearly ? yearlyMetrics.activeDays : targets.activeDays} / {isWeekly ? DAYS_OF_WEEK.length : isYearly ? YEARLY_ACTIVE_DAYS_TARGET : targets.totalDays} <span className="unit">hari</span></span>
           </div>
         </div>
       </div>
