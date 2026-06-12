@@ -54,6 +54,30 @@ describe("ActivitySidebar", () => {
     expect(screen.getByRole("button", { name: "Simpan Aktivitas" })).toBeInTheDocument();
   });
 
+  it("renders 24-hour start options and end options through 24:00", () => {
+    render(
+      <ActivitySidebar
+        selectedActivity={null}
+        selectedDate="2026-05-21"
+        selectedTime="23:00"
+        onSave={vi.fn()}
+        onDelete={vi.fn()}
+        isPending={false}
+        onClose={vi.fn()}
+      />
+    );
+
+    const startSelect = screen.getByLabelText("Waktu Mulai");
+    const endSelect = screen.getByLabelText("Waktu Selesai");
+
+    expect(startSelect).toHaveDisplayValue("23:00");
+    expect(endSelect).toHaveDisplayValue("24:00");
+    expect(startSelect.querySelector('option[value="00:00"]')).toBeInTheDocument();
+    expect(startSelect.querySelector('option[value="23:00"]')).toBeInTheDocument();
+    expect(startSelect.querySelector('option[value="24:00"]')).not.toBeInTheDocument();
+    expect(endSelect.querySelector('option[value="24:00"]')).toBeInTheDocument();
+  });
+
   it("keeps conditional API field and edit delete behavior", () => {
     render(
       <ActivitySidebar

@@ -6,6 +6,7 @@ import {
   CLOSING_TYPES,
   DASHBOARD_END_TIME_SLOTS,
   DASHBOARD_TIME_SLOTS,
+  DEFAULT_DASHBOARD_START_TIME,
   calculateActivityPoints,
   getNextDashboardTimeSlot,
   isValidDashboardTimeRange,
@@ -75,8 +76,8 @@ export default function ActivitySidebar({
     resolver: zodResolver(activityFormSchema),
     values: {
       tanggal: selectedActivity?.tanggal ?? selectedDate ?? "",
-      waktu: selectedActivity?.waktu ?? selectedTime ?? "08:00",
-      waktuSelesai: selectedActivity?.waktuSelesai ?? getNextDashboardTimeSlot(selectedTime ?? "08:00"),
+      waktu: selectedActivity?.waktu ?? selectedTime ?? DEFAULT_DASHBOARD_START_TIME,
+      waktuSelesai: selectedActivity?.waktuSelesai ?? getNextDashboardTimeSlot(selectedTime ?? DEFAULT_DASHBOARD_START_TIME),
       kegiatan: selectedActivity?.kegiatan ?? [],
       catatan: selectedActivity?.catatan ?? "",
       nasabah: selectedActivity?.nasabah ?? "",

@@ -1,36 +1,26 @@
 import type { ActivityType, DashboardTargets } from "./types";
 
-export const DASHBOARD_TIME_SLOTS = [
-  "08:00",
-  "09:00",
-  "10:00",
-  "11:00",
-  "13:00",
-  "14:00",
-  "15:00",
-  "16:00",
-  "17:00",
-] as const;
+function buildHourlyTimeSlots(startHour: number, endHour: number): string[] {
+  return Array.from(
+    { length: endHour - startHour + 1 },
+    (_, index) => `${String(startHour + index).padStart(2, "0")}:00`
+  );
+}
 
-export const DASHBOARD_END_TIME_SLOTS = [
-  ...DASHBOARD_TIME_SLOTS,
-  "18:00",
-] as const;
+const DASHBOARD_TIME_RANGE_SLOTS = buildHourlyTimeSlots(0, 24);
+
+export const DEFAULT_DASHBOARD_START_TIME = "08:00";
+export const DASHBOARD_TIME_SLOTS = DASHBOARD_TIME_RANGE_SLOTS.slice(0, -1);
+export const DASHBOARD_END_TIME_SLOTS = DASHBOARD_TIME_RANGE_SLOTS.slice(1);
 
 export function getNextDashboardTimeSlot(startTime: string): string {
-  const startIndex = DASHBOARD_END_TIME_SLOTS.indexOf(
-    startTime as (typeof DASHBOARD_END_TIME_SLOTS)[number]
-  );
-  return startIndex >= 0 ? DASHBOARD_END_TIME_SLOTS[startIndex + 1] ?? "" : "";
+  const startIndex = DASHBOARD_TIME_RANGE_SLOTS.indexOf(startTime);
+  return startIndex >= 0 ? DASHBOARD_TIME_RANGE_SLOTS[startIndex + 1] ?? "" : "";
 }
 
 export function isValidDashboardTimeRange(startTime: string, endTime: string): boolean {
-  const startIndex = DASHBOARD_END_TIME_SLOTS.indexOf(
-    startTime as (typeof DASHBOARD_END_TIME_SLOTS)[number]
-  );
-  const endIndex = DASHBOARD_END_TIME_SLOTS.indexOf(
-    endTime as (typeof DASHBOARD_END_TIME_SLOTS)[number]
-  );
+  const startIndex = DASHBOARD_TIME_RANGE_SLOTS.indexOf(startTime);
+  const endIndex = DASHBOARD_TIME_RANGE_SLOTS.indexOf(endTime);
   return startIndex >= 0 && endIndex > startIndex;
 }
 

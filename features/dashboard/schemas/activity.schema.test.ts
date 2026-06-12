@@ -22,6 +22,48 @@ describe("activityFormSchema", () => {
     expect(result.success).toBe(true);
   });
 
+  it("accepts full-day hourly activity ranges", () => {
+    const earlyResult = activityFormSchema.safeParse({
+      tanggal: "2026-01-05",
+      waktu: "00:00",
+      waktuSelesai: "01:00",
+      kegiatan: ["Approach / Fact Finding"],
+      catatan: "Early meeting",
+      nasabah: "Bapak Andi",
+      kontakNasabah: "",
+      produk: "",
+    });
+    const lateResult = activityFormSchema.safeParse({
+      tanggal: "2026-01-05",
+      waktu: "23:00",
+      waktuSelesai: "24:00",
+      kegiatan: ["Approach / Fact Finding"],
+      catatan: "Late meeting",
+      nasabah: "Bapak Andi",
+      kontakNasabah: "",
+      produk: "",
+    });
+
+    expect(earlyResult.success).toBe(true);
+    expect(lateResult.success).toBe(true);
+  });
+
+  it("rejects 24:00 as a start time", () => {
+    const result = activityFormSchema.safeParse({
+      tanggal: "2026-01-05",
+      waktu: "24:00",
+      waktuSelesai: "24:00",
+      kegiatan: ["Approach / Fact Finding"],
+      catatan: "",
+      nasabah: "Bapak Andi",
+      kontakNasabah: "",
+      produk: "",
+    });
+
+    expect(result.success).toBe(false);
+    expect(result.error?.issues[0]?.message).toBe("Waktu mulai tidak valid");
+  });
+
   it("rejects missing required date and time", () => {
     const result = activityFormSchema.safeParse({
       tanggal: "",

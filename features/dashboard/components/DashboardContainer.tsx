@@ -16,6 +16,7 @@ import { useToast } from "../utils/useToast";
 import ToastContainer from "./ToastContainer";
 import NotificationMenu from "./NotificationMenu";
 import { buildActivityNotifications } from "../services/notifications.service";
+import { DEFAULT_DASHBOARD_START_TIME } from "../constants";
 const SIDEBAR_TRANSITION_MS = 250;
 
 interface DashboardContainerProps {
@@ -430,7 +431,7 @@ export default function DashboardContainer({ initialKodeAgent, initialActivities
               const selectedDateForPeriod = isCurrentPeriod ? today : new Date(selectedYear, selectedMonth, 1);
               const todayStr = `${selectedDateForPeriod.getFullYear()}-${String(selectedDateForPeriod.getMonth() + 1).padStart(2, "0")}-${String(selectedDateForPeriod.getDate()).padStart(2, "0")}`;
               setSelectedDate(todayStr);
-              setSelectedTime("08:00");
+              setSelectedTime(DEFAULT_DASHBOARD_START_TIME);
               openActivitySidebar();
             }}
             aria-label="Add Activity"

@@ -1,6 +1,6 @@
 import React from "react";
 import { Activity } from "../types";
-import { DAYS_OF_WEEK } from "../constants";
+import { DAYS_OF_WEEK, DEFAULT_DASHBOARD_START_TIME } from "../constants";
 import { getWeekDates as getFormattedWeekDates, getWeeksInMonth } from "../utils/date";
 
 interface WeeklyCalendarProps {
@@ -237,7 +237,7 @@ export default function WeeklyCalendar({
                   onClick={(e) => {
                     const target = e.target as HTMLElement;
                     if (!target.closest(".activity-card-item") && !target.closest(".empty-cell-hover-indicator")) {
-                      onSelectTimeSlot(d.formatted, "08:00");
+                      onSelectTimeSlot(d.formatted, DEFAULT_DASHBOARD_START_TIME);
                     }
                   }}
                 >
@@ -251,7 +251,7 @@ export default function WeeklyCalendar({
                     className="empty-cell-hover-indicator"
                     onClick={(e) => {
                       e.stopPropagation();
-                      onSelectTimeSlot(d.formatted, "08:00");
+                      onSelectTimeSlot(d.formatted, DEFAULT_DASHBOARD_START_TIME);
                     }}
                     style={{
                       flex: 1,

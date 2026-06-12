@@ -175,6 +175,21 @@ describe("DashboardContainer", () => {
     expect(screen.getByRole("heading", { name: "Tambah Aktivitas" })).toBeInTheDocument();
   });
 
+  it("defaults a new activity from the floating add button to 08:00-09:00", () => {
+    render(
+      <DashboardContainer
+        initialKodeAgent="Agent"
+        initialActivities={[]}
+        initialTargets={null}
+      />
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Add Activity" }));
+
+    expect(screen.getByLabelText("Waktu Mulai")).toHaveDisplayValue("08:00");
+    expect(screen.getByLabelText("Waktu Selesai")).toHaveDisplayValue("09:00");
+  });
+
   it("opens the activity panel from a notification item", () => {
     vi.setSystemTime(new Date(2026, 4, 25, 9, 0, 0));
 
