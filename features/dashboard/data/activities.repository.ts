@@ -39,8 +39,7 @@ export async function getActivitiesByAgent(agentId: string): Promise<Activity[]>
     .select("*")
     .eq("agent_id", agentId)
     .order("tanggal", { ascending: true })
-    .order("waktu", { ascending: true })
-    .order("waktu_selesai", { ascending: true });
+    .order("waktu", { ascending: true });
 
   if (error) {
     console.error("Failed to fetch activities:", error);

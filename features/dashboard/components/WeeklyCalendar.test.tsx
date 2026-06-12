@@ -106,7 +106,7 @@ describe("WeeklyCalendar", () => {
     expect(screen.getByText("08123456789")).toBeInTheDocument();
   });
 
-  it("sorts activities by start time then end time", () => {
+  it("sorts activities by start time only", () => {
     render(
       <WeeklyCalendar
         selectedMonth={0}
@@ -122,6 +122,19 @@ describe("WeeklyCalendar", () => {
             status: "Belum",
             catatan: "",
             nasabah: "Budi",
+            kontakNasabah: "",
+            produk: "",
+          },
+          {
+            id: "activity-earlier-start",
+            tanggal: "2026-01-05",
+            waktu: "07:00",
+            waktuSelesai: "12:00",
+            kegiatan: ["Presentasi"],
+            poin: 3,
+            status: "Belum",
+            catatan: "",
+            nasabah: "Cici",
             kontakNasabah: "",
             produk: "",
           },
@@ -146,10 +159,11 @@ describe("WeeklyCalendar", () => {
       />
     );
 
-    const cards = screen.getAllByText(/Chat Calon Nasabah|Follow Up/);
+    const cards = screen.getAllByText(/Presentasi|Chat Calon Nasabah|Follow Up/);
     expect(cards.map((card) => card.textContent)).toEqual([
-      "Chat Calon Nasabah",
+      "Presentasi",
       "Follow Up",
+      "Chat Calon Nasabah",
     ]);
   });
 

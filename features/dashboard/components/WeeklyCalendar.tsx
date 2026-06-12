@@ -36,8 +36,7 @@ const formatActivityTimeRange = (activity: Activity) => {
 };
 
 const compareActivityTime = (a: Activity, b: Activity) => {
-  const startDiff = a.waktu.localeCompare(b.waktu);
-  return startDiff === 0 ? a.waktuSelesai.localeCompare(b.waktuSelesai) : startDiff;
+  return a.waktu.localeCompare(b.waktu);
 };
 
 export default function WeeklyCalendar({

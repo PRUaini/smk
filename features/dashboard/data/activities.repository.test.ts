@@ -1,7 +1,8 @@
-import { vi, describe, it, expect } from "vitest";
+import { vi, beforeEach, describe, it, expect } from "vitest";
 
 const mockInsert = vi.hoisted(() => vi.fn());
 const mockUpdate = vi.hoisted(() => vi.fn());
+const mockOrder = vi.hoisted(() => vi.fn());
 
 const mockQuery = vi.hoisted(() => {
   const queryObj = {
@@ -9,7 +10,10 @@ const mockQuery = vi.hoisted(() => {
     eq: () => queryObj,
     insert: mockInsert,
     update: mockUpdate,
-    order: () => queryObj,
+    order: (...args: unknown[]) => {
+      mockOrder(...args);
+      return queryObj;
+    },
     then: (onfulfilled: (value: { data: null; error: { message: string } }) => void) => {
       if (onfulfilled) {
         onfulfilled({
@@ -32,6 +36,10 @@ vi.mock("@/lib/supabase/server", () => ({
 
 import { createActivity, getActivitiesByAgent, updateActivity } from "./activities.repository";
 
+beforeEach(() => {
+  vi.clearAllMocks();
+});
+
 describe("activities.repository error handling", () => {
   it("hides raw database error message and logs it", async () => {
     const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
@@ -40,6 +48,20 @@ describe("activities.repository error handling", () => {
       "Failed to fetch activities. Please try again later."
     );
     expect(consoleSpy).toHaveBeenCalled();
+
+    consoleSpy.mockRestore();
+  });
+
+  it("orders fetched activities by date and start time only", async () => {
+    const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+
+    await expect(getActivitiesByAgent("agent-123")).rejects.toThrow(
+      "Failed to fetch activities. Please try again later."
+    );
+
+    expect(mockOrder).toHaveBeenCalledTimes(2);
+    expect(mockOrder).toHaveBeenNthCalledWith(1, "tanggal", { ascending: true });
+    expect(mockOrder).toHaveBeenNthCalledWith(2, "waktu", { ascending: true });
 
     consoleSpy.mockRestore();
   });
