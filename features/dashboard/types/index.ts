@@ -11,7 +11,8 @@ export type ActivityType =
   | "Training"
   | "S3 / Motivasi"
   | "Coaching / Meeting Leader"
-  | "Bawa teman ke BOP";
+  | "Bawa teman ke BOP"
+  | "Others";
 
 export type ActivityStatus = "Selesai" | "Belum";
 

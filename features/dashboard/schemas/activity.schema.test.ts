@@ -113,6 +113,32 @@ describe("activityFormSchema", () => {
     expect(payload.poin).toBe(5);
   });
 
+  it("accepts Others as a zero-point activity", () => {
+    const formData = {
+      tanggal: "2026-01-05",
+      waktu: "08:00",
+      waktuSelesai: "09:00",
+      kegiatan: ["Others (0 poin)"],
+      catatan: "Kegiatan non-core",
+      nasabah: "Bapak Andi",
+      kontakNasabah: "",
+      produk: "",
+    };
+    const formResult = activityFormSchema.safeParse(formData);
+    const actionResult = activityActionSchema.safeParse({
+      ...formData,
+      status: "Belum",
+    });
+
+    expect(formResult.success).toBe(true);
+    expect(actionResult.success).toBe(true);
+
+    const payload = buildActivityPayload(formResult.data as ActivityFormData, "Belum");
+
+    expect(payload.poin).toBe(0);
+    expect(payload.kegiatan).toEqual(["Others (0 poin)"]);
+  });
+
   it("rejects empty or whitespace-only customer names", () => {
     const emptyResult = activityFormSchema.safeParse({
       tanggal: "2026-01-05",

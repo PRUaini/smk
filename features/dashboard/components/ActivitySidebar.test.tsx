@@ -168,4 +168,38 @@ describe("ActivitySidebar", () => {
       );
     });
   });
+
+  it("allows selecting Others as a zero-point activity", async () => {
+    const onSave = vi.fn();
+    render(
+      <ActivitySidebar
+        selectedActivity={null}
+        selectedDate="2026-05-21"
+        selectedTime="08:00"
+        onSave={onSave}
+        onDelete={vi.fn()}
+        isPending={false}
+        onClose={vi.fn()}
+      />
+    );
+
+    fireEvent.click(screen.getByLabelText("Kegiatan"));
+    fireEvent.click(screen.getByText("Others (0 poin)"));
+
+    expect(screen.getAllByText("0 poin")).toHaveLength(2);
+
+    fireEvent.change(screen.getByLabelText("Nama Nasabah"), {
+      target: { value: "Budi" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Simpan Aktivitas" }));
+
+    await waitFor(() => {
+      expect(onSave).toHaveBeenCalledWith(
+        expect.objectContaining({
+          kegiatan: ["Others"],
+          poin: 0,
+        })
+      );
+    });
+  });
 });
