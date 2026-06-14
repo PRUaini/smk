@@ -892,6 +892,15 @@ body {
   overflow-x: hidden;
 }
 
+.dashboard-layout-new.has-wallpaper {
+  background-image:
+    linear-gradient(135deg, rgb(248 250 252 / 0.9), rgb(255 245 245 / 0.78)),
+    var(--dashboard-wallpaper-url);
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+}
+
 .dashboard-main-new {
   flex: 1;
   max-width: 100%;
@@ -941,6 +950,74 @@ body {
   display: flex;
   gap: 0.75rem;
   align-items: center;
+}
+
+.wallpaper-picker {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.wallpaper-picker-trigger {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem 0.75rem;
+  border: 1px dashed rgb(239 68 68 / 0.35);
+  border-radius: 999px;
+  color: var(--color-primary);
+  background: rgb(254 242 242 / 0.85);
+  font-size: 0.75rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.wallpaper-picker-trigger:hover {
+  background: var(--color-primary-subtle);
+  border-color: var(--color-primary);
+}
+
+.wallpaper-picker-trigger input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.wallpaper-picker-trigger input:disabled {
+  cursor: not-allowed;
+}
+
+.wallpaper-action-btn {
+  border: 1px solid rgb(15 23 42 / 0.08);
+  background: white;
+  color: var(--color-text-secondary);
+  border-radius: 999px;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.72rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  box-shadow: 0 1px 2px rgb(15 23 42 / 0.04);
+}
+
+.wallpaper-action-btn:hover:not(:disabled) {
+  color: var(--color-text-primary);
+  border-color: rgb(15 23 42 / 0.18);
+  transform: translateY(-1px);
+}
+
+.wallpaper-action-btn.secondary {
+  color: var(--color-error);
+}
+
+.wallpaper-action-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
 }
 
 .date-picker-dropdown {

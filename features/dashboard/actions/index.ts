@@ -12,6 +12,10 @@ import {
   saveTargetsForAgent,
   toggleActivityStatusForAgent,
 } from "../services/dashboard-actions.service";
+import {
+  removeWallpaperForUser,
+  uploadWallpaperForUser,
+} from "../services/wallpaper.service";
 import type { AgentTargets } from "../data/targets.repository";
 
 export async function saveActivityAction(
@@ -50,4 +54,27 @@ export async function saveAgentTargetsAction(
 
   revalidatePath("/dashboard");
   return result;
+}
+
+export async function uploadWallpaperAction(
+  formData: FormData
+): Promise<{ wallpaperUrl: string }> {
+  const user = await getRequiredCurrentUser();
+  const file = formData.get("wallpaper");
+
+  if (!(file instanceof File)) {
+    throw new Error("Pilih file wallpaper terlebih dahulu");
+  }
+
+  const wallpaper = await uploadWallpaperForUser(user.id, file);
+  revalidatePath("/dashboard");
+  return { wallpaperUrl: wallpaper.wallpaperUrl };
+}
+
+export async function removeWallpaperAction(): Promise<{ wallpaperUrl: null }> {
+  const user = await getRequiredCurrentUser();
+
+  await removeWallpaperForUser(user.id);
+  revalidatePath("/dashboard");
+  return { wallpaperUrl: null };
 }

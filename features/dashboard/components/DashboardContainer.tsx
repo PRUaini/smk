@@ -24,12 +24,19 @@ interface DashboardContainerProps {
   initialKodeAgent: string;
   initialActivities: Activity[];
   initialTargets?: AgentTargets | null;
+  initialWallpaperUrl?: string | null;
 }
 
-export default function DashboardContainer({ initialKodeAgent, initialActivities, initialTargets }: DashboardContainerProps) {
+export default function DashboardContainer({
+  initialKodeAgent,
+  initialActivities,
+  initialTargets,
+  initialWallpaperUrl = null,
+}: DashboardContainerProps) {
   const { toasts, showToast, dismissToast } = useToast();
   const [activities, setActivities] = useState<Activity[]>(initialActivities);
   const [targetsData, setTargetsData] = useState<AgentTargets | null>(initialTargets ?? null);
+  const [wallpaperUrl, setWallpaperUrl] = useState<string | null>(initialWallpaperUrl);
   const [selectedYear, setSelectedYear] = useState<number>(() => new Date().getFullYear());
   const [selectedMonth, setSelectedMonth] = useState<number>(() => new Date().getMonth());
   const [autoFocusToday, setAutoFocusToday] = useState(true);
@@ -328,11 +335,25 @@ export default function DashboardContainer({ initialKodeAgent, initialActivities
     closeTargetsSidebar();
   };
 
+  const wallpaperStyle = wallpaperUrl
+    ? ({
+        "--dashboard-wallpaper-url": `url("${wallpaperUrl.replaceAll("\"", "\\\"")}")`,
+      } as React.CSSProperties & Record<string, string>)
+    : undefined;
+
   return (
-    <div className={`dashboard-layout-new ${isSidebarOpen ? "sidebar-expanded" : ""}`}>
+    <div
+      className={`dashboard-layout-new ${wallpaperUrl ? "has-wallpaper" : ""} ${isSidebarOpen ? "sidebar-expanded" : ""}`}
+      style={wallpaperStyle}
+    >
       {/* Main Content Area */}
       <main className="dashboard-main-new">
-        <DashboardHeader kodeAgent={initialKodeAgent} />
+        <DashboardHeader
+          kodeAgent={initialKodeAgent}
+          initialWallpaperUrl={wallpaperUrl}
+          onWallpaperChange={setWallpaperUrl}
+          onToast={showToast}
+        />
 
         {/* Tab Selection Row (Segmented tab + Actions) */}
         <div className="dashboard-tab-row">
