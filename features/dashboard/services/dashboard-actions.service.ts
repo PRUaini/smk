@@ -9,7 +9,7 @@ import {
 } from "../data/targets.repository";
 import { activityActionSchema } from "../schemas/activity.schema";
 import { targetsFormSchema } from "../schemas/targets.schema";
-import { calculateActivityPoints } from "../constants";
+import { OTHER_ACTIVITY_TYPE, calculateActivityPoints } from "../constants";
 import type { Activity, ActivityType } from "../types";
 
 export async function saveActivityForAgent(
@@ -23,13 +23,25 @@ export async function saveActivityForAgent(
 
   const validatedData = validated.data;
   const poin = calculateActivityPoints(validatedData.kegiatan as ActivityType[]);
+  const isOthersActivity =
+    validatedData.kegiatan.length === 1 &&
+    validatedData.kegiatan[0] === OTHER_ACTIVITY_TYPE;
+  const normalizedData = isOthersActivity
+    ? {
+        ...validatedData,
+        nasabah: "",
+        kontakNasabah: "",
+        produk: "",
+        api: undefined,
+      }
+    : validatedData;
 
-  if (validatedData.id) {
-    const { id, ...payload } = validatedData;
+  if (normalizedData.id) {
+    const { id, ...payload } = normalizedData;
     return updateActivity(id, agentId, { ...payload, poin });
   }
 
-  return createActivity(agentId, { ...validatedData, poin });
+  return createActivity(agentId, { ...normalizedData, poin });
 }
 
 export async function toggleActivityStatusForAgent(

@@ -7,6 +7,7 @@ import {
   DASHBOARD_END_TIME_SLOTS,
   DASHBOARD_TIME_SLOTS,
   DEFAULT_DASHBOARD_START_TIME,
+  OTHER_ACTIVITY_TYPE,
   calculateActivityPoints,
   getNextDashboardTimeSlot,
   isValidDashboardTimeRange,
@@ -93,6 +94,7 @@ export default function ActivitySidebar({
   const waktuSelesai = useWatch({ control: form.control, name: "waktuSelesai" });
 
   const hasClosing = kegiatan.some((k) => CLOSING_TYPES.has(k as ActivityType));
+  const isOthersSelected = kegiatan.includes(OTHER_ACTIVITY_TYPE);
   const totalPoints = calculateActivityPoints(kegiatan);
   const endTimeOptions = React.useMemo(
     () => DASHBOARD_END_TIME_SLOTS.filter((time) => !waktu || isValidDashboardTimeRange(waktu, time)),
@@ -101,9 +103,16 @@ export default function ActivitySidebar({
 
   const toggleKegiatan = (type: ActivityType) => {
     const current = form.getValues("kegiatan") as ActivityType[];
-    const updated = current.includes(type)
-      ? current.filter((k) => k !== type)
-      : [...current, type];
+    let updated: ActivityType[];
+
+    if (current.includes(type)) {
+      updated = current.filter((k) => k !== type);
+    } else if (type === OTHER_ACTIVITY_TYPE) {
+      updated = [OTHER_ACTIVITY_TYPE];
+    } else {
+      updated = [...current.filter((k) => k !== OTHER_ACTIVITY_TYPE), type];
+    }
+
     form.setValue("kegiatan", updated, { shouldValidate: true });
   };
 
@@ -126,6 +135,15 @@ export default function ActivitySidebar({
       form.setValue("waktuSelesai", getNextDashboardTimeSlot(waktu), { shouldValidate: true });
     }
   }, [form, waktu, waktuSelesai]);
+
+  React.useEffect(() => {
+    if (!isOthersSelected) return;
+
+    form.setValue("nasabah", "", { shouldValidate: true });
+    form.setValue("kontakNasabah", "");
+    form.setValue("produk", "");
+    form.setValue("api", "");
+  }, [form, isOthersSelected]);
 
   const handleSubmit = (data: ActivityFormData) => {
     onSave(buildActivityPayload(data, selectedActivity?.status, selectedActivity?.id));
@@ -308,60 +326,62 @@ export default function ActivitySidebar({
             </div>
           </section>
 
-          <section className="activity-form-section" aria-labelledby="activity-extra-section">
-            <div className="activity-section-heading" id="activity-extra-section">
-              <SectionIcon type="info" />
-              <span>Informasi Tambahan</span>
-            </div>
+          {!isOthersSelected && (
+            <section className="activity-form-section" aria-labelledby="activity-extra-section">
+              <div className="activity-section-heading" id="activity-extra-section">
+                <SectionIcon type="info" />
+                <span>Informasi Tambahan</span>
+              </div>
 
-            <div className="form-group">
-              <label className="form-label" htmlFor="activity-nasabah">Nama Nasabah</label>
-              <input
-                id="activity-nasabah"
-                type="text"
-                className="form-input"
-                placeholder="Nama calon nasabah..."
-                {...form.register("nasabah")}
-              />
-              <FieldError message={form.formState.errors.nasabah?.message} />
-            </div>
+              <div className="form-group">
+                <label className="form-label" htmlFor="activity-nasabah">Nama Nasabah</label>
+                <input
+                  id="activity-nasabah"
+                  type="text"
+                  className="form-input"
+                  placeholder="Nama calon nasabah..."
+                  {...form.register("nasabah")}
+                />
+                <FieldError message={form.formState.errors.nasabah?.message} />
+              </div>
 
-            <div className="form-group">
-              <label className="form-label" htmlFor="activity-kontak">Kontak Nasabah (Opsional)</label>
-              <input
-                id="activity-kontak"
-                type="text"
-                className="form-input"
-                placeholder="Kontak calon nasabah..."
-                {...form.register("kontakNasabah")}
-              />
-            </div>
+              <div className="form-group">
+                <label className="form-label" htmlFor="activity-kontak">Kontak Nasabah (Opsional)</label>
+                <input
+                  id="activity-kontak"
+                  type="text"
+                  className="form-input"
+                  placeholder="Kontak calon nasabah..."
+                  {...form.register("kontakNasabah")}
+                />
+              </div>
 
-            <div className="form-group">
-              <label className="form-label" htmlFor="activity-produk">Produk (Opsional)</label>
-              <input
-                id="activity-produk"
-                type="text"
-                className="form-input"
-                placeholder="Nama produk..."
-                {...form.register("produk")}
-              />
-            </div>
+              <div className="form-group">
+                <label className="form-label" htmlFor="activity-produk">Produk (Opsional)</label>
+                <input
+                  id="activity-produk"
+                  type="text"
+                  className="form-input"
+                  placeholder="Nama produk..."
+                  {...form.register("produk")}
+                />
+              </div>
 
-            <div className="form-group">
-              <label className="form-label" htmlFor="activity-api">
-                Annualized Premium Income (API) {hasClosing ? "(Wajib)" : "(Opsional)"}
-              </label>
-              <input
-                id="activity-api"
-                type="number"
-                className="form-input"
-                placeholder="Contoh: 10000000"
-                {...form.register("api")}
-              />
-              <FieldError message={form.formState.errors.api?.message} />
-            </div>
-          </section>
+              <div className="form-group">
+                <label className="form-label" htmlFor="activity-api">
+                  Annualized Premium Income (API) {hasClosing ? "(Wajib)" : "(Opsional)"}
+                </label>
+                <input
+                  id="activity-api"
+                  type="number"
+                  className="form-input"
+                  placeholder="Contoh: 10000000"
+                  {...form.register("api")}
+                />
+                <FieldError message={form.formState.errors.api?.message} />
+              </div>
+            </section>
+          )}
         </div>
 
         <div className="sidebar-actions">

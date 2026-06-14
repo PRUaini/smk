@@ -118,9 +118,9 @@ describe("activityFormSchema", () => {
       tanggal: "2026-01-05",
       waktu: "08:00",
       waktuSelesai: "09:00",
-      kegiatan: ["Others (0 poin)"],
+      kegiatan: ["Others"],
       catatan: "Kegiatan non-core",
-      nasabah: "Bapak Andi",
+      nasabah: "",
       kontakNasabah: "",
       produk: "",
     };
@@ -136,7 +136,27 @@ describe("activityFormSchema", () => {
     const payload = buildActivityPayload(formResult.data as ActivityFormData, "Belum");
 
     expect(payload.poin).toBe(0);
-    expect(payload.kegiatan).toEqual(["Others (0 poin)"]);
+    expect(payload.kegiatan).toEqual(["Others"]);
+    expect(payload.nasabah).toBe("");
+    expect(payload.kontakNasabah).toBe("");
+    expect(payload.produk).toBe("");
+    expect(payload.api).toBeUndefined();
+  });
+
+  it("rejects Others combined with core activities", () => {
+    const result = activityFormSchema.safeParse({
+      tanggal: "2026-01-05",
+      waktu: "08:00",
+      waktuSelesai: "09:00",
+      kegiatan: ["Others", "Chat Calon Nasabah"],
+      catatan: "",
+      nasabah: "",
+      kontakNasabah: "",
+      produk: "",
+    });
+
+    expect(result.success).toBe(false);
+    expect(result.error?.issues[0]?.message).toBe("Others tidak dapat digabung dengan kegiatan inti");
   });
 
   it("rejects empty or whitespace-only customer names", () => {

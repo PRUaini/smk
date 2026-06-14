@@ -25,6 +25,7 @@ export function isValidDashboardTimeRange(startTime: string, endTime: string): b
 }
 
 export const DAYS_OF_WEEK = ["Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu", "Minggu"] as const;
+export const OTHER_ACTIVITY_TYPE = "Others" as const;
 
 export const ACTIVITY_POINTS: Record<ActivityType, number> = {
   "Chat Calon Nasabah": 1,
@@ -40,7 +41,7 @@ export const ACTIVITY_POINTS: Record<ActivityType, number> = {
   "S3 / Motivasi": 3,
   "Coaching / Meeting Leader": 3,
   "Bawa teman ke BOP": 3,
-  "Others": 0,
+  [OTHER_ACTIVITY_TYPE]: 0,
 };
 
 export const ACTIVITY_DESCRIPTIONS: Record<ActivityType, string> = {
@@ -57,7 +58,7 @@ export const ACTIVITY_DESCRIPTIONS: Record<ActivityType, string> = {
   "S3 / Motivasi": "Sesi S3 atau kegiatan motivasi tim",
   "Coaching / Meeting Leader": "Coaching atau meeting dengan leader",
   "Bawa teman ke BOP": "Membawa teman atau prospek ke Business Opportunity Presentation",
-  "Others": "Aktivitas lain di luar kegiatan inti",
+  [OTHER_ACTIVITY_TYPE]: "Aktivitas lain di luar kegiatan inti",
 };
 
 export const CLOSING_TYPES: ReadonlySet<ActivityType> = new Set([

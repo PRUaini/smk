@@ -48,6 +48,32 @@ describe("dashboard action service", () => {
     expect(result).toEqual({ ...activityInput, id: "activity-1", poin: 4 });
   });
 
+  it("creates Others activities without additional customer info", async () => {
+    const { createActivity } = await import("../data/activities.repository");
+    const othersInput: Omit<Activity, "id"> = {
+      ...activityInput,
+      kegiatan: ["Others"],
+      poin: 99,
+      nasabah: "",
+      kontakNasabah: "",
+      produk: "",
+      api: undefined,
+    };
+    vi.mocked(createActivity).mockResolvedValue({
+      ...othersInput,
+      id: "activity-others",
+      poin: 0,
+    });
+
+    const result = await saveActivityForAgent("agent-1", othersInput);
+
+    expect(createActivity).toHaveBeenCalledWith("agent-1", {
+      ...othersInput,
+      poin: 0,
+    });
+    expect(result).toEqual({ ...othersInput, id: "activity-others", poin: 0 });
+  });
+
   it("updates existing activities with server-derived points", async () => {
     const { updateActivity } = await import("../data/activities.repository");
     vi.mocked(updateActivity).mockResolvedValue({ ...activityInput, id: "activity-1", poin: 4 });

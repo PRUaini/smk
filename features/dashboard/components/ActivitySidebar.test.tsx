@@ -184,13 +184,12 @@ describe("ActivitySidebar", () => {
     );
 
     fireEvent.click(screen.getByLabelText("Kegiatan"));
-    fireEvent.click(screen.getByText("Others (0 poin)"));
+    fireEvent.click(screen.getByText("Others"));
 
     expect(screen.getAllByText("0 poin")).toHaveLength(2);
+    expect(screen.queryByText("Informasi Tambahan")).not.toBeInTheDocument();
+    expect(screen.queryByLabelText("Nama Nasabah")).not.toBeInTheDocument();
 
-    fireEvent.change(screen.getByLabelText("Nama Nasabah"), {
-      target: { value: "Budi" },
-    });
     fireEvent.click(screen.getByRole("button", { name: "Simpan Aktivitas" }));
 
     await waitFor(() => {
@@ -198,8 +197,40 @@ describe("ActivitySidebar", () => {
         expect.objectContaining({
           kegiatan: ["Others"],
           poin: 0,
+          nasabah: "",
+          kontakNasabah: "",
+          produk: "",
+          api: undefined,
         })
       );
     });
+  });
+
+  it("keeps Others exclusive from core activities", () => {
+    const { container } = render(
+      <ActivitySidebar
+        selectedActivity={null}
+        selectedDate="2026-05-21"
+        selectedTime="08:00"
+        onSave={vi.fn()}
+        onDelete={vi.fn()}
+        isPending={false}
+        onClose={vi.fn()}
+      />
+    );
+
+    fireEvent.click(screen.getByLabelText("Kegiatan"));
+    fireEvent.click(screen.getByText("Chat Calon Nasabah"));
+    fireEvent.click(screen.getByText("Others"));
+
+    expect(container.querySelector(".selected-tags-row")).toHaveTextContent("Others");
+    expect(container.querySelector(".selected-tags-row")).not.toHaveTextContent("Chat Calon Nasabah");
+    expect(screen.queryByText("Informasi Tambahan")).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByText("Approach / Fact Finding"));
+
+    expect(container.querySelector(".selected-tags-row")).toHaveTextContent("Approach / Fact Finding");
+    expect(container.querySelector(".selected-tags-row")).not.toHaveTextContent("Others");
+    expect(screen.getByText("Informasi Tambahan")).toBeInTheDocument();
   });
 });

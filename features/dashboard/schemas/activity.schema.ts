@@ -4,6 +4,7 @@ import {
   CLOSING_TYPES,
   DASHBOARD_END_TIME_SLOTS,
   DASHBOARD_TIME_SLOTS,
+  OTHER_ACTIVITY_TYPE,
   calculateActivityPoints,
   isValidDashboardTimeRange,
 } from "../constants";
@@ -39,13 +40,39 @@ function addTimeRangeIssue(
   }
 }
 
+function isOthersOnly(kegiatan: ActivityType[]): boolean {
+  return kegiatan.length === 1 && kegiatan[0] === OTHER_ACTIVITY_TYPE;
+}
+
+function addActivityDetailsIssues(
+  data: { kegiatan: ActivityType[]; nasabah: string },
+  ctx: z.RefinementCtx
+) {
+  const hasOthers = data.kegiatan.includes(OTHER_ACTIVITY_TYPE);
+  if (hasOthers && data.kegiatan.length > 1) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "Others tidak dapat digabung dengan kegiatan inti",
+      path: ["kegiatan"],
+    });
+  }
+
+  if (!isOthersOnly(data.kegiatan) && data.nasabah.trim().length === 0) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "Nama Nasabah wajib diisi",
+      path: ["nasabah"],
+    });
+  }
+}
+
 export const activityFormSchema = z.object({
   tanggal: z.string().min(1, "Tanggal wajib diisi"),
   waktu: startTimeField,
   waktuSelesai: endTimeField,
   kegiatan: z.array(z.enum(activityTypes)).min(1, "Pilih minimal satu kegiatan"),
   catatan: z.string().max(200, "Catatan maksimal 200 karakter"),
-  nasabah: z.string().trim().min(1, "Nama Nasabah wajib diisi"),
+  nasabah: z.string().trim(),
   kontakNasabah: z.string(),
   produk: z.string(),
   api: z
@@ -58,6 +85,7 @@ export const activityFormSchema = z.object({
     .optional(),
 }).superRefine((data, ctx) => {
   addTimeRangeIssue(data, ctx);
+  addActivityDetailsIssues(data, ctx);
 
   const hasClosing = data.kegiatan.some((k) => CLOSING_TYPES.has(k as ActivityType));
   if (hasClosing && !data.api) {
@@ -76,6 +104,8 @@ export function buildActivityPayload(
   currentStatus?: ActivityStatus,
   id?: string
 ): Omit<Activity, "id"> & { id?: string } {
+  const isOthersActivity = isOthersOnly(formData.kegiatan as ActivityType[]);
+
   return {
     id,
     tanggal: formData.tanggal,
@@ -85,10 +115,10 @@ export function buildActivityPayload(
     poin: calculateActivityPoints(formData.kegiatan as ActivityType[]),
     status: currentStatus ?? "Belum",
     catatan: formData.catatan,
-    nasabah: formData.nasabah,
-    kontakNasabah: formData.kontakNasabah,
-    produk: formData.produk,
-    api: formData.api ? Number(formData.api) : undefined,
+    nasabah: isOthersActivity ? "" : formData.nasabah,
+    kontakNasabah: isOthersActivity ? "" : formData.kontakNasabah,
+    produk: isOthersActivity ? "" : formData.produk,
+    api: isOthersActivity ? undefined : formData.api ? Number(formData.api) : undefined,
   };
 }
 
@@ -100,12 +130,13 @@ export const activityActionSchema = z.object({
   kegiatan: z.array(z.enum(activityTypes)).min(1, "Pilih minimal satu kegiatan"),
   status: z.enum(activityStatuses),
   catatan: z.string().max(200, "Catatan maksimal 200 karakter"),
-  nasabah: z.string().trim().min(1, "Nama Nasabah wajib diisi"),
+  nasabah: z.string().trim(),
   kontakNasabah: z.string(),
   produk: z.string(),
   api: z.number().nonnegative("API tidak boleh negatif").optional(),
 }).superRefine((data, ctx) => {
   addTimeRangeIssue(data, ctx);
+  addActivityDetailsIssues(data, ctx);
 
   const hasClosing = data.kegiatan.some((k) => CLOSING_TYPES.has(k as ActivityType));
   if (hasClosing && !data.api && data.api !== 0) {
