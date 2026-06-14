@@ -9,6 +9,8 @@ vi.mock("../actions", () => ({
   toggleActivityStatusAction: vi.fn(),
   removeActivityAction: vi.fn(),
   saveAgentTargetsAction: vi.fn(),
+  uploadWallpaperAction: vi.fn(),
+  removeWallpaperAction: vi.fn(),
 }));
 
 vi.mock("@/features/auth/actions/logout", () => ({
@@ -173,6 +175,70 @@ describe("DashboardContainer", () => {
     fireEvent.click(screen.getByRole("button", { name: "Add Activity" }));
 
     expect(screen.getByRole("heading", { name: "Tambah Aktivitas" })).toBeInTheDocument();
+  });
+
+  it("keeps wallpaper controls inside the floating settings menu", () => {
+    render(
+      <DashboardContainer
+        initialKodeAgent="Agent"
+        initialActivities={[]}
+        initialTargets={null}
+      />
+    );
+
+    expect(screen.queryByText("Wallpaper Dashboard")).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Buka pengaturan" })).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Buka pengaturan" }));
+
+    expect(screen.getByRole("menu", { name: "Pengaturan dashboard" })).toBeInTheDocument();
+    expect(screen.getByText("Wallpaper Dashboard")).toBeInTheDocument();
+    expect(screen.getByLabelText("Pilih wallpaper dashboard")).toBeInTheDocument();
+  });
+
+  it("closes the settings menu when pressing Escape", () => {
+    render(
+      <DashboardContainer
+        initialKodeAgent="Agent"
+        initialActivities={[]}
+        initialTargets={null}
+      />
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Buka pengaturan" }));
+    expect(screen.getByRole("menu", { name: "Pengaturan dashboard" })).toBeInTheDocument();
+
+    fireEvent.keyDown(document, { key: "Escape" });
+    expect(screen.getByRole("menu", { name: "Pengaturan dashboard" })).toHaveClass("closing");
+
+    act(() => {
+      vi.advanceTimersByTime(180);
+    });
+
+    expect(screen.queryByRole("menu", { name: "Pengaturan dashboard" })).not.toBeInTheDocument();
+  });
+
+  it("closes the settings menu when opening the add activity panel", () => {
+    render(
+      <DashboardContainer
+        initialKodeAgent="Agent"
+        initialActivities={[]}
+        initialTargets={null}
+      />
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Buka pengaturan" }));
+    fireEvent.pointerDown(screen.getByRole("button", { name: "Add Activity" }));
+    fireEvent.click(screen.getByRole("button", { name: "Add Activity" }));
+
+    expect(screen.getByRole("heading", { name: "Tambah Aktivitas" })).toBeInTheDocument();
+    expect(screen.getByRole("menu", { name: "Pengaturan dashboard" })).toHaveClass("closing");
+
+    act(() => {
+      vi.advanceTimersByTime(180);
+    });
+
+    expect(screen.queryByRole("menu", { name: "Pengaturan dashboard" })).not.toBeInTheDocument();
   });
 
   it("defaults a new activity from the floating add button to 08:00-09:00", () => {

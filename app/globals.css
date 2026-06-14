@@ -954,31 +954,40 @@ body {
 
 .wallpaper-picker {
   display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  flex-wrap: wrap;
-  justify-content: flex-end;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.625rem;
+  justify-content: flex-start;
 }
 
 .wallpaper-picker-trigger {
   position: relative;
-  display: inline-flex;
+  display: flex;
   align-items: center;
-  gap: 0.4rem;
-  padding: 0.5rem 0.75rem;
-  border: 1px dashed rgb(239 68 68 / 0.35);
-  border-radius: 999px;
-  color: var(--color-primary);
-  background: rgb(254 242 242 / 0.85);
-  font-size: 0.75rem;
+  justify-content: space-between;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 0.875rem 1rem;
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  color: var(--color-text-primary);
+  background: white;
+  font-size: 0.85rem;
   font-weight: 800;
   cursor: pointer;
   transition: all var(--transition-fast);
 }
 
 .wallpaper-picker-trigger:hover {
-  background: var(--color-primary-subtle);
-  border-color: var(--color-primary);
+  background: var(--color-surface-secondary);
+  border-color: var(--color-text-tertiary);
+}
+
+.wallpaper-picker-trigger::after {
+  content: "Pilih file";
+  color: var(--color-primary);
+  font-size: 0.75rem;
+  font-weight: 800;
 }
 
 .wallpaper-picker-trigger input {
@@ -992,26 +1001,44 @@ body {
   cursor: not-allowed;
 }
 
-.wallpaper-action-btn {
-  border: 1px solid rgb(15 23 42 / 0.08);
-  background: white;
+.wallpaper-selected-file {
+  width: 100%;
+  font-size: 0.78rem;
+  font-weight: 700;
   color: var(--color-text-secondary);
-  border-radius: 999px;
-  padding: 0.5rem 0.75rem;
-  font-size: 0.72rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.wallpaper-action-btn {
+  border: none;
+  background: var(--color-primary);
+  color: white;
+  border-radius: 10px;
+  padding: 0.75rem 1rem;
+  font-size: 0.8rem;
   font-weight: 800;
   cursor: pointer;
   transition: all var(--transition-fast);
-  box-shadow: 0 1px 2px rgb(15 23 42 / 0.04);
+  box-shadow: 0 4px 14px rgba(239, 68, 68, 0.22);
 }
 
 .wallpaper-action-btn:hover:not(:disabled) {
-  color: var(--color-text-primary);
-  border-color: rgb(15 23 42 / 0.18);
+  background: var(--color-primary-hover);
+  color: white;
   transform: translateY(-1px);
 }
 
 .wallpaper-action-btn.secondary {
+  border: 1px solid var(--color-error-border);
+  background: var(--color-error-bg);
+  color: var(--color-error);
+  box-shadow: none;
+}
+
+.wallpaper-action-btn.secondary:hover:not(:disabled) {
+  background: var(--color-error-bg);
   color: var(--color-error);
 }
 
@@ -1977,12 +2004,14 @@ body {
   z-index: 90;
 }
 
-.notification-menu-wrapper {
+.notification-menu-wrapper,
+.settings-menu-wrapper {
   position: relative;
 }
 
 .notification-fab-btn,
-.fab-add-activity {
+.fab-add-activity,
+.settings-fab-btn {
   width: 52px;
   height: 52px;
   border-radius: 50%;
@@ -2002,7 +2031,8 @@ body {
 }
 
 .notification-fab-btn:hover,
-.fab-add-activity:hover {
+.fab-add-activity:hover,
+.settings-fab-btn:hover {
   background: var(--color-primary-hover);
   box-shadow: 0 6px 18px rgba(239, 68, 68, 0.5);
 }
@@ -2047,7 +2077,25 @@ body {
   animation: notificationDropdownIn 0.18s ease-out;
 }
 
+.settings-dropdown {
+  position: absolute;
+  right: 0;
+  bottom: calc(100% + 0.75rem);
+  width: min(320px, calc(100vw - 2.5rem));
+  overflow: hidden;
+  background: white;
+  border: 1px solid var(--color-border);
+  border-radius: 14px;
+  box-shadow: var(--shadow-xl);
+  transform-origin: bottom right;
+  animation: notificationDropdownIn 0.18s ease-out;
+}
+
 .notification-dropdown.closing {
+  animation: notificationDropdownOut 0.18s ease-in forwards;
+}
+
+.settings-dropdown.closing {
   animation: notificationDropdownOut 0.18s ease-in forwards;
 }
 
@@ -2069,6 +2117,44 @@ body {
   font-size: 0.85rem;
   font-weight: 800;
   color: var(--color-text-primary);
+}
+
+.settings-dropdown-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.875rem 1rem;
+  border-bottom: 1px solid var(--color-border);
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: var(--color-text-primary);
+}
+
+.settings-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1rem;
+}
+
+.settings-section-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.settings-section-copy h2 {
+  font-size: 0.9rem;
+  font-weight: 800;
+  color: var(--color-text-primary);
+}
+
+.settings-section-copy p {
+  font-size: 0.78rem;
+  line-height: 1.45;
+  color: var(--color-text-secondary);
+  font-weight: 600;
 }
 
 .notification-mark-all-btn {
@@ -2910,7 +2996,8 @@ body {
   }
 
   .notification-fab-btn,
-  .fab-add-activity {
+  .fab-add-activity,
+  .settings-fab-btn {
     width: 52px;
     height: 52px;
   }

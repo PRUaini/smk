@@ -8,12 +8,14 @@ interface WallpaperPickerProps {
   initialWallpaperUrl: string | null;
   onWallpaperChange: (wallpaperUrl: string | null) => void;
   onToast: (message: string, type: ToastType) => void;
+  onComplete?: () => void;
 }
 
 export default function WallpaperPicker({
   initialWallpaperUrl,
   onWallpaperChange,
   onToast,
+  onComplete,
 }: WallpaperPickerProps) {
   const [currentWallpaperUrl, setCurrentWallpaperUrl] = useState(initialWallpaperUrl);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -41,6 +43,7 @@ export default function WallpaperPicker({
         if (inputRef.current) inputRef.current.value = "";
         onWallpaperChange(result.wallpaperUrl);
         onToast("Wallpaper dashboard berhasil diperbarui", "success");
+        onComplete?.();
       } catch (error) {
         onToast(
           error instanceof Error ? error.message : "Gagal mengunggah wallpaper",
@@ -59,6 +62,7 @@ export default function WallpaperPicker({
         if (inputRef.current) inputRef.current.value = "";
         onWallpaperChange(null);
         onToast("Wallpaper dashboard berhasil dihapus", "success");
+        onComplete?.();
       } catch (error) {
         onToast(
           error instanceof Error ? error.message : "Gagal menghapus wallpaper",
@@ -81,6 +85,10 @@ export default function WallpaperPicker({
         />
         <span>Wallpaper</span>
       </label>
+
+      {selectedFile && (
+        <span className="wallpaper-selected-file">{selectedFile.name}</span>
+      )}
 
       <button
         type="button"

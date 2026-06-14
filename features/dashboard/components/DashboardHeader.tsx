@@ -1,21 +1,11 @@
 import React from "react";
 import LogoutButton from "@/features/auth/components/LogoutButton";
-import type { ToastType } from "../utils/useToast";
-import WallpaperPicker from "./WallpaperPicker";
 
 interface DashboardHeaderProps {
   kodeAgent: string;
-  initialWallpaperUrl: string | null;
-  onWallpaperChange: (wallpaperUrl: string | null) => void;
-  onToast: (message: string, type: ToastType) => void;
 }
 
-export default function DashboardHeader({
-  kodeAgent,
-  initialWallpaperUrl,
-  onWallpaperChange,
-  onToast,
-}: DashboardHeaderProps) {
+export default function DashboardHeader({ kodeAgent }: DashboardHeaderProps) {
   // Determine dynamic Indonesian greeting
   const getGreeting = () => {
     const hour = new Date().getHours();
@@ -53,12 +43,6 @@ export default function DashboardHeader({
       </div>
 
       <div className="header-actions">
-        <WallpaperPicker
-          initialWallpaperUrl={initialWallpaperUrl}
-          onWallpaperChange={onWallpaperChange}
-          onToast={onToast}
-        />
-
         {/* Logout Button */}
         <LogoutButton className="header-logout-offset" />
       </div>

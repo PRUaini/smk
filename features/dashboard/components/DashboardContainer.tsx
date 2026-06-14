@@ -15,6 +15,7 @@ import TargetsSidebar from "./TargetsSidebar";
 import { Toast, useToast } from "../utils/useToast";
 import ToastContainer from "./ToastContainer";
 import NotificationMenu from "./NotificationMenu";
+import DashboardSettingsMenu from "./DashboardSettingsMenu";
 import { buildActivityNotifications } from "../services/notifications.service";
 import { DEFAULT_DASHBOARD_START_TIME } from "../constants";
 const SIDEBAR_TRANSITION_MS = 250;
@@ -348,12 +349,7 @@ export default function DashboardContainer({
     >
       {/* Main Content Area */}
       <main className="dashboard-main-new">
-        <DashboardHeader
-          kodeAgent={initialKodeAgent}
-          initialWallpaperUrl={wallpaperUrl}
-          onWallpaperChange={setWallpaperUrl}
-          onToast={showToast}
-        />
+        <DashboardHeader kodeAgent={initialKodeAgent} />
 
         {/* Tab Selection Row (Segmented tab + Actions) */}
         <div className="dashboard-tab-row">
@@ -502,6 +498,12 @@ export default function DashboardContainer({
             </svg>
           </button>
         )}
+
+        <DashboardSettingsMenu
+          initialWallpaperUrl={wallpaperUrl}
+          onWallpaperChange={setWallpaperUrl}
+          onToast={showToast}
+        />
       </div>
 
       <ToastContainer toasts={visibleToasts} onDismiss={handleDismissToast} />
