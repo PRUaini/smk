@@ -12,12 +12,13 @@ import LaporanAktivitas from "./LaporanAktivitas";
 import DashboardWidgetBoundary from "./DashboardWidgetBoundary";
 import type { AgentTargets } from "../data/targets.repository";
 import TargetsSidebar from "./TargetsSidebar";
-import { useToast } from "../utils/useToast";
+import { Toast, useToast } from "../utils/useToast";
 import ToastContainer from "./ToastContainer";
 import NotificationMenu from "./NotificationMenu";
 import { buildActivityNotifications } from "../services/notifications.service";
 import { DEFAULT_DASHBOARD_START_TIME } from "../constants";
 const SIDEBAR_TRANSITION_MS = 250;
+const REMINDER_TOAST_PREFIX = "reminder-";
 
 interface DashboardContainerProps {
   initialKodeAgent: string;
@@ -134,6 +135,21 @@ export default function DashboardContainer({ initialKodeAgent, initialActivities
     [allNotifications, readNotificationIds]
   );
 
+  const reminderToasts = useMemo<Toast[]>(
+    () =>
+      notifications.map((notification) => ({
+        id: `${REMINDER_TOAST_PREFIX}${notification.id}`,
+        message: `Pengingat: ${notification.statusLabel} - ${notification.title} (${notification.description})`,
+        type: "info",
+      })),
+    [notifications]
+  );
+
+  const visibleToasts = useMemo(
+    () => [...reminderToasts, ...toasts],
+    [reminderToasts, toasts]
+  );
+
   const availableYears = useMemo(() => {
     const years = new Set<number>([new Date().getFullYear(), selectedYear]);
     activities.forEach((activity) => {
@@ -169,8 +185,23 @@ export default function DashboardContainer({ initialKodeAgent, initialActivities
     const activity = activities.find((item) => item.id === activityId);
     if (!activity) return;
 
+    const notification = allNotifications.find((item) => item.activityId === activityId);
+    if (notification) {
+      markNotificationRead(notification.id);
+    }
+
     closeTargetsSidebar();
     handleSelectActivity(activity);
+  };
+
+  const markNotificationRead = (notificationId: string) => {
+    setReadNotificationIds((current) => {
+      if (current.has(notificationId)) return current;
+
+      const next = new Set(current);
+      next.add(notificationId);
+      return next;
+    });
   };
 
   const handleMarkAllNotificationsRead = () => {
@@ -179,6 +210,15 @@ export default function DashboardContainer({ initialKodeAgent, initialActivities
       allNotifications.forEach((notification) => next.add(notification.id));
       return next;
     });
+  };
+
+  const handleDismissToast = (id: string) => {
+    if (id.startsWith(REMINDER_TOAST_PREFIX)) {
+      markNotificationRead(id.slice(REMINDER_TOAST_PREFIX.length));
+      return;
+    }
+
+    dismissToast(id);
   };
 
   const handleSelectTimeSlot = (dateStr: string, timeStr: string) => {
@@ -443,7 +483,7 @@ export default function DashboardContainer({ initialKodeAgent, initialActivities
         )}
       </div>
 
-      <ToastContainer toasts={toasts} onDismiss={dismissToast} />
+      <ToastContainer toasts={visibleToasts} onDismiss={handleDismissToast} />
     </div>
   );
 }

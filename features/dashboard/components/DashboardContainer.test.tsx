@@ -206,6 +206,43 @@ describe("DashboardContainer", () => {
 
     expect(screen.getByRole("heading", { name: "Edit Aktivitas" })).toBeInTheDocument();
     expect(screen.getByLabelText("Nama Nasabah")).toHaveValue("Budi");
+    expect(screen.queryByText(/Pengingat: Terlambat - Chat Calon Nasabah/)).not.toBeInTheDocument();
+    expect(screen.queryByText("1")).not.toBeInTheDocument();
+  });
+
+  it("shows reminder toasts for unread notifications", () => {
+    vi.setSystemTime(new Date(2026, 4, 25, 9, 0, 0));
+
+    render(
+      <DashboardContainer
+        initialKodeAgent="Agent"
+        initialActivities={[activity]}
+        initialTargets={null}
+      />
+    );
+
+    expect(screen.getByText("1")).toBeInTheDocument();
+    expect(screen.getByText(/Pengingat: Terlambat - Chat Calon Nasabah/)).toBeInTheDocument();
+  });
+
+  it("marks a notification read when dismissing its reminder toast", () => {
+    vi.setSystemTime(new Date(2026, 4, 25, 9, 0, 0));
+
+    render(
+      <DashboardContainer
+        initialKodeAgent="Agent"
+        initialActivities={[activity]}
+        initialTargets={null}
+      />
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Close notification" }));
+
+    expect(screen.queryByText(/Pengingat: Terlambat - Chat Calon Nasabah/)).not.toBeInTheDocument();
+    expect(screen.queryByText("1")).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Buka notifikasi" }));
+    expect(screen.getByText("Tidak ada notifikasi")).toBeInTheDocument();
   });
 
   it("marks all notifications as read from the notification menu", () => {
@@ -220,6 +257,7 @@ describe("DashboardContainer", () => {
     );
 
     expect(screen.getByText("1")).toBeInTheDocument();
+    expect(screen.getByText(/Pengingat: Terlambat - Chat Calon Nasabah/)).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: "Buka notifikasi" }));
     fireEvent.click(screen.getByRole("button", { name: "Tandai Semua" }));
@@ -232,6 +270,7 @@ describe("DashboardContainer", () => {
     });
 
     expect(screen.queryByText("1")).not.toBeInTheDocument();
+    expect(screen.queryByText(/Pengingat: Terlambat - Chat Calon Nasabah/)).not.toBeInTheDocument();
     expect(screen.getByText("Tidak ada notifikasi")).toBeInTheDocument();
   });
 
