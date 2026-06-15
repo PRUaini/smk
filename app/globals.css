@@ -893,12 +893,92 @@ body {
 }
 
 .dashboard-layout-new.has-wallpaper {
+  --dashboard-glass-bg: rgb(255 255 255 / 0.64);
+  --dashboard-glass-bg-strong: rgb(255 255 255 / 0.74);
+  --dashboard-glass-border: rgb(255 255 255 / 0.42);
+  --dashboard-glass-shadow: 0 12px 32px rgb(15 23 42 / 0.12);
+  --dashboard-glass-inner-border: inset 0 1px 0 rgb(255 255 255 / 0.5);
   background-image:
-    linear-gradient(135deg, rgb(248 250 252 / 0.9), rgb(255 245 245 / 0.78)),
+    linear-gradient(135deg, rgb(248 250 252 / 0.38), rgb(255 245 245 / 0.28)),
     var(--dashboard-wallpaper-url);
   background-size: cover;
   background-position: center;
   background-attachment: fixed;
+}
+
+.dashboard-layout-new.has-wallpaper .dashboard-header-new,
+.dashboard-layout-new.has-wallpaper .month-tabs-container,
+.dashboard-layout-new.has-wallpaper .segmented-control,
+.dashboard-layout-new.has-wallpaper .kpi-card,
+.dashboard-layout-new.has-wallpaper .weekly-calendar-card,
+.dashboard-layout-new.has-wallpaper .dashboard-footer-summary,
+.dashboard-layout-new.has-wallpaper .report-chart-card,
+.dashboard-layout-new.has-wallpaper .monthly-progress-main-card,
+.dashboard-layout-new.has-wallpaper .side-metric-item,
+.dashboard-layout-new.has-wallpaper .monthly-report-trigger-btn,
+.dashboard-layout-new.has-wallpaper .notification-dropdown,
+.dashboard-layout-new.has-wallpaper .settings-dropdown,
+.dashboard-layout-new.has-wallpaper .filter-dropdown-menu,
+.dashboard-layout-new.has-wallpaper .report-dropdown-selector,
+.dashboard-layout-new.has-wallpaper .edit-targets-trigger-btn {
+  background: var(--dashboard-glass-bg);
+  border-color: var(--dashboard-glass-border);
+  box-shadow: var(--dashboard-glass-shadow), var(--dashboard-glass-inner-border);
+  backdrop-filter: blur(18px) saturate(1.2);
+  -webkit-backdrop-filter: blur(18px) saturate(1.2);
+}
+
+.dashboard-layout-new.has-wallpaper .weekly-calendar-card {
+  --weekly-calendar-line: rgb(15 23 42 / 0.12);
+}
+
+.dashboard-layout-new.has-wallpaper .calendar-grid-header,
+.dashboard-layout-new.has-wallpaper .calendar-grid-footer {
+  background: rgb(255 255 255 / 0.48);
+}
+
+.dashboard-layout-new.has-wallpaper .calendar-cell:hover,
+.dashboard-layout-new.has-wallpaper .segmented-tab:hover,
+.dashboard-layout-new.has-wallpaper .month-tab-btn:hover,
+.dashboard-layout-new.has-wallpaper .report-dropdown-selector:hover,
+.dashboard-layout-new.has-wallpaper .edit-targets-trigger-btn:hover,
+.dashboard-layout-new.has-wallpaper .monthly-report-trigger-btn:hover,
+.dashboard-layout-new.has-wallpaper .filter-option:hover {
+  background: rgb(255 255 255 / 0.56);
+}
+
+.dashboard-layout-new.has-wallpaper .calendar-cell.active-day-col,
+.dashboard-layout-new.has-wallpaper .day-col-header.active-day,
+.dashboard-layout-new.has-wallpaper .footer-point-cell.active-day-col,
+.dashboard-layout-new.has-wallpaper .filter-option.active {
+  background: rgb(255 245 245 / 0.66);
+}
+
+.dashboard-layout-new.has-wallpaper .calendar-cell.active-day-col:hover {
+  background: rgb(255 245 245 / 0.78);
+}
+
+.dashboard-layout-new.has-wallpaper .activity-card-item,
+.dashboard-layout-new.has-wallpaper .more-activities-toggle,
+.dashboard-layout-new.has-wallpaper .month-tab-btn,
+.dashboard-layout-new.has-wallpaper .notification-bell-btn,
+.dashboard-layout-new.has-wallpaper .date-picker-dropdown,
+.dashboard-layout-new.has-wallpaper .wallpaper-picker-trigger {
+  background: var(--dashboard-glass-bg-strong);
+  border-color: rgb(255 255 255 / 0.5);
+  backdrop-filter: blur(12px) saturate(1.15);
+  -webkit-backdrop-filter: blur(12px) saturate(1.15);
+}
+
+.dashboard-layout-new.has-wallpaper .week-tabs-container .month-tab-btn {
+  background: var(--dashboard-glass-bg-strong);
+}
+
+.dashboard-layout-new.has-wallpaper .month-tab-btn.active,
+.dashboard-layout-new.has-wallpaper .segmented-tab.active,
+.dashboard-layout-new.has-wallpaper .week-tabs-container .month-tab-btn.active {
+  background: var(--color-primary);
+  color: white;
 }
 
 .dashboard-main-new {
