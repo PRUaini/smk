@@ -342,10 +342,11 @@ describe("DashboardContainer", () => {
 
   it("replaces a new optimistic activity id with the persisted id before editing", async () => {
     vi.useRealTimers();
+    const todayStr = new Date().toISOString().split("T")[0];
     const savedActivity: Activity = {
       ...activity,
       id: "persisted-activity",
-      tanggal: "2026-06-08",
+      tanggal: todayStr,
       waktu: "08:00",
       waktuSelesai: "09:00",
     };

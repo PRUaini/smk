@@ -18,7 +18,7 @@ describe("LoginForm", () => {
     expect(screen.getByLabelText("Kode Agent")).toHaveAttribute("placeholder", "Masukkan kode agent");
     expect(screen.getByLabelText("Password")).toHaveAttribute("placeholder", "Masukkan password");
     expect(screen.getByRole("button", { name: "Masuk" })).toBeInTheDocument();
-    expect(screen.getByText("© 2026 PRUaini Group")).toBeInTheDocument();
+    expect(screen.queryByText("© 2026 PRUaini Group")).not.toBeInTheDocument();
     expect(container.querySelector(".banner-illustration-glass")).not.toBeInTheDocument();
     expect(container.querySelector(".login-card-header")).not.toBeInTheDocument();
   });

@@ -1,4 +1,5 @@
 import { fireEvent, render, screen, within } from "@testing-library/react";
+import { readFileSync } from "fs";
 import { describe, expect, it } from "vitest";
 import type { DashboardTargets } from "../types";
 import LaporanAktivitas from "./LaporanAktivitas";
@@ -82,5 +83,18 @@ describe("LaporanAktivitas", () => {
     expect(screen.getByRole("button", { name: "Mingguan" })).toHaveClass("active");
     expect(screen.getByText("Ringkasan Progres Mingguan")).toBeInTheDocument();
     expect(within(chart).getAllByText("40%").length).toBeGreaterThan(0);
+  });
+
+  it("defines progress bar fill colors for every report KPI accent", () => {
+    const css = readFileSync("app/globals.css", "utf8");
+
+    expect(css).toContain(".kpi-progress-bar.bg-red");
+    expect(css).toContain("background-color: var(--color-primary)");
+    expect(css).toContain(".kpi-progress-bar.bg-purple");
+    expect(css).toContain("background-color: var(--color-dashboard-purple)");
+    expect(css).toContain(".kpi-progress-bar.bg-green");
+    expect(css).toContain("background-color: var(--color-dashboard-green)");
+    expect(css).toContain(".kpi-progress-bar.bg-orange");
+    expect(css).toContain("background-color: var(--color-dashboard-orange)");
   });
 });

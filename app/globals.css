@@ -1404,6 +1404,22 @@ body {
   transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+.kpi-progress-bar.bg-red {
+  background-color: var(--color-primary);
+}
+
+.kpi-progress-bar.bg-purple {
+  background-color: var(--color-dashboard-purple);
+}
+
+.kpi-progress-bar.bg-green {
+  background-color: var(--color-dashboard-green);
+}
+
+.kpi-progress-bar.bg-orange {
+  background-color: var(--color-dashboard-orange);
+}
+
 .kpi-card-footer {
   display: flex;
   justify-content: space-between;
@@ -3549,6 +3565,10 @@ body {
   width: 8px;
   height: 8px;
   border-radius: 50%;
+}
+
+.legend-dot.bg-red {
+  background-color: var(--color-primary);
 }
 
 .legend-box {
