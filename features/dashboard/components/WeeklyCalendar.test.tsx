@@ -66,6 +66,10 @@ describe("WeeklyCalendar", () => {
     expect(container.querySelector(".time-col-header")).not.toBeInTheDocument();
     expect(container.querySelector(".time-cell")).not.toBeInTheDocument();
     expect(container.querySelector(".time-col-footer")).not.toBeInTheDocument();
+    const gridTable = container.querySelector(".calendar-grid-table");
+    expect(gridTable).toContainElement(container.querySelector(".calendar-grid-header"));
+    expect(gridTable).toContainElement(container.querySelector(".calendar-grid-body"));
+    expect(gridTable).toContainElement(container.querySelector(".calendar-grid-footer"));
     expect(container.querySelectorAll(".calendar-grid-header .day-col-header")).toHaveLength(7);
     expect(container.querySelectorAll(".calendar-grid-row:first-child .calendar-cell")).toHaveLength(7);
     expect(container.querySelectorAll(".calendar-grid-footer .footer-point-cell")).toHaveLength(7);

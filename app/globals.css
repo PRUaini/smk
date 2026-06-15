@@ -1437,8 +1437,13 @@ body {
 
 .weekly-grid-container {
   width: 100%;
-  min-width: 900px;
+  min-width: 0;
   overflow-x: auto;
+}
+
+.calendar-grid-table {
+  width: 100%;
+  min-width: 900px;
 }
 
 .weekly-empty-state {
@@ -1534,6 +1539,7 @@ body {
 .calendar-grid-header {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
+  width: 100%;
   border-bottom: 1.5px solid var(--weekly-calendar-line);
   background: var(--color-surface-secondary);
 }
@@ -1590,6 +1596,7 @@ body {
 .calendar-grid-row {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
+  width: 100%;
 }
 
 .calendar-cell {
@@ -1887,6 +1894,7 @@ body {
 .calendar-grid-footer {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
+  width: 100%;
   border-top: 1.5px solid var(--weekly-calendar-line);
   background: var(--color-surface-secondary);
   font-weight: 700;
@@ -2938,10 +2946,7 @@ body {
     justify-content: center;
   }
 
-  .calendar-grid-header,
-  .calendar-grid-row,
-  .calendar-grid-footer {
-    grid-template-columns: repeat(7, minmax(104px, 1fr));
+  .calendar-grid-table {
     min-width: 728px;
   }
 
@@ -3220,10 +3225,7 @@ body {
     padding: 0.45rem 0.65rem;
   }
 
-  .calendar-grid-header,
-  .calendar-grid-row,
-  .calendar-grid-footer {
-    grid-template-columns: repeat(7, 104px);
+  .calendar-grid-table {
     min-width: 728px;
   }
 

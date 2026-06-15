@@ -200,85 +200,87 @@ export default function WeeklyCalendar({
           </div>
         )}
 
-        <div className="calendar-grid-header">
-          {weekDates.map((d) => (
-            <div
-              key={d.formatted}
-              className={`day-col-header ${isToday(d.formatted) ? "active-day" : ""}`}
-            >
-              <span className="day-name">{d.dayName}</span>
-              <span className="day-date">{d.label}</span>
-            </div>
-          ))}
-        </div>
+        <div className="calendar-grid-table">
+          <div className="calendar-grid-header">
+            {weekDates.map((d) => (
+              <div
+                key={d.formatted}
+                className={`day-col-header ${isToday(d.formatted) ? "active-day" : ""}`}
+              >
+                <span className="day-name">{d.dayName}</span>
+                <span className="day-date">{d.label}</span>
+              </div>
+            ))}
+          </div>
 
-        <div className="calendar-grid-body">
-          <div className="calendar-grid-row">
-            {weekDates.map((d) => {
-              const dayActivities = weeklyActivities
-                .filter((act) => act.tanggal === d.formatted)
-                .sort(compareActivityTime);
-              const isActiveDay = isToday(d.formatted);
+          <div className="calendar-grid-body">
+            <div className="calendar-grid-row">
+              {weekDates.map((d) => {
+                const dayActivities = weeklyActivities
+                  .filter((act) => act.tanggal === d.formatted)
+                  .sort(compareActivityTime);
+                const isActiveDay = isToday(d.formatted);
 
-              return (
-                <div
-                  key={d.formatted}
-                  className={`calendar-cell ${isActiveDay ? "active-day-col" : ""}`}
-                  style={{
-                    display: "flex",
-                    flexDirection: "column",
-                    justifyContent: "flex-start",
-                    alignItems: "stretch",
-                    minHeight: "220px",
-                    padding: "0.5rem",
-                    gap: "0.5rem",
-                  }}
-                  onClick={(e) => {
-                    const target = e.target as HTMLElement;
-                    if (!target.closest(".activity-card-item") && !target.closest(".empty-cell-hover-indicator")) {
-                      onSelectTimeSlot(d.formatted, DEFAULT_DASHBOARD_START_TIME);
-                    }
-                  }}
-                >
-                  {dayActivities.length > 0 && (
-                    <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem", width: "100%" }}>
-                      {dayActivities.map((act) => renderActivityCard(act))}
-                    </div>
-                  )}
-
+                return (
                   <div
-                    className="empty-cell-hover-indicator"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onSelectTimeSlot(d.formatted, DEFAULT_DASHBOARD_START_TIME);
-                    }}
+                    key={d.formatted}
+                    className={`calendar-cell ${isActiveDay ? "active-day-col" : ""}`}
                     style={{
-                      flex: 1,
                       display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      width: "100%",
-                      minHeight: "50px",
+                      flexDirection: "column",
+                      justifyContent: "flex-start",
+                      alignItems: "stretch",
+                      minHeight: "220px",
+                      padding: "0.5rem",
+                      gap: "0.5rem",
+                    }}
+                    onClick={(e) => {
+                      const target = e.target as HTMLElement;
+                      if (!target.closest(".activity-card-item") && !target.closest(".empty-cell-hover-indicator")) {
+                        onSelectTimeSlot(d.formatted, DEFAULT_DASHBOARD_START_TIME);
+                      }
                     }}
                   >
-                    + Tambah
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
+                    {dayActivities.length > 0 && (
+                      <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem", width: "100%" }}>
+                        {dayActivities.map((act) => renderActivityCard(act))}
+                      </div>
+                    )}
 
-        <div className="calendar-grid-footer">
-          {weekDates.map((d) => (
-            <div
-              key={`footer-${d.formatted}`}
-              className={`footer-point-cell ${isToday(d.formatted) ? "active-day-col" : ""}`}
-            >
-              <span className="total-label">Total Poin</span>
-              <span className="total-points-value">{getDailyPoints(d.formatted)}</span>
+                    <div
+                      className="empty-cell-hover-indicator"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onSelectTimeSlot(d.formatted, DEFAULT_DASHBOARD_START_TIME);
+                      }}
+                      style={{
+                        flex: 1,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        width: "100%",
+                        minHeight: "50px",
+                      }}
+                    >
+                      + Tambah
+                    </div>
+                  </div>
+                );
+              })}
             </div>
-          ))}
+          </div>
+
+          <div className="calendar-grid-footer">
+            {weekDates.map((d) => (
+              <div
+                key={`footer-${d.formatted}`}
+                className={`footer-point-cell ${isToday(d.formatted) ? "active-day-col" : ""}`}
+              >
+                <span className="total-label">Total Poin</span>
+                <span className="total-points-value">{getDailyPoints(d.formatted)}</span>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </div>
