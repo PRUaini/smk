@@ -106,6 +106,47 @@ describe("WeeklyCalendar", () => {
     expect(screen.getByText("08123456789")).toBeInTheDocument();
   });
 
+  it("renders long activity card content inside the card", () => {
+    const longCustomerName = "Budi Santoso Dengan Nama Sangat Panjang Untuk Menguji Bungkus Teks";
+    const longContact = "08123456789012345678901234567890";
+    const longProduct = "Produk Perlindungan Masa Depan Dengan Nama Sangat Panjang";
+    const longNote = "Catatan aktivitas yang sangat panjang untuk memastikan konten kartu aktivitas tetap tampil lengkap dan dapat membungkus di dalam kartu.";
+
+    const { container } = render(
+      <WeeklyCalendar
+        selectedMonth={0}
+        selectedYear={2026}
+        activities={[
+          {
+            id: "activity-long-content",
+            tanggal: "2026-01-05",
+            waktu: "08:00",
+            waktuSelesai: "09:00",
+            kegiatan: ["Coaching / Meeting Leader"],
+            poin: 3,
+            status: "Belum",
+            catatan: longNote,
+            nasabah: longCustomerName,
+            kontakNasabah: longContact,
+            produk: longProduct,
+          },
+        ]}
+        selectedActivityId={null}
+        onSelectActivity={vi.fn()}
+        onSelectTimeSlot={vi.fn()}
+        onToggleComplete={vi.fn()}
+      />
+    );
+
+    const card = container.querySelector(".activity-card-item");
+
+    expect(card).toHaveTextContent("Coaching / Meeting Leader");
+    expect(card).toHaveTextContent(longCustomerName);
+    expect(card).toHaveTextContent(longContact);
+    expect(card).toHaveTextContent(longProduct);
+    expect(card).toHaveTextContent(longNote);
+  });
+
   it("sorts activities by start time only", () => {
     render(
       <WeeklyCalendar
