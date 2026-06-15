@@ -11,6 +11,7 @@ import {
   calculateActivityPoints,
   getNextDashboardTimeSlot,
   isValidDashboardTimeRange,
+  shouldHideActivityExtraInfo,
 } from "../constants";
 import { activityFormSchema, buildActivityPayload, type ActivityFormData } from "../schemas/activity.schema";
 import { Activity, ActivityType } from "../types";
@@ -94,7 +95,7 @@ export default function ActivitySidebar({
   const waktuSelesai = useWatch({ control: form.control, name: "waktuSelesai" });
 
   const hasClosing = kegiatan.some((k) => CLOSING_TYPES.has(k as ActivityType));
-  const isOthersSelected = kegiatan.includes(OTHER_ACTIVITY_TYPE);
+  const hideExtraInfo = shouldHideActivityExtraInfo(kegiatan);
   const totalPoints = calculateActivityPoints(kegiatan);
   const endTimeOptions = React.useMemo(
     () => DASHBOARD_END_TIME_SLOTS.filter((time) => !waktu || isValidDashboardTimeRange(waktu, time)),
@@ -137,13 +138,13 @@ export default function ActivitySidebar({
   }, [form, waktu, waktuSelesai]);
 
   React.useEffect(() => {
-    if (!isOthersSelected) return;
+    if (!hideExtraInfo) return;
 
     form.setValue("nasabah", "", { shouldValidate: true });
     form.setValue("kontakNasabah", "");
     form.setValue("produk", "");
     form.setValue("api", "");
-  }, [form, isOthersSelected]);
+  }, [form, hideExtraInfo]);
 
   const handleSubmit = (data: ActivityFormData) => {
     onSave(buildActivityPayload(data, selectedActivity?.status, selectedActivity?.id));
@@ -326,7 +327,7 @@ export default function ActivitySidebar({
             </div>
           </section>
 
-          {!isOthersSelected && (
+          {!hideExtraInfo && (
             <section className="activity-form-section" aria-labelledby="activity-extra-section">
               <div className="activity-section-heading" id="activity-extra-section">
                 <SectionIcon type="info" />

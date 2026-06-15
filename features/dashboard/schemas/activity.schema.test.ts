@@ -143,6 +143,37 @@ describe("activityFormSchema", () => {
     expect(payload.api).toBeUndefined();
   });
 
+  it("accepts non-customer activities without additional customer info", () => {
+    const formData = {
+      tanggal: "2026-01-05",
+      waktu: "08:00",
+      waktuSelesai: "09:00",
+      kegiatan: ["Training", "S3 / Motivasi"],
+      catatan: "Team session",
+      nasabah: "",
+      kontakNasabah: "old-contact",
+      produk: "old-product",
+      api: "5000000",
+    };
+    const formResult = activityFormSchema.safeParse(formData);
+    const actionResult = activityActionSchema.safeParse({
+      ...formData,
+      status: "Belum",
+      api: 5000000,
+    });
+
+    expect(formResult.success).toBe(true);
+    expect(actionResult.success).toBe(true);
+
+    const payload = buildActivityPayload(formResult.data as ActivityFormData, "Belum");
+
+    expect(payload.poin).toBe(6);
+    expect(payload.nasabah).toBe("");
+    expect(payload.kontakNasabah).toBe("");
+    expect(payload.produk).toBe("");
+    expect(payload.api).toBeUndefined();
+  });
+
   it("rejects Others combined with core activities", () => {
     const result = activityFormSchema.safeParse({
       tanggal: "2026-01-05",

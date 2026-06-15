@@ -66,6 +66,14 @@ export const CLOSING_TYPES: ReadonlySet<ActivityType> = new Set([
   "NPA",
 ]);
 
+export const NO_EXTRA_INFO_ACTIVITY_TYPES: ReadonlySet<ActivityType> = new Set([
+  "Training",
+  "S3 / Motivasi",
+  "Coaching / Meeting Leader",
+  "Bawa teman ke BOP",
+  OTHER_ACTIVITY_TYPE,
+]);
+
 export const MEETING_TYPES: ReadonlySet<ActivityType> = new Set([
   "Approach / Fact Finding",
 ]);
@@ -73,6 +81,10 @@ export const MEETING_TYPES: ReadonlySet<ActivityType> = new Set([
 /** Calculate total points for a multi-select kegiatan array */
 export function calculateActivityPoints(kegiatan: ActivityType[]): number {
   return kegiatan.reduce((sum, k) => sum + (ACTIVITY_POINTS[k] ?? 0), 0);
+}
+
+export function shouldHideActivityExtraInfo(kegiatan: ActivityType[]): boolean {
+  return kegiatan.length > 0 && kegiatan.every((k) => NO_EXTRA_INFO_ACTIVITY_TYPES.has(k));
 }
 
 export const DEFAULT_TARGETS: Pick<

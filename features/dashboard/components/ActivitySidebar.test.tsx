@@ -206,6 +206,63 @@ describe("ActivitySidebar", () => {
     });
   });
 
+  it("hides additional information for non-customer activities", async () => {
+    const onSave = vi.fn();
+    render(
+      <ActivitySidebar
+        selectedActivity={null}
+        selectedDate="2026-05-21"
+        selectedTime="08:00"
+        onSave={onSave}
+        onDelete={vi.fn()}
+        isPending={false}
+        onClose={vi.fn()}
+      />
+    );
+
+    fireEvent.click(screen.getByLabelText("Kegiatan"));
+    fireEvent.click(screen.getByText("Training"));
+
+    expect(screen.queryByText("Informasi Tambahan")).not.toBeInTheDocument();
+    expect(screen.queryByLabelText("Nama Nasabah")).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Simpan Aktivitas" }));
+
+    await waitFor(() => {
+      expect(onSave).toHaveBeenCalledWith(
+        expect.objectContaining({
+          kegiatan: ["Training"],
+          poin: 3,
+          nasabah: "",
+          kontakNasabah: "",
+          produk: "",
+          api: undefined,
+        })
+      );
+    });
+  });
+
+  it("shows additional information when non-customer activities are mixed with customer activities", () => {
+    render(
+      <ActivitySidebar
+        selectedActivity={null}
+        selectedDate="2026-05-21"
+        selectedTime="08:00"
+        onSave={vi.fn()}
+        onDelete={vi.fn()}
+        isPending={false}
+        onClose={vi.fn()}
+      />
+    );
+
+    fireEvent.click(screen.getByLabelText("Kegiatan"));
+    fireEvent.click(screen.getByText("Training"));
+    fireEvent.click(screen.getByText("Chat Calon Nasabah"));
+
+    expect(screen.getByText("Informasi Tambahan")).toBeInTheDocument();
+    expect(screen.getByLabelText("Nama Nasabah")).toBeInTheDocument();
+  });
+
   it("keeps Others exclusive from core activities", () => {
     const { container } = render(
       <ActivitySidebar

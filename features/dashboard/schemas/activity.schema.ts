@@ -7,6 +7,7 @@ import {
   OTHER_ACTIVITY_TYPE,
   calculateActivityPoints,
   isValidDashboardTimeRange,
+  shouldHideActivityExtraInfo,
 } from "../constants";
 import type { Activity, ActivityStatus, ActivityType } from "../types";
 
@@ -40,10 +41,6 @@ function addTimeRangeIssue(
   }
 }
 
-function isOthersOnly(kegiatan: ActivityType[]): boolean {
-  return kegiatan.length === 1 && kegiatan[0] === OTHER_ACTIVITY_TYPE;
-}
-
 function addActivityDetailsIssues(
   data: { kegiatan: ActivityType[]; nasabah: string },
   ctx: z.RefinementCtx
@@ -57,7 +54,7 @@ function addActivityDetailsIssues(
     });
   }
 
-  if (!isOthersOnly(data.kegiatan) && data.nasabah.trim().length === 0) {
+  if (!shouldHideActivityExtraInfo(data.kegiatan) && data.nasabah.trim().length === 0) {
     ctx.addIssue({
       code: z.ZodIssueCode.custom,
       message: "Nama Nasabah wajib diisi",
@@ -104,7 +101,7 @@ export function buildActivityPayload(
   currentStatus?: ActivityStatus,
   id?: string
 ): Omit<Activity, "id"> & { id?: string } {
-  const isOthersActivity = isOthersOnly(formData.kegiatan as ActivityType[]);
+  const hideExtraInfo = shouldHideActivityExtraInfo(formData.kegiatan as ActivityType[]);
 
   return {
     id,
@@ -115,10 +112,10 @@ export function buildActivityPayload(
     poin: calculateActivityPoints(formData.kegiatan as ActivityType[]),
     status: currentStatus ?? "Belum",
     catatan: formData.catatan,
-    nasabah: isOthersActivity ? "" : formData.nasabah,
-    kontakNasabah: isOthersActivity ? "" : formData.kontakNasabah,
-    produk: isOthersActivity ? "" : formData.produk,
-    api: isOthersActivity ? undefined : formData.api ? Number(formData.api) : undefined,
+    nasabah: hideExtraInfo ? "" : formData.nasabah,
+    kontakNasabah: hideExtraInfo ? "" : formData.kontakNasabah,
+    produk: hideExtraInfo ? "" : formData.produk,
+    api: hideExtraInfo ? undefined : formData.api ? Number(formData.api) : undefined,
   };
 }
 

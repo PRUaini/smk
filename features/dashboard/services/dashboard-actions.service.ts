@@ -9,7 +9,7 @@ import {
 } from "../data/targets.repository";
 import { activityActionSchema } from "../schemas/activity.schema";
 import { targetsFormSchema } from "../schemas/targets.schema";
-import { OTHER_ACTIVITY_TYPE, calculateActivityPoints } from "../constants";
+import { calculateActivityPoints, shouldHideActivityExtraInfo } from "../constants";
 import type { Activity, ActivityType } from "../types";
 
 export async function saveActivityForAgent(
@@ -23,10 +23,8 @@ export async function saveActivityForAgent(
 
   const validatedData = validated.data;
   const poin = calculateActivityPoints(validatedData.kegiatan as ActivityType[]);
-  const isOthersActivity =
-    validatedData.kegiatan.length === 1 &&
-    validatedData.kegiatan[0] === OTHER_ACTIVITY_TYPE;
-  const normalizedData = isOthersActivity
+  const hideExtraInfo = shouldHideActivityExtraInfo(validatedData.kegiatan as ActivityType[]);
+  const normalizedData = hideExtraInfo
     ? {
         ...validatedData,
         nasabah: "",
