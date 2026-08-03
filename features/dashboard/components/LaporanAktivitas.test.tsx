@@ -9,16 +9,17 @@ const targets: DashboardTargets = {
   totalPoints: 250,
   targetMeetings: 40,
   totalMeetings: 20,
-  targetSales: 25,
-  totalSales: 10,
   activeDays: 12,
   totalDays: 31,
   targetWeeklyPoints: 125,
   totalWeeklyPoints: 50,
   targetWeeklyMeetings: 10,
   totalWeeklyMeetings: 4,
-  targetWeeklySales: 6,
-  totalWeeklySales: 2,
+  targetApi: 120000000,
+  targetApiBulanan: 10000000,
+  targetApiMingguan: 2500000,
+  periodeKerjaAwal: 1,
+  periodeKerjaAkhir: 12,
   totalApi: 10000000,
   totalAccumulatedApi: 25000000,
   totalWeeklyApi: 5000000,
@@ -77,7 +78,7 @@ describe("LaporanAktivitas", () => {
     fireEvent.click(screen.getByRole("button", { name: "Bulanan" }));
     expect(screen.getByRole("button", { name: "Bulanan" })).toHaveClass("active");
     expect(screen.getByText("Ringkasan Progres Bulanan")).toBeInTheDocument();
-    expect(within(chart).getAllByText("40%").length).toBeGreaterThan(0);
+    expect(within(chart).getAllByText("50%").length).toBeGreaterThan(0);
 
     fireEvent.click(screen.getByRole("button", { name: "Mingguan" }));
     expect(screen.getByRole("button", { name: "Mingguan" })).toHaveClass("active");

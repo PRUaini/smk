@@ -58,7 +58,7 @@ export default function LaporanAktivitas({ targets, activities, selectedMonth, s
   const isWeekly = reportPeriod === "weekly";
   const weeklyPointPct = calculatePercentage(targets.totalWeeklyPoints, targets.targetWeeklyPoints);
   const weeklyMeetingPct = calculatePercentage(targets.totalWeeklyMeetings, targets.targetWeeklyMeetings);
-  const weeklySalesPct = calculatePercentage(targets.totalWeeklySales, targets.targetWeeklySales);
+  const weeklyApiPct = calculatePercentage(weeklyMetrics.api, targets.targetApiMingguan);
 
   // 1. Day-to-day (Daily points in selected month)
   const dailyData = useMemo(() => {
@@ -118,7 +118,6 @@ export default function LaporanAktivitas({ targets, activities, selectedMonth, s
     return {
       points: completedYearActivities.reduce((sum, act) => sum + act.poin, 0),
       meetings: completedYearActivities.filter((act) => act.kegiatan.some((k) => MEETING_TYPES.has(k))).length,
-      sales: completedYearActivities.filter((act) => act.kegiatan.some((k) => CLOSING_TYPES.has(k))).length,
       api: yearActivities
         .filter((act) => act.kegiatan.some((k) => CLOSING_TYPES.has(k)))
         .reduce((sum, act) => sum + (act.api || 0), 0),
@@ -130,12 +129,11 @@ export default function LaporanAktivitas({ targets, activities, selectedMonth, s
   const yearlyTargetData = useMemo(() => {
     const targetPointsYr = targets.targetPoints * 12;
     const targetMeetingsYr = targets.targetMeetings * 12;
-    const targetSalesYr = targets.targetSales * 12;
 
     return {
       pointPct: calculatePercentage(yearlyMetrics.points, targetPointsYr),
       meetingPct: calculatePercentage(yearlyMetrics.meetings, targetMeetingsYr),
-      salesPct: calculatePercentage(yearlyMetrics.sales, targetSalesYr),
+      apiPct: calculatePercentage(yearlyMetrics.api, targets.targetApi),
       activeDaysPct: calculatePercentage(yearlyMetrics.activeDays, YEARLY_ACTIVE_DAYS_TARGET)
     };
   }, [targets, yearlyMetrics]);
@@ -148,13 +146,10 @@ export default function LaporanAktivitas({ targets, activities, selectedMonth, s
   const targetMeetings = isWeekly ? targets.targetWeeklyMeetings : isYearly ? targets.targetMeetings * 12 : targets.targetMeetings;
   const meetingPct = calculatePercentage(currentMeetings, targetMeetings);
 
-  const currentSales = isWeekly ? weeklyMetrics.sales : isYearly ? yearlyMetrics.sales : targets.totalSales;
-  const targetSales = isWeekly ? targets.targetWeeklySales : isYearly ? targets.targetSales * 12 : targets.targetSales;
-  const salesPct = calculatePercentage(currentSales, targetSales);
-
-  const currentApi = isWeekly ? weeklyMetrics.api : isYearly ? yearlyMetrics.api : targets.totalApi;
-  const collectedApi = isWeekly ? weeklyMetrics.api : isYearly ? yearlyMetrics.api : targets.totalAccumulatedApi;
-  const activeDaysPct = calculatePercentage(targets.activeDays, targets.totalDays);
+  const targetApiPeriod = isWeekly ? targets.targetApiMingguan : isYearly ? targets.targetApi : targets.targetApiBulanan;
+  const collectedApiPeriod = isWeekly ? weeklyMetrics.api : isYearly ? yearlyMetrics.api : targets.totalApi;
+  const remainingApiPeriod = Math.max(0, targetApiPeriod - collectedApiPeriod);
+  const apiPct = calculatePercentage(collectedApiPeriod, targetApiPeriod);
 
   // Select dynamic display metrics for the target comparisons chart
   const activePointPct =
@@ -167,15 +162,10 @@ export default function LaporanAktivitas({ targets, activities, selectedMonth, s
     reportPeriod === "monthly" ? calculatePercentage(targets.totalMeetings, targets.targetMeetings) :
     yearlyTargetData.meetingPct;
 
-  const activeSalesPct =
-    reportPeriod === "weekly" ? weeklySalesPct :
-    reportPeriod === "monthly" ? calculatePercentage(targets.totalSales, targets.targetSales) :
-    yearlyTargetData.salesPct;
-
-  const activeDaysPctForBar =
-    reportPeriod === "weekly" ? calculatePercentage(weeklyMetrics.activeDays || 0, DAYS_OF_WEEK.length) :
-    reportPeriod === "monthly" ? activeDaysPct :
-    yearlyTargetData.activeDaysPct;
+  const activeApiPct =
+    reportPeriod === "weekly" ? weeklyApiPct :
+    reportPeriod === "monthly" ? calculatePercentage(targets.totalApi, targets.targetApiBulanan) :
+    yearlyTargetData.apiPct;
 
   // Compute cumulative points (monthly or weekly cumulative)
   const cumulativeData = useMemo(() => {
@@ -378,7 +368,7 @@ export default function LaporanAktivitas({ targets, activities, selectedMonth, s
         )}
       </div>
 
-      {/* 4 KPI Cards */}
+      {/* 3 KPI Cards */}
       <div className="kpi-grid">
         {/* Total Poin Card */}
         <div className="kpi-card">
@@ -401,9 +391,6 @@ export default function LaporanAktivitas({ targets, activities, selectedMonth, s
           </div>
           <div className="kpi-card-footer">
             <span className="kpi-pct-attained">{pointPct}% Tercapai</span>
-            {!isWeekly && (
-              <span className="kpi-weekly-badge">Minggu ini: {targets.totalWeeklyPoints}/{targets.targetWeeklyPoints} ({weeklyPointPct}%)</span>
-            )}
           </div>
         </div>
 
@@ -431,42 +418,10 @@ export default function LaporanAktivitas({ targets, activities, selectedMonth, s
           </div>
           <div className="kpi-card-footer">
             <span className="kpi-pct-attained">{meetingPct}% Tercapai</span>
-            {!isWeekly && (
-              <span className="kpi-weekly-badge">Minggu ini: {targets.totalWeeklyMeetings}/{targets.targetWeeklyMeetings} ({weeklyMeetingPct}%)</span>
-            )}
           </div>
         </div>
 
-        {/* Penjualan Card */}
-        <div className="kpi-card">
-          <div className="kpi-card-header">
-            <div className="kpi-icon kpi-icon-green">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <circle cx="9" cy="21" r="1" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                <circle cx="20" cy="21" r="1" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
-            </div>
-            <div className="kpi-meta">
-              <span className="kpi-label">Penjualan</span>
-              <div className="kpi-value-row">
-                <span className="kpi-value">{currentSales}</span>
-                <span className="kpi-target">dari target {targetSales}</span>
-              </div>
-            </div>
-          </div>
-          <div className="kpi-progress-bar-wrapper">
-            <div className="kpi-progress-bar bg-green" style={{ width: `${Math.min(100, salesPct)}%` }} />
-          </div>
-          <div className="kpi-card-footer">
-            <span className="kpi-pct-attained">{salesPct}% Tercapai</span>
-            {!isWeekly && (
-              <span className="kpi-weekly-badge">Minggu ini: {targets.totalWeeklySales}/{targets.targetWeeklySales} ({weeklySalesPct}%)</span>
-            )}
-          </div>
-        </div>
-
-        {/* Total API Card */}
+        {/* Target API Card */}
         <div className="kpi-card">
           <div className="kpi-card-header">
             <div className="kpi-icon kpi-icon-orange">
@@ -477,19 +432,19 @@ export default function LaporanAktivitas({ targets, activities, selectedMonth, s
               </svg>
             </div>
             <div className="kpi-meta">
-              <span className="kpi-label">Total API</span>
+              <span className="kpi-label">{isWeekly ? "Sisa Target API Mingguan" : isYearly ? "Sisa Target API Tahunan" : "Sisa Target API Bulanan"}</span>
               <div className="kpi-value-row-stacked">
-                <span className="kpi-value">Rp {currentApi.toLocaleString("id-ID")}</span>
-                <span className="kpi-target-label">{isWeekly ? "akumulasi minggu ini" : isYearly ? "akumulasi tahun ini" : "akumulasi bulan ini"}</span>
+                <span className="kpi-value">Rp {remainingApiPeriod.toLocaleString("id-ID")}</span>
+                <span className="kpi-target-label">dari target Rp {targetApiPeriod.toLocaleString("id-ID")}</span>
               </div>
             </div>
           </div>
           <div className="kpi-progress-bar-wrapper">
-            <div className="kpi-progress-bar bg-orange" style={{ width: "100%" }} />
+            <div className="kpi-progress-bar bg-orange" style={{ width: `${Math.min(100, apiPct)}%` }} />
           </div>
           <div className="kpi-card-footer">
             <span className="kpi-pct-attained">
-              {isWeekly ? "Total API terkumpul minggu ini" : isYearly ? "Total API terkumpul tahun ini" : "Total API terkumpul"}: Rp {collectedApi.toLocaleString("id-ID")}
+              Total API Terkumpul: Rp {collectedApiPeriod.toLocaleString("id-ID")} ({apiPct}% Tercapai)
             </span>
           </div>
         </div>
@@ -694,7 +649,7 @@ export default function LaporanAktivitas({ targets, activities, selectedMonth, s
                   <span className="bar-column-label">Janji Pertemuan</span>
                 </div>
 
-                {/* Group 3: Penjualan */}
+                {/* Group 3: Target API */}
                 <div className="bar-group-column">
                   <div className="bar-visual-wrapper">
                     <div className="bar-gridlines">
@@ -708,35 +663,8 @@ export default function LaporanAktivitas({ targets, activities, selectedMonth, s
                     <div className="bar-pair-aligner">
                       {/* Actual Bar */}
                       <div className="bar-pill-outer">
-                        <span className="bar-percentage-label" style={{ color: "var(--color-dashboard-green)" }}>{activeSalesPct}%</span>
-                        <div className="bar-pill-fill" style={{ height: `${Math.min(100, activeSalesPct)}%`, backgroundColor: "var(--color-dashboard-green)" }} />
-                      </div>
-                      {/* Target Bar */}
-                      <div className="bar-pill-outer target">
-                        <span className="bar-percentage-label target">100%</span>
-                        <div className="bar-pill-fill-dashed" style={{ height: "100%", borderColor: "var(--color-dashboard-green)" }} />
-                      </div>
-                    </div>
-                  </div>
-                  <span className="bar-column-label">Penjualan</span>
-                </div>
-
-                {/* Group 4: Hari Aktif */}
-                <div className="bar-group-column">
-                  <div className="bar-visual-wrapper">
-                    <div className="bar-gridlines">
-                      <div className="bar-gridline" />
-                      <div className="bar-gridline" />
-                      <div className="bar-gridline" />
-                      <div className="bar-gridline" />
-                      <div className="bar-gridline" />
-                    </div>
-
-                    <div className="bar-pair-aligner">
-                      {/* Actual Bar */}
-                      <div className="bar-pill-outer">
-                        <span className="bar-percentage-label" style={{ color: "var(--color-dashboard-orange)" }}>{activeDaysPctForBar}%</span>
-                        <div className="bar-pill-fill" style={{ height: `${Math.min(100, activeDaysPctForBar)}%`, backgroundColor: "var(--color-dashboard-orange)" }} />
+                        <span className="bar-percentage-label" style={{ color: "var(--color-dashboard-orange)" }}>{activeApiPct}%</span>
+                        <div className="bar-pill-fill" style={{ height: `${Math.min(100, activeApiPct)}%`, backgroundColor: "var(--color-dashboard-orange)" }} />
                       </div>
                       {/* Target Bar */}
                       <div className="bar-pill-outer target">
@@ -745,7 +673,7 @@ export default function LaporanAktivitas({ targets, activities, selectedMonth, s
                       </div>
                     </div>
                   </div>
-                  <span className="bar-column-label">Hari Aktif</span>
+                  <span className="bar-column-label">Target API</span>
                 </div>
               </div>
             </div>

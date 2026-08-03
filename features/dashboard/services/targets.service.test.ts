@@ -119,7 +119,6 @@ describe("calculateDashboardTargets", () => {
 
     expect(targets.totalPoints).toBe(16); // 1 (a1) + 4 (a2) + 1 (a8) + 10 (a5)
     expect(targets.totalMeetings).toBe(1); // a2
-    expect(targets.totalSales).toBe(1); // a5
     expect(targets.activeDays).toBe(4);
     expect(targets.totalDays).toBe(31);
     expect(targets.totalApi).toBe(25000000); // a3 + a5
@@ -130,7 +129,6 @@ describe("calculateDashboardTargets", () => {
 
     expect(targets.totalWeeklyPoints).toBe(16);
     expect(targets.totalWeeklyMeetings).toBe(1);
-    expect(targets.totalWeeklySales).toBe(1);
   });
 
   it("returns zero totals when no activity exists for the month", () => {
@@ -138,7 +136,6 @@ describe("calculateDashboardTargets", () => {
 
     expect(targets.totalPoints).toBe(0);
     expect(targets.totalMeetings).toBe(0);
-    expect(targets.totalSales).toBe(0);
     expect(targets.activeDays).toBe(0);
   });
 
@@ -228,5 +225,17 @@ describe("calculateDashboardTargets", () => {
     expect(targets.totalPoints).toBe(10);
     expect(targets.totalApi).toBe(11000000);
     expect(targets.totalAccumulatedApi).toBe(11000000);
+  });
+
+  it("calculates monthly and weekly target API breakdown based on working period", () => {
+    const targets = calculateDashboardTargets([], 0, {
+      targetApi: 120000000,
+      periodeKerjaAwal: 1,
+      periodeKerjaAkhir: 12,
+    });
+
+    expect(targets.targetApi).toBe(120000000);
+    expect(targets.targetApiBulanan).toBe(10000000); // 120,000,000 / 12
+    expect(targets.targetApiMingguan).toBe(2500000); // 10,000,000 / 4 weeks in Jan 2026
   });
 });

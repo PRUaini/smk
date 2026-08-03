@@ -125,10 +125,11 @@ export default function DashboardContainer({
     const customTargets = targetsData ? {
       targetPoints: targetsData.targetPoints,
       targetMeetings: targetsData.targetMeetings,
-      targetSales: targetsData.targetSales,
       targetWeeklyPoints: targetsData.targetWeeklyPoints,
       targetWeeklyMeetings: targetsData.targetWeeklyMeetings,
-      targetWeeklySales: targetsData.targetWeeklySales,
+      targetApi: targetsData.targetApi,
+      periodeKerjaAwal: targetsData.periodeKerjaAwal,
+      periodeKerjaAkhir: targetsData.periodeKerjaAkhir,
     } : undefined;
     return calculateDashboardTargets(activities, selectedMonth, customTargets, selectedYear);
   }, [activities, selectedMonth, selectedYear, targetsData]);

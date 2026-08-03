@@ -4,10 +4,11 @@ export interface AgentTargets {
   kodeAgent: string;
   targetPoints: number;
   targetMeetings: number;
-  targetSales: number;
   targetWeeklyPoints: number;
   targetWeeklyMeetings: number;
-  targetWeeklySales: number;
+  targetApi: number;
+  periodeKerjaAwal: number;
+  periodeKerjaAkhir: number;
 }
 
 export async function getAgentTargets(kodeAgent: string): Promise<AgentTargets | null> {
@@ -29,10 +30,11 @@ export async function getAgentTargets(kodeAgent: string): Promise<AgentTargets |
     kodeAgent: data.kode_agent,
     targetPoints: data.target_points,
     targetMeetings: data.target_meetings,
-    targetSales: data.target_sales,
     targetWeeklyPoints: data.target_weekly_points,
     targetWeeklyMeetings: data.target_weekly_meetings,
-    targetWeeklySales: data.target_weekly_sales,
+    targetApi: data.target_api ?? 0,
+    periodeKerjaAwal: data.periode_kerja_awal ?? 1,
+    periodeKerjaAkhir: data.periode_kerja_akhir ?? 12,
   };
 }
 
@@ -45,10 +47,11 @@ export async function saveAgentTargets(kodeAgent: string, targets: Omit<AgentTar
         kode_agent: kodeAgent,
         target_points: targets.targetPoints,
         target_meetings: targets.targetMeetings,
-        target_sales: targets.targetSales,
         target_weekly_points: targets.targetWeeklyPoints,
         target_weekly_meetings: targets.targetWeeklyMeetings,
-        target_weekly_sales: targets.targetWeeklySales,
+        target_api: targets.targetApi,
+        periode_kerja_awal: targets.periodeKerjaAwal,
+        periode_kerja_akhir: targets.periodeKerjaAkhir,
         updated_at: new Date().toISOString(),
       },
       { onConflict: "kode_agent" }
@@ -65,9 +68,10 @@ export async function saveAgentTargets(kodeAgent: string, targets: Omit<AgentTar
     kodeAgent: data.kode_agent,
     targetPoints: data.target_points,
     targetMeetings: data.target_meetings,
-    targetSales: data.target_sales,
     targetWeeklyPoints: data.target_weekly_points,
     targetWeeklyMeetings: data.target_weekly_meetings,
-    targetWeeklySales: data.target_weekly_sales,
+    targetApi: data.target_api ?? targets.targetApi,
+    periodeKerjaAwal: data.periode_kerja_awal ?? targets.periodeKerjaAwal,
+    periodeKerjaAkhir: data.periode_kerja_akhir ?? targets.periodeKerjaAkhir,
   };
 }

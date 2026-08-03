@@ -18,10 +18,11 @@ export function calculateDashboardTargets(
       DashboardTargets,
       | "targetPoints"
       | "targetMeetings"
-      | "targetSales"
       | "targetWeeklyPoints"
       | "targetWeeklyMeetings"
-      | "targetWeeklySales"
+      | "targetApi"
+      | "periodeKerjaAwal"
+      | "periodeKerjaAkhir"
     >
   >,
   selectedYear = new Date().getFullYear()
@@ -75,17 +76,27 @@ export function calculateDashboardTargets(
     (activity) => activity.status === "Selesai"
   );
 
+  const targetApi = customTargets?.targetApi ?? DEFAULT_TARGETS.targetApi;
+  const periodeKerjaAwal = customTargets?.periodeKerjaAwal ?? DEFAULT_TARGETS.periodeKerjaAwal;
+  const periodeKerjaAkhir = customTargets?.periodeKerjaAkhir ?? DEFAULT_TARGETS.periodeKerjaAkhir;
+  const activeMonths = Math.max(1, periodeKerjaAkhir - periodeKerjaAwal + 1);
+  const targetApiBulanan = Math.round(targetApi / activeMonths);
+  const targetApiMingguan = Math.round(targetApiBulanan / Math.max(1, weeks.length));
+
   return {
     ...DEFAULT_TARGETS,
     ...customTargets,
+    targetApi,
+    periodeKerjaAwal,
+    periodeKerjaAkhir,
+    targetApiBulanan,
+    targetApiMingguan,
     totalPoints: sumPoints(completedMonthlyActivities),
     totalMeetings: countMeetings(completedMonthlyActivities),
-    totalSales: countSales(completedMonthlyActivities),
     activeDays: new Set(completedMonthlyActivities.map((activity) => activity.tanggal)).size,
     totalDays: getDaysInMonth(selectedYear, selectedMonth),
     totalWeeklyPoints: sumPoints(completedWeeklyActivities),
     totalWeeklyMeetings: countMeetings(completedWeeklyActivities),
-    totalWeeklySales: countSales(completedWeeklyActivities),
     totalApi: monthlyActivities
       .filter((activity) => activity.kegiatan.some((k) => CLOSING_TYPES.has(k)))
       .reduce((sum, activity) => sum + (activity.api || 0), 0),
@@ -104,10 +115,6 @@ function sumPoints(activities: Activity[]) {
 
 function countMeetings(activities: Activity[]) {
   return activities.filter((activity) => activity.kegiatan.some((k) => MEETING_TYPES.has(k))).length;
-}
-
-function countSales(activities: Activity[]) {
-  return activities.filter((activity) => activity.kegiatan.some((k) => CLOSING_TYPES.has(k))).length;
 }
 
 function getDaysInMonth(year: number, monthIndex: number) {

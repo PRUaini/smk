@@ -141,28 +141,31 @@ describe("dashboard action service", () => {
       kodeAgent: "agent001",
       targetPoints: 500,
       targetMeetings: 40,
-      targetSales: 25,
       targetWeeklyPoints: 125,
       targetWeeklyMeetings: 10,
-      targetWeeklySales: 6,
+      targetApi: 120000000,
+      periodeKerjaAwal: 1,
+      periodeKerjaAkhir: 12,
     });
 
     await saveTargetsForAgent("agent001", {
       targetPoints: 500,
       targetMeetings: 40,
-      targetSales: 25,
       targetWeeklyPoints: 125,
       targetWeeklyMeetings: 10,
-      targetWeeklySales: 6,
+      targetApi: 120000000,
+      periodeKerjaAwal: 1,
+      periodeKerjaAkhir: 12,
     });
 
     expect(saveAgentTargets).toHaveBeenCalledWith("agent001", {
       targetPoints: 500,
       targetMeetings: 40,
-      targetSales: 25,
       targetWeeklyPoints: 125,
       targetWeeklyMeetings: 10,
-      targetWeeklySales: 6,
+      targetApi: 120000000,
+      periodeKerjaAwal: 1,
+      periodeKerjaAkhir: 12,
     });
   });
 });

@@ -91,15 +91,17 @@ export const DEFAULT_TARGETS: Pick<
   DashboardTargets,
   | "targetPoints"
   | "targetMeetings"
-  | "targetSales"
   | "targetWeeklyPoints"
   | "targetWeeklyMeetings"
-  | "targetWeeklySales"
+  | "targetApi"
+  | "periodeKerjaAwal"
+  | "periodeKerjaAkhir"
 > = {
   targetPoints: 500,
   targetMeetings: 40,
-  targetSales: 25,
   targetWeeklyPoints: 125,
   targetWeeklyMeetings: 10,
-  targetWeeklySales: 6,
+  targetApi: 0,
+  periodeKerjaAwal: 1,
+  periodeKerjaAkhir: 12,
 };
