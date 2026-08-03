@@ -35,7 +35,7 @@ export default function KPIGrid({ targets }: KPIGridProps) {
           </div>
         </div>
         <div className="kpi-progress-bar-wrapper">
-          <div className="kpi-progress-bar bg-red" style={{ width: `${pointPct}%` }} />
+          <div className="kpi-progress-bar bg-red" style={{ width: `${Math.min(100, pointPct)}%` }} />
         </div>
         <div className="kpi-card-footer">
           <span>{pointPct}% Tercapai</span>
@@ -60,7 +60,7 @@ export default function KPIGrid({ targets }: KPIGridProps) {
           </div>
         </div>
         <div className="kpi-progress-bar-wrapper">
-          <div className="kpi-progress-bar bg-purple" style={{ width: `${meetingPct}%` }} />
+          <div className="kpi-progress-bar bg-purple" style={{ width: `${Math.min(100, meetingPct)}%` }} />
         </div>
         <div className="kpi-card-footer">
           <span>{meetingPct}% Tercapai</span>
@@ -86,7 +86,7 @@ export default function KPIGrid({ targets }: KPIGridProps) {
           </div>
         </div>
         <div className="kpi-progress-bar-wrapper">
-          <div className="kpi-progress-bar bg-orange" style={{ width: `${apiPct}%` }} />
+          <div className="kpi-progress-bar bg-orange" style={{ width: `${Math.min(100, apiPct)}%` }} />
         </div>
         <div className="kpi-card-footer">
           <span>Total API Terkumpul: Rp {targets.totalApi.toLocaleString("id-ID")} ({apiPct}% Tercapai)</span>

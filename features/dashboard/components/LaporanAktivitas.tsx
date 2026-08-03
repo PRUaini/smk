@@ -126,9 +126,10 @@ export default function LaporanAktivitas({ targets, activities, selectedMonth, s
   }, [activities, selectedYear]);
 
   // Yearly target parameters (aggregated compare)
+  const activeMonths = Math.max(1, targets.periodeKerjaAkhir - targets.periodeKerjaAwal + 1);
   const yearlyTargetData = useMemo(() => {
-    const targetPointsYr = targets.targetPoints * 12;
-    const targetMeetingsYr = targets.targetMeetings * 12;
+    const targetPointsYr = targets.targetPoints * activeMonths;
+    const targetMeetingsYr = targets.targetMeetings * activeMonths;
 
     return {
       pointPct: calculatePercentage(yearlyMetrics.points, targetPointsYr),
@@ -136,14 +137,14 @@ export default function LaporanAktivitas({ targets, activities, selectedMonth, s
       apiPct: calculatePercentage(yearlyMetrics.api, targets.targetApi),
       activeDaysPct: calculatePercentage(yearlyMetrics.activeDays, YEARLY_ACTIVE_DAYS_TARGET)
     };
-  }, [targets, yearlyMetrics]);
+  }, [targets, yearlyMetrics, activeMonths]);
 
   const currentPoints = isWeekly ? weeklyMetrics.points : isYearly ? yearlyMetrics.points : targets.totalPoints;
-  const targetPoints = isWeekly ? targets.targetWeeklyPoints : isYearly ? targets.targetPoints * 12 : targets.targetPoints;
+  const targetPoints = isWeekly ? targets.targetWeeklyPoints : isYearly ? targets.targetPoints * activeMonths : targets.targetPoints;
   const pointPct = calculatePercentage(currentPoints, targetPoints);
 
   const currentMeetings = isWeekly ? weeklyMetrics.meetings : isYearly ? yearlyMetrics.meetings : targets.totalMeetings;
-  const targetMeetings = isWeekly ? targets.targetWeeklyMeetings : isYearly ? targets.targetMeetings * 12 : targets.targetMeetings;
+  const targetMeetings = isWeekly ? targets.targetWeeklyMeetings : isYearly ? targets.targetMeetings * activeMonths : targets.targetMeetings;
   const meetingPct = calculatePercentage(currentMeetings, targetMeetings);
 
   const targetApiPeriod = isWeekly ? targets.targetApiMingguan : isYearly ? targets.targetApi : targets.targetApiBulanan;
