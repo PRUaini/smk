@@ -449,6 +449,16 @@ export default function DashboardContainer({
         )}
       </main>
 
+      {(isSidebarOpen || isSidebarClosing || isTargetsSidebarOpen || isTargetsSidebarClosing) && (
+        <div
+          className={`sidebar-backdrop ${isSidebarClosing || isTargetsSidebarClosing ? "closing" : "opening"}`}
+          onClick={() => {
+            if (isSidebarOpen && !isSidebarClosing) closeActivitySidebar();
+            if (isTargetsSidebarOpen && !isTargetsSidebarClosing) closeTargetsSidebar();
+          }}
+        />
+      )}
+
       {(isSidebarOpen || isSidebarClosing) && (
         <ActivitySidebar
           selectedActivity={selectedActivity}

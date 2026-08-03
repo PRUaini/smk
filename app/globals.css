@@ -989,11 +989,6 @@ body {
   flex-direction: column;
   gap: 1.5rem;
   padding: 2rem;
-  transition: margin-right 0.3s ease;
-}
-
-.dashboard-layout-new.sidebar-expanded .dashboard-main-new {
-  margin-right: 380px;
 }
 
 /* Dashboard Header */
@@ -2400,6 +2395,39 @@ body {
   .notification-dropdown.marking-read .notification-list,
   .notification-fab-btn.marking-read .notification-fab-badge {
     animation: none;
+  }
+}
+
+/* Sidebar Modal Backdrop Overlay */
+.sidebar-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.45);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  z-index: 99;
+  animation: fadeInOverlay 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.sidebar-backdrop.closing {
+  animation: fadeOutOverlay 0.2s cubic-bezier(0.7, 0, 0.84, 0) forwards;
+}
+
+@keyframes fadeInOverlay {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fadeOutOverlay {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
   }
 }
 
