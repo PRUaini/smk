@@ -41,12 +41,16 @@ export default function TargetsSidebar({
   });
 
   const watchedApi = Number(form.watch("targetApi") || 0);
+  const watchedPoints = Number(form.watch("targetPoints") || 0);
+  const watchedMeetings = Number(form.watch("targetMeetings") || 0);
   const watchedAwal = Number(form.watch("periodeKerjaAwal") || 1);
   const watchedAkhir = Number(form.watch("periodeKerjaAkhir") || 12);
 
   const activeMonths = Math.max(1, watchedAkhir - watchedAwal + 1);
   const calculatedMonthlyApi = Math.round(watchedApi / activeMonths);
   const calculatedWeeklyApi = Math.round(calculatedMonthlyApi / 4);
+  const calculatedYearlyPoints = watchedPoints * 12;
+  const calculatedYearlyMeetings = watchedMeetings * 12;
 
   const handleSubmit = (data: TargetsFormData) => {
     onSave(data);
@@ -91,6 +95,34 @@ export default function TargetsSidebar({
         {activeTab === "tahunan" && (
           <div className="tab-content">
             <div className="form-group">
+              <label className="form-label">Target Poin Tahunan</label>
+              <input
+                type="number"
+                className="form-input"
+                placeholder="Contoh: 6000"
+                value={watchedPoints * 12}
+                onChange={(e) => {
+                  const val = Number(e.target.value) || 0;
+                  form.setValue("targetPoints", Math.round(val / 12), { shouldValidate: true });
+                }}
+              />
+            </div>
+
+            <div className="form-group" style={{ marginTop: "1rem" }}>
+              <label className="form-label">Target Janji Pertemuan Tahunan</label>
+              <input
+                type="number"
+                className="form-input"
+                placeholder="Contoh: 480"
+                value={watchedMeetings * 12}
+                onChange={(e) => {
+                  const val = Number(e.target.value) || 0;
+                  form.setValue("targetMeetings", Math.round(val / 12), { shouldValidate: true });
+                }}
+              />
+            </div>
+
+            <div className="form-group" style={{ marginTop: "1rem" }}>
               <label className="form-label">Target API Tahunan (Rp)</label>
               <input
                 type="number"
@@ -139,7 +171,7 @@ export default function TargetsSidebar({
                 padding: "1rem",
                 borderRadius: "0.5rem",
                 backgroundColor: "var(--color-bg-secondary, rgba(0,0,0,0.03))",
-                border: "1px stroke var(--color-border, rgba(0,0,0,0.08))",
+                border: "1px solid var(--color-border, rgba(0,0,0,0.08))",
               }}
             >
               <h4 style={{ fontSize: "0.875rem", fontWeight: 600, marginBottom: "0.5rem" }}>
