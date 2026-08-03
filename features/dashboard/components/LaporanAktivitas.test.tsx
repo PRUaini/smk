@@ -1,7 +1,7 @@
 import { fireEvent, render, screen, within } from "@testing-library/react";
 import { readFileSync } from "fs";
 import { describe, expect, it } from "vitest";
-import type { DashboardTargets } from "../types";
+import type { Activity, DashboardTargets } from "../types";
 import LaporanAktivitas from "./LaporanAktivitas";
 
 const targets: DashboardTargets = {
@@ -83,7 +83,85 @@ describe("LaporanAktivitas", () => {
     fireEvent.click(screen.getByRole("button", { name: "Mingguan" }));
     expect(screen.getByRole("button", { name: "Mingguan" })).toHaveClass("active");
     expect(screen.getByText("Ringkasan Progres Mingguan")).toBeInTheDocument();
-    expect(within(chart).getAllByText("40%").length).toBeGreaterThan(0);
+    // No activities provided, so the weekly totals come from the selected week's metrics (0).
+    expect(within(chart).getAllByText("0%").length).toBeGreaterThan(0);
+  });
+
+  it("uses the selected week's activities for weekly pencapaian vs target instead of the auto-detected current week", () => {
+    const weekActivities: Activity[] = [
+      {
+        id: "w1a",
+        tanggal: "2026-01-05",
+        waktu: "08:00",
+        waktuSelesai: "09:00",
+        kegiatan: ["Closing Prospek"],
+        poin: 10,
+        status: "Selesai",
+        catatan: "",
+        nasabah: "",
+        kontakNasabah: "",
+        produk: "",
+        api: 1500000,
+      },
+      {
+        id: "w1b",
+        tanggal: "2026-01-06",
+        waktu: "09:00",
+        waktuSelesai: "10:00",
+        kegiatan: ["Approach / Fact Finding"],
+        poin: 4,
+        status: "Selesai",
+        catatan: "",
+        nasabah: "",
+        kontakNasabah: "",
+        produk: "",
+      },
+      {
+        id: "w2a",
+        tanggal: "2026-01-12",
+        waktu: "08:00",
+        waktuSelesai: "09:00",
+        kegiatan: ["Closing Prospek"],
+        poin: 10,
+        status: "Selesai",
+        catatan: "",
+        nasabah: "",
+        kontakNasabah: "",
+        produk: "",
+        api: 1000000,
+      },
+    ];
+
+    // totalWeekly* simulates the auto-detected "current" week (e.g. Minggu 3),
+    // which must NOT drive the chart when the user selects a different week.
+    render(
+      <LaporanAktivitas
+        targets={{ ...targets, totalWeeklyPoints: 50, totalWeeklyMeetings: 4 }}
+        activities={weekActivities}
+        selectedMonth={0}
+        selectedYear={2026}
+      />
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Mingguan" }));
+
+    const chart = screen.getByRole("heading", { name: "Pencapaian vs Target" }).closest(".report-chart-card") as HTMLElement;
+    const pointColumn = within(chart).getByText("Total Poin").closest(".bar-group-column") as HTMLElement;
+    const meetingColumn = within(chart).getByText("Janji Pertemuan").closest(".bar-group-column") as HTMLElement;
+    const apiColumn = within(chart).getByText("Target API").closest(".bar-group-column") as HTMLElement;
+
+    // Minggu 1 is selected by default: 14 pts of 125 -> 11%, 1 meeting of 10 -> 10%, API 1.5M of 2.5M -> 60%.
+    // The buggy behavior would show 40% (50 of 125) from the auto-detected week.
+    expect(within(pointColumn).getByText("11%")).toBeInTheDocument();
+    expect(within(pointColumn).queryByText("40%")).not.toBeInTheDocument();
+    expect(within(meetingColumn).getByText("10%")).toBeInTheDocument();
+    expect(within(apiColumn).getByText("60%")).toBeInTheDocument();
+
+    // Switching to Minggu 2 shows that week's data: 10 pts of 125 -> 8%, API 1M of 2.5M -> 40%.
+    fireEvent.click(screen.getByRole("button", { name: "Minggu 2" }));
+    expect(within(pointColumn).getByText("8%")).toBeInTheDocument();
+    expect(within(pointColumn).queryByText("11%")).not.toBeInTheDocument();
+    expect(within(apiColumn).getByText("40%")).toBeInTheDocument();
   });
 
   it("defines progress bar fill colors for every report KPI accent", () => {

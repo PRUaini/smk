@@ -56,8 +56,8 @@ export default function LaporanAktivitas({ targets, activities, selectedMonth, s
   // Selected report metrics based on view mode (yearly vs monthly vs weekly)
   const isYearly = reportPeriod === "yearly";
   const isWeekly = reportPeriod === "weekly";
-  const weeklyPointPct = calculatePercentage(targets.totalWeeklyPoints, targets.targetWeeklyPoints);
-  const weeklyMeetingPct = calculatePercentage(targets.totalWeeklyMeetings, targets.targetWeeklyMeetings);
+  const weeklyPointPct = calculatePercentage(weeklyMetrics.points, targets.targetWeeklyPoints);
+  const weeklyMeetingPct = calculatePercentage(weeklyMetrics.meetings, targets.targetWeeklyMeetings);
   const weeklyApiPct = calculatePercentage(weeklyMetrics.api, targets.targetApiMingguan);
 
   // 1. Day-to-day (Daily points in selected month)

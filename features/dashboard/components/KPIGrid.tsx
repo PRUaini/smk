@@ -9,12 +9,9 @@ interface KPIGridProps {
 export default function KPIGrid({ targets }: KPIGridProps) {
   const pointPct = calculatePercentage(targets.totalPoints, targets.targetPoints);
   const meetingPct = calculatePercentage(targets.totalMeetings, targets.targetMeetings);
-  const weeklyPointPct = calculatePercentage(targets.totalWeeklyPoints, targets.targetWeeklyPoints);
-  const weeklyMeetingPct = calculatePercentage(targets.totalWeeklyMeetings, targets.targetWeeklyMeetings);
 
   const remainingMonthlyApi = Math.max(0, targets.targetApiBulanan - targets.totalApi);
   const apiPct = calculatePercentage(targets.totalApi, targets.targetApiBulanan);
-  const weeklyApiPct = calculatePercentage(targets.totalWeeklyApi, targets.targetApiMingguan);
 
   return (
     <div className="kpi-grid">
