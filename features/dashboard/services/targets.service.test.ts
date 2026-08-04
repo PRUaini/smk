@@ -236,6 +236,6 @@ describe("calculateDashboardTargets", () => {
 
     expect(targets.targetApi).toBe(120000000);
     expect(targets.targetApiBulanan).toBe(10000000); // 120,000,000 / 12
-    expect(targets.targetApiMingguan).toBe(2500000); // 10,000,000 / 4 weeks in Jan 2026
+    expect(targets.targetApiMingguan).toBe(2000000); // 10,000,000 / 5 displayed weeks in Jan 2026
   });
 });

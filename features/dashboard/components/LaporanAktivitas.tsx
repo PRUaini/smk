@@ -2,7 +2,7 @@ import React, { useState, useMemo } from "react";
 import { Activity, DashboardTargets } from "../types";
 import { CLOSING_TYPES, DAYS_OF_WEEK, MEETING_TYPES } from "../constants";
 import { calculatePercentage } from "../utils/percentage";
-import { getWeeksInMonth, getWeekDates } from "../utils/date";
+import { getDaysInPeriod, getWeeksInMonth, getWeekDates } from "../utils/date";
 import { buildLineChartSvg, getMonthsAbbr, type ChartDatum } from "../utils/report";
 
 interface LaporanAktivitasProps {
@@ -14,7 +14,6 @@ interface LaporanAktivitasProps {
 
 type ReportPeriod = "yearly" | "monthly" | "weekly";
 
-const YEARLY_ACTIVE_DAYS_TARGET = 150;
 const MONTHS_ABBR = getMonthsAbbr();
 const WEEKLY_DAY_LABELS = DAYS_OF_WEEK.map((day) => day.slice(0, 3));
 
@@ -38,10 +37,15 @@ export default function LaporanAktivitas({ targets, activities, selectedMonth, s
     }
     const dates = getWeekDates(weekStartDate);
     const completedWeeklyActivities = activities.filter(
-      (act) => act.status === "Selesai" && dates.includes(act.tanggal)
+      (act) =>
+        act.status === "Selesai" &&
+        dates.includes(act.tanggal) &&
+        act.tanggal.startsWith(`${selectedYear}-${String(selectedMonth + 1).padStart(2, "0")}-`)
     );
     const weeklyActivities = activities.filter(
-      (act) => dates.includes(act.tanggal)
+      (act) =>
+        dates.includes(act.tanggal) &&
+        act.tanggal.startsWith(`${selectedYear}-${String(selectedMonth + 1).padStart(2, "0")}-`)
     );
     const points = completedWeeklyActivities.reduce((sum, act) => sum + act.poin, 0);
     const meetings = completedWeeklyActivities.filter((act) => act.kegiatan.some((k) => MEETING_TYPES.has(k))).length;
@@ -51,7 +55,7 @@ export default function LaporanAktivitas({ targets, activities, selectedMonth, s
       .reduce((sum, act) => sum + (act.api || 0), 0);
     const activeDays = new Set(completedWeeklyActivities.map((act) => act.tanggal)).size;
     return { points, meetings, sales, api, activeDays };
-  }, [activities, weeks, activeWeekIdx]);
+  }, [activities, selectedMonth, selectedYear, weeks, activeWeekIdx]);
 
   // Selected report metrics based on view mode (yearly vs monthly vs weekly)
   const isYearly = reportPeriod === "yearly";
@@ -127,6 +131,10 @@ export default function LaporanAktivitas({ targets, activities, selectedMonth, s
 
   // Yearly target parameters (aggregated compare)
   const activeMonths = Math.max(1, targets.periodeKerjaAkhir - targets.periodeKerjaAwal + 1);
+  const yearlyActiveDaysTarget = useMemo(
+    () => getDaysInPeriod(selectedYear, targets.periodeKerjaAwal, targets.periodeKerjaAkhir),
+    [targets.periodeKerjaAwal, targets.periodeKerjaAkhir, selectedYear]
+  );
   const yearlyTargetData = useMemo(() => {
     const targetPointsYr = targets.targetPoints * activeMonths;
     const targetMeetingsYr = targets.targetMeetings * activeMonths;
@@ -135,9 +143,9 @@ export default function LaporanAktivitas({ targets, activities, selectedMonth, s
       pointPct: calculatePercentage(yearlyMetrics.points, targetPointsYr),
       meetingPct: calculatePercentage(yearlyMetrics.meetings, targetMeetingsYr),
       apiPct: calculatePercentage(yearlyMetrics.api, targets.targetApi),
-      activeDaysPct: calculatePercentage(yearlyMetrics.activeDays, YEARLY_ACTIVE_DAYS_TARGET)
+      activeDaysPct: calculatePercentage(yearlyMetrics.activeDays, yearlyActiveDaysTarget)
     };
-  }, [targets, yearlyMetrics, activeMonths]);
+  }, [targets, yearlyMetrics, activeMonths, yearlyActiveDaysTarget]);
 
   const currentPoints = isWeekly ? weeklyMetrics.points : isYearly ? yearlyMetrics.points : targets.totalPoints;
   const targetPoints = isWeekly ? targets.targetWeeklyPoints : isYearly ? targets.targetPoints * activeMonths : targets.targetPoints;
@@ -861,7 +869,7 @@ export default function LaporanAktivitas({ targets, activities, selectedMonth, s
 
           <div className="side-metric-item">
             <span className="side-label">Hari Aktif</span>
-            <span className="side-value">{isWeekly ? weeklyMetrics.activeDays : isYearly ? yearlyMetrics.activeDays : targets.activeDays} / {isWeekly ? DAYS_OF_WEEK.length : isYearly ? YEARLY_ACTIVE_DAYS_TARGET : targets.totalDays} <span className="unit">hari</span></span>
+            <span className="side-value">{isWeekly ? weeklyMetrics.activeDays : isYearly ? yearlyMetrics.activeDays : targets.activeDays} / {isWeekly ? DAYS_OF_WEEK.length : isYearly ? yearlyActiveDaysTarget : targets.totalDays} <span className="unit">hari</span></span>
           </div>
         </div>
       </div>

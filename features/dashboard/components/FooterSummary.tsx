@@ -1,18 +1,23 @@
 import React from "react";
 import { DashboardTargets } from "../types";
+import { getDaysInPeriod } from "../utils/date";
 import { calculatePercentage } from "../utils/percentage";
 
 interface FooterSummaryProps {
   targets: DashboardTargets;
+  selectedYear?: number;
 }
 
-export default function FooterSummary({ targets }: FooterSummaryProps) {
+export default function FooterSummary({ targets, selectedYear = new Date().getFullYear() }: FooterSummaryProps) {
   const percentage = calculatePercentage(targets.totalPoints, targets.targetPoints);
   
   // Calculate average points per day based on totalPoints divided by activeDays (or default to 0 if 0 active days)
   const averagePoints = targets.activeDays 
     ? (targets.totalPoints / targets.activeDays).toFixed(1) 
     : "0";
+
+  // Adaptive working-period day target (periode kerja), matching the Laporan Aktivitas tab
+  const activeDaysTarget = getDaysInPeriod(selectedYear, targets.periodeKerjaAwal, targets.periodeKerjaAkhir);
 
   return (
     <div className="dashboard-footer-summary">
@@ -55,7 +60,7 @@ export default function FooterSummary({ targets }: FooterSummaryProps) {
         <div className="metrics-summary-item">
           <span className="metric-label">Hari Aktif</span>
           <span className="metric-value">
-            {targets.activeDays} <span className="slash">/</span> {targets.totalDays} <span className="unit">hari</span>
+            {targets.activeDays} <span className="slash">/</span> {activeDaysTarget} <span className="unit">hari</span>
           </span>
         </div>
 

@@ -73,9 +73,14 @@ export function calculateDashboardTargets(
 
   const currentWeekDates = currentWeekStart ? getWeekDates(currentWeekStart) : [];
 
-  const weeklyActivities = activities.filter((activity) =>
-    currentWeekDates.includes(activity.tanggal)
-  );
+  const weeklyActivities = activities.filter((activity) => {
+    const { yr, mo } = parseYearMonth(activity.tanggal);
+    return (
+      yr === selectedYear &&
+      mo === monthNumber &&
+      currentWeekDates.includes(activity.tanggal)
+    );
+  });
   const completedWeeklyActivities = weeklyActivities.filter(
     (activity) => activity.status === "Selesai"
   );

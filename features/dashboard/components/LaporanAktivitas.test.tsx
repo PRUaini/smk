@@ -91,7 +91,7 @@ describe("LaporanAktivitas", () => {
     const weekActivities: Activity[] = [
       {
         id: "w1a",
-        tanggal: "2026-01-05",
+        tanggal: "2026-01-03",
         waktu: "08:00",
         waktuSelesai: "09:00",
         kegiatan: ["Closing Prospek"],
@@ -105,7 +105,7 @@ describe("LaporanAktivitas", () => {
       },
       {
         id: "w1b",
-        tanggal: "2026-01-06",
+        tanggal: "2026-01-04",
         waktu: "09:00",
         waktuSelesai: "10:00",
         kegiatan: ["Approach / Fact Finding"],
@@ -157,8 +157,8 @@ describe("LaporanAktivitas", () => {
     expect(within(meetingColumn).getByText("10%")).toBeInTheDocument();
     expect(within(apiColumn).getByText("60%")).toBeInTheDocument();
 
-    // Switching to Minggu 2 shows that week's data: 10 pts of 125 -> 8%, API 1M of 2.5M -> 40%.
-    fireEvent.click(screen.getByRole("button", { name: "Minggu 2" }));
+    // Switching to Minggu 3 shows that week's data: 10 pts of 125 -> 8%, API 1M of 2.5M -> 40%.
+    fireEvent.click(screen.getByRole("button", { name: "Minggu 3" }));
     expect(within(pointColumn).getByText("8%")).toBeInTheDocument();
     expect(within(pointColumn).queryByText("11%")).not.toBeInTheDocument();
     expect(within(apiColumn).getByText("40%")).toBeInTheDocument();
@@ -175,5 +175,44 @@ describe("LaporanAktivitas", () => {
     expect(css).toContain("background-color: var(--color-dashboard-green)");
     expect(css).toContain(".kpi-progress-bar.bg-orange");
     expect(css).toContain("background-color: var(--color-dashboard-orange)");
+  });
+
+  it("shows the full working period as the yearly active days target (365 days for Jan-Dec)", () => {
+    const { container } = render(
+      <LaporanAktivitas
+        targets={targets}
+        activities={[]}
+        selectedMonth={0}
+        selectedYear={2026}
+      />
+    );
+
+    expect(container.querySelector(".monthly-progress-side-pane")).toHaveTextContent("0 / 365 hari");
+  });
+
+  it("adapts the yearly active days target to a partial working period (Jan-Nov)", () => {
+    const { container } = render(
+      <LaporanAktivitas
+        targets={{ ...targets, periodeKerjaAkhir: 11 }}
+        activities={[]}
+        selectedMonth={0}
+        selectedYear={2026}
+      />
+    );
+
+    expect(container.querySelector(".monthly-progress-side-pane")).toHaveTextContent("0 / 334 hari");
+  });
+
+  it("accounts for leap years in the yearly active days target", () => {
+    const { container } = render(
+      <LaporanAktivitas
+        targets={targets}
+        activities={[]}
+        selectedMonth={0}
+        selectedYear={2028}
+      />
+    );
+
+    expect(container.querySelector(".monthly-progress-side-pane")).toHaveTextContent("0 / 366 hari");
   });
 });

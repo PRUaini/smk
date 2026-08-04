@@ -143,9 +143,9 @@ describe("DashboardContainer", () => {
     fireEvent.click(screen.getByRole("button", { name: "Pilih tahun 2026" }));
     fireEvent.click(screen.getByRole("option", { name: "2027" }));
     fireEvent.click(screen.getByRole("button", { name: "Januari" }));
-    fireEvent.click(screen.getAllByText("+ Tambah")[0].closest(".calendar-cell")!);
+    fireEvent.click(screen.getAllByText("+ Tambah")[4].closest(".calendar-cell")!);
 
-    expect(screen.getByLabelText("Tanggal")).toHaveValue("2027-01-04");
+    expect(screen.getByLabelText("Tanggal")).toHaveValue("2027-01-01");
   });
 
   it("does not render fake activity titles when initial activities are empty", () => {

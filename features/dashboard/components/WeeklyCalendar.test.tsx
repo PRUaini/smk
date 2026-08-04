@@ -84,7 +84,7 @@ describe("WeeklyCalendar", () => {
         activities={[
           {
             id: "activity-1",
-            tanggal: "2026-01-05",
+            tanggal: "2026-01-03",
             waktu: "08:00",
             waktuSelesai: "09:00",
             kegiatan: ["Approach / Fact Finding"],
@@ -123,7 +123,7 @@ describe("WeeklyCalendar", () => {
         activities={[
           {
             id: "activity-long-content",
-            tanggal: "2026-01-05",
+            tanggal: "2026-01-03",
             waktu: "08:00",
             waktuSelesai: "09:00",
             kegiatan: ["Coaching / Meeting Leader"],
@@ -159,7 +159,7 @@ describe("WeeklyCalendar", () => {
         activities={[
           {
             id: "activity-late-end",
-            tanggal: "2026-01-05",
+            tanggal: "2026-01-03",
             waktu: "08:00",
             waktuSelesai: "10:00",
             kegiatan: ["Follow Up"],
@@ -172,7 +172,7 @@ describe("WeeklyCalendar", () => {
           },
           {
             id: "activity-earlier-start",
-            tanggal: "2026-01-05",
+            tanggal: "2026-01-03",
             waktu: "07:00",
             waktuSelesai: "12:00",
             kegiatan: ["Presentasi"],
@@ -185,7 +185,7 @@ describe("WeeklyCalendar", () => {
           },
           {
             id: "activity-early-end",
-            tanggal: "2026-01-05",
+            tanggal: "2026-01-03",
             waktu: "08:00",
             waktuSelesai: "09:00",
             kegiatan: ["Chat Calon Nasabah"],
@@ -225,9 +225,9 @@ describe("WeeklyCalendar", () => {
       />
     );
 
-    fireEvent.click(screen.getAllByText("+ Tambah")[0].closest(".calendar-cell")!);
+    fireEvent.click(screen.getAllByText("+ Tambah")[3].closest(".calendar-cell")!);
 
-    expect(onSelectTimeSlotMock).toHaveBeenCalledWith(expect.stringMatching(/^2026-01-/), "08:00");
+    expect(onSelectTimeSlotMock).toHaveBeenCalledWith("2026-01-01", "08:00");
   });
 
   it("uses the selected year when selecting an empty calendar slot", () => {
@@ -244,9 +244,9 @@ describe("WeeklyCalendar", () => {
       />
     );
 
-    fireEvent.click(screen.getAllByText("+ Tambah")[0].closest(".calendar-cell")!);
+    fireEvent.click(screen.getAllByText("+ Tambah")[4].closest(".calendar-cell")!);
 
-    expect(onSelectTimeSlotMock).toHaveBeenCalledWith(expect.stringMatching(/^2027-01-/), "08:00");
+    expect(onSelectTimeSlotMock).toHaveBeenCalledWith("2027-01-01", "08:00");
   });
 
   it("creates selectable Sunday slots", () => {
@@ -265,7 +265,7 @@ describe("WeeklyCalendar", () => {
 
     fireEvent.click(screen.getAllByText("+ Tambah")[6].closest(".calendar-cell")!);
 
-    expect(onSelectTimeSlotMock).toHaveBeenCalledWith("2026-01-11", "08:00");
+    expect(onSelectTimeSlotMock).toHaveBeenCalledWith("2026-01-04", "08:00");
   });
 
   it("auto-selects today's week before manual selection", () => {
@@ -286,7 +286,7 @@ describe("WeeklyCalendar", () => {
       />
     );
 
-    expect(screen.getByRole("button", { name: "Minggu 3" })).toHaveClass("active");
+    expect(screen.getByRole("button", { name: "Minggu 4" })).toHaveClass("active");
     fireEvent.click(screen.getAllByText("+ Tambah")[0].closest(".calendar-cell")!);
     expect(onSelectTimeSlotMock).toHaveBeenCalledWith("2026-01-19", "08:00");
   });
@@ -310,9 +310,9 @@ describe("WeeklyCalendar", () => {
     );
 
     fireEvent.click(screen.getByRole("button", { name: "Minggu 1" }));
-    fireEvent.click(screen.getAllByText("+ Tambah")[0].closest(".calendar-cell")!);
+    fireEvent.click(screen.getAllByText("+ Tambah")[3].closest(".calendar-cell")!);
 
     expect(screen.getByRole("button", { name: "Minggu 1" })).toHaveClass("active");
-    expect(onSelectTimeSlotMock).toHaveBeenCalledWith("2026-01-05", "08:00");
+    expect(onSelectTimeSlotMock).toHaveBeenCalledWith("2026-01-01", "08:00");
   });
 });

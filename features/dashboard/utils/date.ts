@@ -2,19 +2,20 @@ import { DAYS_OF_WEEK } from "../constants";
 
 export function getWeeksInMonth(selectedMonth: number, selectedYear = new Date().getFullYear()) {
   const weeks: Date[] = [];
-  
-  const d = new Date(selectedYear, selectedMonth, 1);
-  const day = d.getDay();
-  if (day === 0) {
-    d.setDate(d.getDate() + 1);
-  } else if (day > 1) {
-    d.setDate(d.getDate() + (8 - day));
+
+  const firstDay = new Date(selectedYear, selectedMonth, 1);
+  const mondayOffset = (firstDay.getDay() + 6) % 7;
+  const firstWeekStart = new Date(selectedYear, selectedMonth, 1 - mondayOffset);
+  const lastDay = new Date(selectedYear, selectedMonth + 1, 0);
+
+  for (
+    const weekStart = firstWeekStart;
+    weekStart <= lastDay;
+    weekStart.setDate(weekStart.getDate() + 7)
+  ) {
+    weeks.push(new Date(weekStart));
   }
 
-  while (d.getMonth() === selectedMonth) {
-    weeks.push(new Date(d));
-    d.setDate(d.getDate() + 7);
-  }
   return weeks;
 }
 
@@ -28,4 +29,12 @@ export function getWeekDates(startDate: Date) {
     );
   }
   return dates;
+}
+
+export function getDaysInPeriod(year: number, startMonth: number, endMonth: number) {
+  let total = 0;
+  for (let month = startMonth; month <= endMonth; month++) {
+    total += new Date(year, month, 0).getDate();
+  }
+  return total;
 }
