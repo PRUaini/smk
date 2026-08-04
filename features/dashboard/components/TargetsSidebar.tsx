@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm, type Resolver } from "react-hook-form";
+import { useForm, useWatch, type Resolver } from "react-hook-form";
 import { targetsFormSchema, type TargetsFormData } from "../schemas/targets.schema";
 import type { AgentTargets } from "../data/targets.repository";
 import { DEFAULT_TARGETS } from "../constants";
@@ -40,17 +40,17 @@ export default function TargetsSidebar({
     },
   });
 
-  const watchedApi = Number(form.watch("targetApi") || 0);
-  const watchedPoints = Number(form.watch("targetPoints") || 0);
-  const watchedMeetings = Number(form.watch("targetMeetings") || 0);
-  const watchedAwal = Number(form.watch("periodeKerjaAwal") || 1);
-  const watchedAkhir = Number(form.watch("periodeKerjaAkhir") || 12);
+  const watchedApi = Number(useWatch({ control: form.control, name: "targetApi" }) || 0);
+  const watchedPoints = Number(useWatch({ control: form.control, name: "targetPoints" }) || 0);
+  const watchedMeetings = Number(useWatch({ control: form.control, name: "targetMeetings" }) || 0);
+  const watchedAwal = Number(useWatch({ control: form.control, name: "periodeKerjaAwal" }) || 1);
+  const watchedAkhir = Number(useWatch({ control: form.control, name: "periodeKerjaAkhir" }) || 12);
 
   const activeMonths = Math.max(1, watchedAkhir - watchedAwal + 1);
   const calculatedMonthlyApi = Math.round(watchedApi / activeMonths);
   const calculatedWeeklyApi = Math.round(calculatedMonthlyApi / 4);
-  const calculatedYearlyPoints = watchedPoints * 12;
-  const calculatedYearlyMeetings = watchedMeetings * 12;
+  const yearlyPoints = watchedPoints * 12;
+  const yearlyMeetings = watchedMeetings * 12;
 
   const handleSubmit = (data: TargetsFormData) => {
     onSave(data);
@@ -100,7 +100,7 @@ export default function TargetsSidebar({
                 type="number"
                 className="form-input"
                 placeholder="Contoh: 6000"
-                value={watchedPoints * 12}
+                value={yearlyPoints}
                 onChange={(e) => {
                   const val = Number(e.target.value) || 0;
                   form.setValue("targetPoints", Math.round(val / 12), { shouldValidate: true });
@@ -114,7 +114,7 @@ export default function TargetsSidebar({
                 type="number"
                 className="form-input"
                 placeholder="Contoh: 480"
-                value={watchedMeetings * 12}
+                value={yearlyMeetings}
                 onChange={(e) => {
                   const val = Number(e.target.value) || 0;
                   form.setValue("targetMeetings", Math.round(val / 12), { shouldValidate: true });

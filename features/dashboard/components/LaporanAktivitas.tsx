@@ -15,11 +15,10 @@ interface LaporanAktivitasProps {
 type ReportPeriod = "yearly" | "monthly" | "weekly";
 
 const YEARLY_ACTIVE_DAYS_TARGET = 150;
+const MONTHS_ABBR = getMonthsAbbr();
 
 export default function LaporanAktivitas({ targets, activities, selectedMonth, selectedYear }: LaporanAktivitasProps) {
-  const monthsAbbr = getMonthsAbbr();
-  const monthLabel = monthsAbbr[selectedMonth];
-  const weeklyDayLabels = useMemo(() => DAYS_OF_WEEK.map((day) => day.slice(0, 3)), []);
+  const monthLabel = MONTHS_ABBR[selectedMonth];
 
   // Interactive Filter States
   const [dailyFilter, setDailyFilter] = useState<"harian" | "bulanan" | "tahunan">("harian");
@@ -198,7 +197,7 @@ export default function LaporanAktivitas({ targets, activities, selectedMonth, s
       runningSum += d.points;
       return { day: String(d.day), points: runningSum };
     });
-  }, [isWeekly, isYearly, weeks, activeWeekIdx, activities, dailyData, monthlyData, monthsAbbr, weeklyDayLabels]);
+  }, [isWeekly, isYearly, weeks, activeWeekIdx, activities, dailyData, monthlyData]);
 
   // SVG dimensions & scales for Tren Poin Harian
   const dailyChartSvg = useMemo(() => {

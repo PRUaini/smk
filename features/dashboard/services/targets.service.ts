@@ -28,14 +28,18 @@ export function calculateDashboardTargets(
   selectedYear = new Date().getFullYear()
 ): DashboardTargets {
   const monthNumber = selectedMonth + 1;
-  const activitiesUpToMonth = activities.filter((activity) => {
-    const { yr, mo } = parseYearMonth(activity.tanggal);
-    return yr === selectedYear && mo <= monthNumber;
-  });
-  const monthlyActivities = activitiesUpToMonth.filter((activity) => {
-    const { mo } = parseYearMonth(activity.tanggal);
-    return mo === monthNumber;
-  });
+  const parsedActivities = activities.map((activity) => ({
+    activity,
+    ...parseYearMonth(activity.tanggal),
+  }));
+
+  const parsedUpToMonth = parsedActivities.filter(
+    ({ yr, mo }) => yr === selectedYear && mo <= monthNumber
+  );
+  const activitiesUpToMonth = parsedUpToMonth.map(({ activity }) => activity);
+  const monthlyActivities = parsedUpToMonth
+    .filter(({ mo }) => mo === monthNumber)
+    .map(({ activity }) => activity);
   const completedMonthlyActivities = monthlyActivities.filter(
     (activity) => activity.status === "Selesai"
   );

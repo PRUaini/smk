@@ -50,7 +50,7 @@ export default function WeeklyCalendar({
   autoFocusToday,
 }: WeeklyCalendarProps) {
   const [weekSelection, setWeekSelection] = React.useState<{ month: number; year: number; week: number } | null>(null);
-  const weeks = getWeeksInMonth(selectedMonth, selectedYear);
+  const weeks = React.useMemo(() => getWeeksInMonth(selectedMonth, selectedYear), [selectedMonth, selectedYear]);
   const defaultWeek = React.useMemo(() => {
     if (autoFocusToday) {
       const today = new Date();
@@ -72,7 +72,7 @@ export default function WeeklyCalendar({
   }, [selectedMonth, selectedYear, autoFocusToday, weeks]);
   const selectedWeek = weekSelection?.month === selectedMonth && weekSelection.year === selectedYear ? weekSelection.week : defaultWeek;
 
-  const getWeekDates = () => {
+  const weekDates = React.useMemo(() => {
     const weekIndex = Math.min(selectedWeek, weeks.length - 1);
     const startDate = weeks[weekIndex] || new Date();
 
@@ -86,11 +86,13 @@ export default function WeeklyCalendar({
         label: `${String(tempDate.getDate()).padStart(2, "0")}/${String(tempDate.getMonth() + 1).padStart(2, "0")}`,
       };
     });
-  };
-
-  const weekDates = getWeekDates();
-  const weeklyActivities = activities.filter((activity) =>
-    weekDates.some((date) => date.formatted === activity.tanggal)
+  }, [selectedWeek, weeks]);
+  const weeklyActivities = React.useMemo(
+    () =>
+      activities.filter((activity) =>
+        weekDates.some((date) => date.formatted === activity.tanggal)
+      ),
+    [activities, weekDates]
   );
 
   const getDailyPoints = (dateStr: string) => {
@@ -99,11 +101,12 @@ export default function WeeklyCalendar({
       .reduce((sum, act) => sum + act.poin, 0);
   };
 
-  const isToday = (dateStr: string) => {
+  const todayStr = React.useMemo(() => {
     const today = new Date();
-    const formattedToday = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
-    return dateStr === formattedToday;
-  };
+    return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+  }, []);
+
+  const isToday = (dateStr: string) => dateStr === todayStr;
 
   const renderActivityCard = (activity: Activity) => {
     return (
