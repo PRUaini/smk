@@ -79,6 +79,22 @@ describe("activityFormSchema", () => {
     expect(result.success).toBe(false);
   });
 
+  it("accepts valid leap-day dates and rejects malformed or impossible dates", () => {
+    const baseActivity = {
+      waktu: "08:00",
+      waktuSelesai: "09:00",
+      kegiatan: ["Approach / Fact Finding"],
+      catatan: "",
+      nasabah: "Bapak Andi",
+      kontakNasabah: "",
+      produk: "",
+    };
+
+    expect(activityFormSchema.safeParse({ ...baseActivity, tanggal: "2028-02-29" }).success).toBe(true);
+    expect(activityFormSchema.safeParse({ ...baseActivity, tanggal: "2026-02-30" }).success).toBe(false);
+    expect(activityFormSchema.safeParse({ ...baseActivity, tanggal: "2026/02/01" }).success).toBe(false);
+  });
+
   it("derives points and default notes for saved payloads", () => {
     const payload = buildActivityPayload({
       tanggal: "2026-01-05",
@@ -314,6 +330,22 @@ describe("activityActionSchema", () => {
       api: 15000000,
     });
     expect(result.success).toBe(true);
+  });
+
+  it("rejects malformed or impossible dates at the server action boundary", () => {
+    const baseActivity = {
+      waktu: "08:00",
+      waktuSelesai: "09:00",
+      kegiatan: ["Approach / Fact Finding"],
+      status: "Belum",
+      catatan: "",
+      nasabah: "Bapak Andi",
+      kontakNasabah: "",
+      produk: "",
+    };
+
+    expect(activityActionSchema.safeParse({ ...baseActivity, tanggal: "2026-02-30" }).success).toBe(false);
+    expect(activityActionSchema.safeParse({ ...baseActivity, tanggal: "not-a-date" }).success).toBe(false);
   });
 
   it("rejects negative API numbers", () => {

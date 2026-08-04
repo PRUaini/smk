@@ -14,6 +14,25 @@ import type { Activity, ActivityStatus, ActivityType } from "../types";
 const activityTypes = Object.keys(ACTIVITY_POINTS) as [ActivityType, ...ActivityType[]];
 const activityStatuses: [ActivityStatus, ...ActivityStatus[]] = ["Selesai", "Belum"];
 
+function isValidActivityDate(value: string): boolean {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+
+  const [year, month, day] = value.split("-").map(Number);
+  if (year < 1 || month < 1 || month > 12 || day < 1) return false;
+
+  const parsed = new Date(Date.UTC(year, month - 1, day));
+  return (
+    parsed.getUTCFullYear() === year &&
+    parsed.getUTCMonth() === month - 1 &&
+    parsed.getUTCDate() === day
+  );
+}
+
+const activityDateField = z
+  .string()
+  .min(1, "Tanggal wajib diisi")
+  .refine(isValidActivityDate, "Tanggal tidak valid");
+
 const startTimeField = z
   .string()
   .min(1, "Waktu mulai wajib dipilih")
@@ -64,7 +83,7 @@ function addActivityDetailsIssues(
 }
 
 export const activityFormSchema = z.object({
-  tanggal: z.string().min(1, "Tanggal wajib diisi"),
+  tanggal: activityDateField,
   waktu: startTimeField,
   waktuSelesai: endTimeField,
   kegiatan: z.array(z.enum(activityTypes)).min(1, "Pilih minimal satu kegiatan"),
@@ -121,7 +140,7 @@ export function buildActivityPayload(
 
 export const activityActionSchema = z.object({
   id: z.string().optional(),
-  tanggal: z.string().min(1, "Tanggal wajib diisi"),
+  tanggal: activityDateField,
   waktu: startTimeField,
   waktuSelesai: endTimeField,
   kegiatan: z.array(z.enum(activityTypes)).min(1, "Pilih minimal satu kegiatan"),
