@@ -16,6 +16,7 @@ type ReportPeriod = "yearly" | "monthly" | "weekly";
 
 const YEARLY_ACTIVE_DAYS_TARGET = 150;
 const MONTHS_ABBR = getMonthsAbbr();
+const WEEKLY_DAY_LABELS = DAYS_OF_WEEK.map((day) => day.slice(0, 3));
 
 export default function LaporanAktivitas({ targets, activities, selectedMonth, selectedYear }: LaporanAktivitasProps) {
   const monthLabel = MONTHS_ABBR[selectedMonth];
@@ -180,7 +181,7 @@ export default function LaporanAktivitas({ targets, activities, selectedMonth, s
           );
           const points = dayActivities.reduce((sum, act) => sum + act.poin, 0);
           runningSum += points;
-          return { day: weeklyDayLabels[idx], points: runningSum };
+          return { day: WEEKLY_DAY_LABELS[idx], points: runningSum };
         });
       }
       return [];
@@ -189,7 +190,7 @@ export default function LaporanAktivitas({ targets, activities, selectedMonth, s
       let runningSum = 0;
       return monthlyData.map((d) => {
         runningSum += d.points;
-        return { day: monthsAbbr[d.month], points: runningSum };
+        return { day: MONTHS_ABBR[d.month], points: runningSum };
       });
     }
     let runningSum = 0;
@@ -212,14 +213,14 @@ export default function LaporanAktivitas({ targets, activities, selectedMonth, s
           );
           const points = dayActivities.reduce((sum, act) => sum + act.poin, 0);
           return {
-            label: weeklyDayLabels[idx] || "",
+            label: WEEKLY_DAY_LABELS[idx] || "",
             points
           };
         });
       }
     } else if (isYearly) {
       dataset = monthlyData.map((m) => ({
-        label: monthsAbbr[m.month],
+        label: MONTHS_ABBR[m.month],
         points: m.points
       }));
     } else if (dailyFilter === "harian") {
@@ -229,7 +230,7 @@ export default function LaporanAktivitas({ targets, activities, selectedMonth, s
       }));
     } else if (dailyFilter === "bulanan") {
       dataset = monthlyData.map((m) => ({
-        label: monthsAbbr[m.month],
+        label: MONTHS_ABBR[m.month],
         points: m.points
       }));
     } else {
@@ -245,7 +246,7 @@ export default function LaporanAktivitas({ targets, activities, selectedMonth, s
       100,
       !isWeekly && !isYearly && dailyFilter === "harian" ? 5 : 1
     );
-  }, [isWeekly, isYearly, weeks, activeWeekIdx, activities, dailyFilter, dailyData, monthlyData, yearlyData, monthLabel, monthsAbbr, weeklyDayLabels]);
+  }, [isWeekly, isYearly, weeks, activeWeekIdx, activities, dailyFilter, dailyData, monthlyData, yearlyData, monthLabel]);
 
   // SVG dimensions & scales for Akumulasi Poin
   const cumulativeChartSvg = useMemo(() => {
