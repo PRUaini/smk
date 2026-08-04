@@ -370,7 +370,7 @@ export default function ActivitySidebar({
 
               <div className="form-group">
                 <label className="form-label" htmlFor="activity-api">
-                  Annualized Premium Income (API) {hasClosing ? "(Wajib)" : "(Opsional)"}
+                  Annualized Premium Income (API) {hasClosing ? "" : "(Opsional)"}
                 </label>
                 <input
                   id="activity-api"

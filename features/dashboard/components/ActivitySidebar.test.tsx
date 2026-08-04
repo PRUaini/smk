@@ -51,6 +51,7 @@ describe("ActivitySidebar", () => {
     expect(screen.getByLabelText("Nama Nasabah")).toBeInTheDocument();
     expect(screen.getByLabelText("Kontak Nasabah (Opsional)")).toBeInTheDocument();
     expect(screen.getByLabelText("Produk (Opsional)")).toBeInTheDocument();
+    expect(screen.getByLabelText("Annualized Premium Income (API) (Opsional)")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Simpan Aktivitas" })).toBeInTheDocument();
   });
 
@@ -92,7 +93,7 @@ describe("ActivitySidebar", () => {
     );
 
     expect(screen.getByRole("heading", { name: "Edit Aktivitas" })).toBeInTheDocument();
-    expect(screen.getByLabelText("Annualized Premium Income (API) (Wajib)")).toBeInTheDocument();
+    expect(screen.getByLabelText("Annualized Premium Income (API)")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Hapus" })).toBeInTheDocument();
   });
 
