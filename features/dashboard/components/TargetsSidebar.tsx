@@ -10,6 +10,7 @@ interface TargetsSidebarProps {
   onSave: (targets: Omit<AgentTargets, "kodeAgent">) => void;
   isPending: boolean;
   onClose: () => void;
+  onDirtyChange?: (isDirty: boolean) => void;
   className?: string;
 }
 
@@ -23,9 +24,17 @@ export default function TargetsSidebar({
   onSave,
   isPending,
   onClose,
+  onDirtyChange,
   className = "",
 }: TargetsSidebarProps) {
   const [activeTab, setActiveTab] = useState<"tahunan" | "bulanan" | "mingguan">("tahunan");
+  const asideRef = React.useRef<HTMLElement>(null);
+  const [yearlyPointsInput, setYearlyPointsInput] = useState(() =>
+    String((initialTargets?.targetPoints ?? DEFAULT_TARGETS.targetPoints) * 12)
+  );
+  const [yearlyMeetingsInput, setYearlyMeetingsInput] = useState(() =>
+    String((initialTargets?.targetMeetings ?? DEFAULT_TARGETS.targetMeetings) * 12)
+  );
 
   const form = useForm<TargetsFormData>({
     resolver: zodResolver(targetsFormSchema) as Resolver<TargetsFormData>,
@@ -49,18 +58,28 @@ export default function TargetsSidebar({
   const activeMonths = Math.max(1, watchedAkhir - watchedAwal + 1);
   const calculatedMonthlyApi = Math.round(watchedApi / activeMonths);
   const calculatedWeeklyApi = Math.round(calculatedMonthlyApi / 4);
-  const yearlyPoints = watchedPoints * 12;
-  const yearlyMeetings = watchedMeetings * 12;
+
+  React.useEffect(() => {
+    asideRef.current?.focus({ preventScroll: true });
+  }, []);
+
+  React.useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") onClose();
+    };
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [onClose]);
 
   const handleSubmit = (data: TargetsFormData) => {
     onSave(data);
   };
 
   return (
-    <aside className={`activity-sidebar-card ${className}`.trim()}>
+    <aside ref={asideRef} tabIndex={-1} className={`activity-sidebar-card ${className}`.trim()}>
       <div className="sidebar-header">
         <h2 className="sidebar-title">Edit Target Agen</h2>
-        <button className="close-sidebar-btn" onClick={onClose} aria-label="Close">
+        <button className="close-sidebar-btn" onClick={onClose} aria-label="Tutup">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
@@ -71,6 +90,7 @@ export default function TargetsSidebar({
         <button
           type="button"
           className={`segmented-tab ${activeTab === "tahunan" ? "active" : ""}`}
+          aria-pressed={activeTab === "tahunan"}
           onClick={() => setActiveTab("tahunan")}
         >
           Tahunan
@@ -78,6 +98,7 @@ export default function TargetsSidebar({
         <button
           type="button"
           className={`segmented-tab ${activeTab === "bulanan" ? "active" : ""}`}
+          aria-pressed={activeTab === "bulanan"}
           onClick={() => setActiveTab("bulanan")}
         >
           Bulanan
@@ -85,13 +106,18 @@ export default function TargetsSidebar({
         <button
           type="button"
           className={`segmented-tab ${activeTab === "mingguan" ? "active" : ""}`}
+          aria-pressed={activeTab === "mingguan"}
           onClick={() => setActiveTab("mingguan")}
         >
           Mingguan
         </button>
       </div>
 
-      <form onSubmit={form.handleSubmit(handleSubmit)} className="sidebar-form">
+      <form
+        onSubmit={form.handleSubmit(handleSubmit)}
+        className="sidebar-form"
+        onInput={() => onDirtyChange?.(true)}
+      >
         {activeTab === "tahunan" && (
           <div className="tab-content">
             <div className="form-group">
@@ -100,11 +126,13 @@ export default function TargetsSidebar({
                 type="number"
                 className="form-input"
                 placeholder="Contoh: 6000"
-                value={yearlyPoints}
+                value={yearlyPointsInput}
                 onChange={(e) => {
+                  setYearlyPointsInput(e.target.value);
                   const val = Number(e.target.value) || 0;
                   form.setValue("targetPoints", Math.round(val / 12), { shouldValidate: true });
                 }}
+                onBlur={() => setYearlyPointsInput(String(watchedPoints * 12))}
               />
             </div>
 
@@ -114,11 +142,13 @@ export default function TargetsSidebar({
                 type="number"
                 className="form-input"
                 placeholder="Contoh: 480"
-                value={yearlyMeetings}
+                value={yearlyMeetingsInput}
                 onChange={(e) => {
+                  setYearlyMeetingsInput(e.target.value);
                   const val = Number(e.target.value) || 0;
                   form.setValue("targetMeetings", Math.round(val / 12), { shouldValidate: true });
                 }}
+                onBlur={() => setYearlyMeetingsInput(String(watchedMeetings * 12))}
               />
             </div>
 

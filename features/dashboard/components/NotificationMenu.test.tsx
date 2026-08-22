@@ -36,7 +36,7 @@ describe("NotificationMenu", () => {
       />
     );
 
-    const button = screen.getByRole("button", { name: "Buka notifikasi" });
+    const button = screen.getByRole("button", { name: /Buka notifikasi/ });
     expect(button).toHaveClass("notification-fab-btn");
     expect(screen.getByText("1")).toBeInTheDocument();
 
@@ -57,7 +57,7 @@ describe("NotificationMenu", () => {
       />
     );
 
-    const button = screen.getByRole("button", { name: "Buka notifikasi" });
+    const button = screen.getByRole("button", { name: /Buka notifikasi/ });
     fireEvent.click(button);
     fireEvent.click(button);
 
@@ -81,7 +81,7 @@ describe("NotificationMenu", () => {
       />
     );
 
-    fireEvent.click(screen.getByRole("button", { name: "Buka notifikasi" }));
+    fireEvent.click(screen.getByRole("button", { name: /Buka notifikasi/ }));
     fireEvent.click(screen.getByRole("button", { name: "Tandai Semua" }));
 
     expect(screen.getByRole("menu", { name: "Notifikasi aktivitas" })).toHaveClass("marking-read");
@@ -103,7 +103,7 @@ describe("NotificationMenu", () => {
       />
     );
 
-    fireEvent.click(screen.getByRole("button", { name: "Buka notifikasi" }));
+    fireEvent.click(screen.getByRole("button", { name: /Buka notifikasi/ }));
 
     expect(screen.getByText("Tidak ada notifikasi")).toBeInTheDocument();
   });

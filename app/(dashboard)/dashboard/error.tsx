@@ -27,14 +27,7 @@ export default function DashboardError({ error, reset }: DashboardErrorProps) {
               {error.message || "Terjadi kendala saat memuat data dari server."}
             </p>
           </div>
-          <button
-            type="button"
-            className="dashboard-widget-error-action"
-            onClick={reset}
-            style={{ width: "100%", padding: "0.75rem 1.5rem", background: "var(--color-primary)", color: "white", border: "none", borderRadius: "10px", fontWeight: "600", cursor: "pointer", transition: "background 0.15s ease" }}
-            onMouseOver={(e) => (e.currentTarget.style.background = "var(--color-primary-hover)")}
-            onMouseOut={(e) => (e.currentTarget.style.background = "var(--color-primary)")}
-          >
+          <button type="button" className="dashboard-error-retry-btn" onClick={reset}>
             Muat ulang Halaman
           </button>
         </div>

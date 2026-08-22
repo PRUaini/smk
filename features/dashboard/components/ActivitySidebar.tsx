@@ -26,6 +26,7 @@ interface ActivitySidebarProps {
   onDelete: (id: string) => void;
   isPending: boolean;
   onClose: () => void;
+  onDirtyChange?: (isDirty: boolean) => void;
   className?: string;
 }
 
@@ -69,10 +70,12 @@ export default function ActivitySidebar({
   onDelete,
   isPending,
   onClose,
+  onDirtyChange,
   className = "",
 }: ActivitySidebarProps) {
   const [isDropdownOpen, setIsDropdownOpen] = React.useState(false);
   const dropdownRef = React.useRef<HTMLDivElement>(null);
+  const asideRef = React.useRef<HTMLElement>(null);
 
   const form = useForm<ActivityFormData>({
     resolver: zodResolver(activityFormSchema),
@@ -131,6 +134,18 @@ export default function ActivitySidebar({
   }, [isDropdownOpen]);
 
   React.useEffect(() => {
+    asideRef.current?.focus({ preventScroll: true });
+  }, []);
+
+  React.useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") onClose();
+    };
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [onClose]);
+
+  React.useEffect(() => {
     if (!waktu) return;
     if (!waktuSelesai || !isValidDashboardTimeRange(waktu, waktuSelesai)) {
       form.setValue("waktuSelesai", getNextDashboardTimeSlot(waktu), { shouldValidate: true });
@@ -157,7 +172,7 @@ export default function ActivitySidebar({
     : "Pilih kegiatan...";
 
   return (
-    <aside className={`activity-sidebar-card activity-drawer-panel ${className}`.trim()}>
+    <aside ref={asideRef} tabIndex={-1} className={`activity-sidebar-card activity-drawer-panel ${className}`.trim()}>
       <div className="sidebar-header">
         <div>
           <h2 className="sidebar-title">
@@ -165,14 +180,18 @@ export default function ActivitySidebar({
           </h2>
           <p className="sidebar-subtitle">Isi detail kegiatan harian Anda</p>
         </div>
-        <button className="close-sidebar-btn" onClick={onClose} aria-label="Close">
+        <button className="close-sidebar-btn" onClick={onClose} aria-label="Tutup">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
         </button>
       </div>
 
-      <form onSubmit={form.handleSubmit(handleSubmit)} className="sidebar-form">
+      <form
+        onSubmit={form.handleSubmit(handleSubmit)}
+        className="sidebar-form"
+        onInput={() => onDirtyChange?.(true)}
+      >
         <div className="sidebar-form-body">
           <section className="activity-form-section" aria-labelledby="activity-time-section">
             <div className="activity-section-heading" id="activity-time-section">
@@ -289,7 +308,10 @@ export default function ActivitySidebar({
                       <button
                         type="button"
                         className="selected-tag-remove"
-                        onClick={() => toggleKegiatan(k)}
+                        onClick={() => {
+                          onDirtyChange?.(true);
+                          toggleKegiatan(k);
+                        }}
                         aria-label={`Hapus ${k}`}
                       >
                         ×

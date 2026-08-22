@@ -10,6 +10,8 @@ interface LaporanAktivitasProps {
   activities: Activity[];
   selectedMonth: number; // 0-indexed
   selectedYear: number;
+  selectedWeekIndex?: number;
+  onSelectWeek?: (index: number) => void;
 }
 
 type ReportPeriod = "yearly" | "monthly" | "weekly";
@@ -17,18 +19,48 @@ type ReportPeriod = "yearly" | "monthly" | "weekly";
 const MONTHS_ABBR = getMonthsAbbr();
 const WEEKLY_DAY_LABELS = DAYS_OF_WEEK.map((day) => day.slice(0, 3));
 
-export default function LaporanAktivitas({ targets, activities, selectedMonth, selectedYear }: LaporanAktivitasProps) {
+export default function LaporanAktivitas({ targets, activities, selectedMonth, selectedYear, selectedWeekIndex, onSelectWeek }: LaporanAktivitasProps) {
   const monthLabel = MONTHS_ABBR[selectedMonth];
 
   // Interactive Filter States
   const [dailyFilter, setDailyFilter] = useState<"harian" | "bulanan" | "tahunan">("harian");
   const [isDailyMenuOpen, setIsDailyMenuOpen] = useState(false);
+  const dailyFilterRef = React.useRef<HTMLDivElement>(null);
   const [reportPeriod, setReportPeriod] = useState<ReportPeriod>("yearly");
-  const [weekSelection, setWeekSelection] = useState({ month: selectedMonth, year: selectedYear, week: 0 });
+  const [internalWeekSelection, setInternalWeekSelection] = useState({ month: selectedMonth, year: selectedYear, week: 0 });
+  const isWeekControlled = selectedWeekIndex !== undefined && onSelectWeek !== undefined;
   const selectedWeek = weekSelection.month === selectedMonth && weekSelection.year === selectedYear ? weekSelection.week : 0;
 
   const weeks = useMemo(() => getWeeksInMonth(selectedMonth, selectedYear), [selectedMonth, selectedYear]);
+  const fallbackWeek = internalWeekSelection.month === selectedMonth && internalWeekSelection.year === selectedYear ? internalWeekSelection.week : 0;
+  const selectedWeek = isWeekControlled ? Math.min(selectedWeekIndex!, weeks.length - 1) : fallbackWeek;
+  const handleWeekSelect = (index: number) => {
+    if (isWeekControlled) {
+      onSelectWeek!(index);
+      return;
+    }
+    setInternalWeekSelection({ month: selectedMonth, year: selectedYear, week: index });
+  };
   const activeWeekIdx = Math.min(selectedWeek, weeks.length - 1);
+
+  React.useEffect(() => {
+    if (!isDailyMenuOpen) return;
+
+    const handlePointerDown = (event: PointerEvent) => {
+      if (!dailyFilterRef.current?.contains(event.target as Node)) {
+        setIsDailyMenuOpen(false);
+      }
+    };
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setIsDailyMenuOpen(false);
+    };
+    document.addEventListener("pointerdown", handlePointerDown);
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("pointerdown", handlePointerDown);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isDailyMenuOpen]);
 
   const weeklyMetrics = useMemo(() => {
     const weekStartDate = weeks[activeWeekIdx];
@@ -342,18 +374,21 @@ export default function LaporanAktivitas({ targets, activities, selectedMonth, s
         <div className="segmented-control" style={{ alignSelf: "flex-start" }}>
           <button
             className={`segmented-tab ${reportPeriod === "yearly" ? "active" : ""}`}
+            aria-pressed={reportPeriod === "yearly"}
             onClick={() => setReportPeriod("yearly")}
           >
             Tahunan
           </button>
           <button
             className={`segmented-tab ${reportPeriod === "monthly" ? "active" : ""}`}
+            aria-pressed={reportPeriod === "monthly"}
             onClick={() => setReportPeriod("monthly")}
           >
             Bulanan
           </button>
           <button
             className={`segmented-tab ${reportPeriod === "weekly" ? "active" : ""}`}
+            aria-pressed={reportPeriod === "weekly"}
             onClick={() => setReportPeriod("weekly")}
           >
             Mingguan
@@ -367,7 +402,8 @@ export default function LaporanAktivitas({ targets, activities, selectedMonth, s
                 <button
                   key={index}
                   className={`month-tab-btn ${activeWeekIdx === index ? "active" : ""}`}
-                  onClick={() => setWeekSelection({ month: selectedMonth, year: selectedYear, week: index })}
+                  aria-pressed={activeWeekIdx === index}
+                  onClick={() => handleWeekSelect(index)}
                 >
                   Minggu {index + 1}
                 </button>
@@ -466,18 +502,25 @@ export default function LaporanAktivitas({ targets, activities, selectedMonth, s
           <div className="chart-card-header">
             <h3 className="chart-title">{isWeekly ? "Tren Poin Mingguan" : isYearly ? "Tren Poin Tahunan" : "Tren Poin Harian"}</h3>
             {!isWeekly && !isYearly && (
-              <div className="chart-filter-select-wrapper">
-                <div className="chart-filter-select" onClick={(e) => { e.stopPropagation(); setIsDailyMenuOpen(!isDailyMenuOpen); }}>
+              <div className="chart-filter-select-wrapper" ref={dailyFilterRef}>
+                <button
+                  type="button"
+                  className="chart-filter-select"
+                  aria-haspopup="listbox"
+                  aria-expanded={isDailyMenuOpen}
+                  aria-label="Pilih rentang laporan"
+                  onClick={() => setIsDailyMenuOpen(!isDailyMenuOpen)}
+                >
                   <span>{dailyFilter === "harian" ? "Harian" : dailyFilter === "bulanan" ? "Bulanan" : "Tahunan"}</span>
                   <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <path d="M6 9l6 6 6-6" />
                   </svg>
-                </div>
+                </button>
                 {isDailyMenuOpen && (
-                  <div className="filter-dropdown-menu">
-                    <div className={`filter-option ${dailyFilter === "harian" ? "active" : ""}`} onClick={() => { setDailyFilter("harian"); setIsDailyMenuOpen(false); }}>Harian</div>
-                    <div className={`filter-option ${dailyFilter === "bulanan" ? "active" : ""}`} onClick={() => { setDailyFilter("bulanan"); setIsDailyMenuOpen(false); }}>Bulanan</div>
-                    <div className={`filter-option ${dailyFilter === "tahunan" ? "active" : ""}`} onClick={() => { setDailyFilter("tahunan"); setIsDailyMenuOpen(false); }}>Tahunan</div>
+                  <div className="filter-dropdown-menu" role="listbox" aria-label="Rentang laporan">
+                    <button type="button" role="option" aria-selected={dailyFilter === "harian"} className={`filter-option ${dailyFilter === "harian" ? "active" : ""}`} onClick={() => { setDailyFilter("harian"); setIsDailyMenuOpen(false); }}>Harian</button>
+                    <button type="button" role="option" aria-selected={dailyFilter === "bulanan"} className={`filter-option ${dailyFilter === "bulanan" ? "active" : ""}`} onClick={() => { setDailyFilter("bulanan"); setIsDailyMenuOpen(false); }}>Bulanan</button>
+                    <button type="button" role="option" aria-selected={dailyFilter === "tahunan"} className={`filter-option ${dailyFilter === "tahunan" ? "active" : ""}`} onClick={() => { setDailyFilter("tahunan"); setIsDailyMenuOpen(false); }}>Tahunan</button>
                   </div>
                 )}
               </div>
@@ -515,7 +558,7 @@ export default function LaporanAktivitas({ targets, activities, selectedMonth, s
                       x="32"
                       y={line.y + 4}
                       textAnchor="end"
-                      fontSize="10"
+                      fontSize="12"
                       fill="var(--color-text-secondary)"
                       fontWeight="500"
                     >
@@ -561,7 +604,7 @@ export default function LaporanAktivitas({ targets, activities, selectedMonth, s
                     x={lbl.x}
                     y="210"
                     textAnchor="middle"
-                    fontSize="10"
+                    fontSize="12"
                     fill="var(--color-text-secondary)"
                     fontWeight="500"
                   >
@@ -782,7 +825,7 @@ export default function LaporanAktivitas({ targets, activities, selectedMonth, s
                         x="32"
                         y={line.y + 4}
                         textAnchor="end"
-                        fontSize="9"
+                        fontSize="11"
                         fill="var(--color-text-secondary)"
                         fontWeight="500"
                       >
@@ -805,7 +848,7 @@ export default function LaporanAktivitas({ targets, activities, selectedMonth, s
                     x="475"
                     y={cumulativeChartSvg.targetY - 6}
                     textAnchor="end"
-                    fontSize="9"
+                    fontSize="11"
                     fill="var(--color-text-secondary)"
                     fontWeight="600"
                   >
@@ -847,7 +890,7 @@ export default function LaporanAktivitas({ targets, activities, selectedMonth, s
                       x={lbl.x}
                       y="172"
                       textAnchor="middle"
-                      fontSize="9"
+                      fontSize="11"
                       fill="var(--color-text-secondary)"
                       fontWeight="500"
                     >

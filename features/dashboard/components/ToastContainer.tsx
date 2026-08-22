@@ -8,9 +8,13 @@ interface ToastContainerProps {
 
 export default function ToastContainer({ toasts, onDismiss }: ToastContainerProps) {
   return (
-    <div className="toast-container" aria-live="assertive">
+    <div className="toast-container">
       {toasts.map((toast) => (
-        <div key={toast.id} className={`toast-item toast-${toast.type}`}>
+        <div
+          key={toast.id}
+          className={`toast-item toast-${toast.type}`}
+          role={toast.type === "error" || toast.type === "confirm" ? "alert" : "status"}
+        >
           <div className="toast-content" style={toast.type === "confirm" ? { flexDirection: "column", alignItems: "flex-start", gap: "0.5rem" } : undefined}>
             <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
               {toast.type === "success" && (
@@ -59,7 +63,7 @@ export default function ToastContainer({ toasts, onDismiss }: ToastContainerProp
                     border: "none"
                   }}
                 >
-                  Hapus
+                  {toast.confirmLabel ?? "Hapus"}
                 </button>
                 <button
                   onClick={() => {
@@ -82,7 +86,7 @@ export default function ToastContainer({ toasts, onDismiss }: ToastContainerProp
               </div>
             )}
           </div>
-          <button className="toast-close-btn" onClick={() => onDismiss(toast.id)} aria-label="Close notification">
+          <button className="toast-close-btn" onClick={() => onDismiss(toast.id)} aria-label="Tutup notifikasi">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <line x1="18" y1="6" x2="6" y2="18" />
               <line x1="6" y1="6" x2="18" y2="18" />

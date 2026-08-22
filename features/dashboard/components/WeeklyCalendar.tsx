@@ -1,7 +1,7 @@
 import React from "react";
 import { Activity } from "../types";
 import { DAYS_OF_WEEK, DEFAULT_DASHBOARD_START_TIME } from "../constants";
-import { getWeekDates as getFormattedWeekDates, getWeeksInMonth } from "../utils/date";
+import { getWeekDates as getFormattedWeekDates, getDefaultWeekIndex, getWeeksInMonth } from "../utils/date";
 
 interface WeeklyCalendarProps {
   selectedMonth: number;
@@ -12,6 +12,8 @@ interface WeeklyCalendarProps {
   onSelectTimeSlot: (dayStr: string, timeStr: string) => void;
   onToggleComplete: (id: string) => void;
   autoFocusToday?: boolean;
+  selectedWeekIndex?: number;
+  onSelectWeek?: (index: number) => void;
 }
 
 const getActivityTypeClass = (kegiatan: string[]) => {
@@ -48,29 +50,25 @@ export default function WeeklyCalendar({
   onSelectTimeSlot,
   onToggleComplete,
   autoFocusToday,
+  selectedWeekIndex,
+  onSelectWeek,
 }: WeeklyCalendarProps) {
-  const [weekSelection, setWeekSelection] = React.useState<{ month: number; year: number; week: number } | null>(null);
+  const [internalWeekSelection, setInternalWeekSelection] = React.useState<{ month: number; year: number; week: number } | null>(null);
+  const isWeekControlled = selectedWeekIndex !== undefined && onSelectWeek !== undefined;
   const weeks = React.useMemo(() => getWeeksInMonth(selectedMonth, selectedYear), [selectedMonth, selectedYear]);
-  const defaultWeek = React.useMemo(() => {
-    if (autoFocusToday) {
-      const today = new Date();
-      if (selectedYear === today.getFullYear() && selectedMonth === today.getMonth()) {
-        today.setHours(0, 0, 0, 0);
-        for (let i = 0; i < weeks.length; i++) {
-          const start = new Date(weeks[i]);
-          start.setHours(0, 0, 0, 0);
-          const end = new Date(start);
-          end.setDate(end.getDate() + 6);
-          end.setHours(23, 59, 59, 999);
-          if (today >= start && today <= end) {
-            return i;
-          }
-        }
-      }
+  const defaultWeek = React.useMemo(
+    () => getDefaultWeekIndex(weeks, selectedMonth, selectedYear, autoFocusToday),
+    [selectedMonth, selectedYear, autoFocusToday, weeks]
+  );
+  const internalSelectedWeek = internalWeekSelection?.month === selectedMonth && internalWeekSelection.year === selectedYear ? internalWeekSelection.week : defaultWeek;
+  const selectedWeek = isWeekControlled ? Math.min(selectedWeekIndex!, weeks.length - 1) : internalSelectedWeek;
+  const handleWeekSelect = (index: number) => {
+    if (isWeekControlled) {
+      onSelectWeek!(index);
+      return;
     }
-    return 0;
-  }, [selectedMonth, selectedYear, autoFocusToday, weeks]);
-  const selectedWeek = weekSelection?.month === selectedMonth && weekSelection.year === selectedYear ? weekSelection.week : defaultWeek;
+    setInternalWeekSelection({ month: selectedMonth, year: selectedYear, week: index });
+  };
 
   const weekDates = React.useMemo(() => {
     const weekIndex = Math.min(selectedWeek, weeks.length - 1);
@@ -112,7 +110,11 @@ export default function WeeklyCalendar({
     return (
       <div
         key={activity.id}
+        role="button"
+        tabIndex={0}
+        aria-label={`${formatKegiatanLabel(activity.kegiatan)}, ${formatActivityTimeRange(activity)}`}
         className={`activity-card-item ${getActivityTypeClass(activity.kegiatan)} ${selectedActivityId === activity.id ? "selected-activity" : ""}`}
+        onKeyDown={(e) => handleCardKeyDown(e, activity)}
         onClick={(e) => {
           e.stopPropagation();
           onSelectActivity(activity);
@@ -172,6 +174,13 @@ export default function WeeklyCalendar({
     );
   };
 
+  const handleCardKeyDown = (event: React.KeyboardEvent, activity: Activity) => {
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      onSelectActivity(activity);
+    }
+  };
+
   return (
     <div className="weekly-calendar-card">
       <div className="month-tabs-container week-tabs-container">
@@ -180,7 +189,8 @@ export default function WeeklyCalendar({
             <button
               key={index}
               className={`month-tab-btn ${selectedWeek === index ? "active" : ""}`}
-              onClick={() => setWeekSelection({ month: selectedMonth, year: selectedYear, week: index })}
+              aria-pressed={selectedWeek === index}
+              onClick={() => handleWeekSelect(index)}
             >
               Minggu {index + 1}
             </button>
@@ -251,7 +261,16 @@ export default function WeeklyCalendar({
                     )}
 
                     <div
+                      role="button"
+                      tabIndex={0}
                       className="empty-cell-hover-indicator"
+                      aria-label={`Tambah aktivitas ${d.label}`}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" || e.key === " ") {
+                          e.preventDefault();
+                          onSelectTimeSlot(d.formatted, DEFAULT_DASHBOARD_START_TIME);
+                        }
+                      }}
                       onClick={(e) => {
                         e.stopPropagation();
                         onSelectTimeSlot(d.formatted, DEFAULT_DASHBOARD_START_TIME);

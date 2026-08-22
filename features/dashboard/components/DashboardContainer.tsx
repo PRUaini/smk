@@ -18,8 +18,10 @@ import NotificationMenu from "./NotificationMenu";
 import DashboardSettingsMenu from "./DashboardSettingsMenu";
 import { buildActivityNotifications } from "../services/notifications.service";
 import { DEFAULT_DASHBOARD_START_TIME } from "../constants";
+import { getDefaultWeekIndex, getWeeksInMonth } from "../utils/date";
 const SIDEBAR_TRANSITION_MS = 250;
 const REMINDER_TOAST_PREFIX = "reminder-";
+const MAX_REMINDER_TOASTS = 3;
 
 interface DashboardContainerProps {
   initialKodeAgent: string;
@@ -48,12 +50,16 @@ export default function DashboardContainer({
   const [isTargetsSidebarOpen, setIsTargetsSidebarOpen] = useState(false);
   const [isSidebarClosing, setIsSidebarClosing] = useState(false);
   const [isTargetsSidebarClosing, setIsTargetsSidebarClosing] = useState(false);
+  const [isActivityFormDirty, setIsActivityFormDirty] = useState(false);
+  const [isTargetsFormDirty, setIsTargetsFormDirty] = useState(false);
   const [isYearMenuOpen, setIsYearMenuOpen] = useState(false);
+  const yearFilterRef = useRef<HTMLDivElement>(null);
   const [readNotificationIds, setReadNotificationIds] = useState<Set<string>>(
     () => new Set()
   );
   const [isPending, startTransition] = useTransition();
   const [activeTab, setActiveTab] = useState<"agenda" | "laporan">("agenda");
+  const [weekSelection, setWeekSelection] = useState<{ month: number; year: number; week: number } | null>(null);
   const sidebarCloseTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const targetsSidebarCloseTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const tempActivityIdCounter = useRef(0);
@@ -79,8 +85,28 @@ export default function DashboardContainer({
     };
   }, []);
 
+  useEffect(() => {
+    if (!isYearMenuOpen) return;
+
+    const handlePointerDown = (event: PointerEvent) => {
+      if (!yearFilterRef.current?.contains(event.target as Node)) {
+        setIsYearMenuOpen(false);
+      }
+    };
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setIsYearMenuOpen(false);
+    };
+    document.addEventListener("pointerdown", handlePointerDown);
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("pointerdown", handlePointerDown);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isYearMenuOpen]);
+
   const openActivitySidebar = () => {
     clearSidebarCloseTimer();
+    setIsActivityFormDirty(false);
     setIsSidebarClosing(false);
     setIsSidebarOpen(true);
   };
@@ -97,12 +123,25 @@ export default function DashboardContainer({
     sidebarCloseTimer.current = setTimeout(() => {
       setIsSidebarClosing(false);
       setSelectedActivity(null);
+      setIsActivityFormDirty(false);
       sidebarCloseTimer.current = null;
     }, SIDEBAR_TRANSITION_MS);
   };
 
+  const attemptCloseActivitySidebar = () => {
+    if (isActivityFormDirty && !isSidebarClosing) {
+      showToast("Perubahan belum disimpan. Buang perubahan?", "confirm", {
+        confirmLabel: "Buang",
+        onConfirm: () => closeActivitySidebar(),
+      });
+      return;
+    }
+    closeActivitySidebar();
+  };
+
   const openTargetsSidebar = () => {
     clearTargetsSidebarCloseTimer();
+    setIsTargetsFormDirty(false);
     setIsTargetsSidebarClosing(false);
     setIsTargetsSidebarOpen(true);
   };
@@ -117,8 +156,20 @@ export default function DashboardContainer({
     setIsTargetsSidebarClosing(true);
     targetsSidebarCloseTimer.current = setTimeout(() => {
       setIsTargetsSidebarClosing(false);
+      setIsTargetsFormDirty(false);
       targetsSidebarCloseTimer.current = null;
     }, SIDEBAR_TRANSITION_MS);
+  };
+
+  const attemptCloseTargetsSidebar = () => {
+    if (isTargetsFormDirty && !isTargetsSidebarClosing) {
+      showToast("Perubahan belum disimpan. Buang perubahan?", "confirm", {
+        confirmLabel: "Buang",
+        onConfirm: () => closeTargetsSidebar(),
+      });
+      return;
+    }
+    closeTargetsSidebar();
   };
 
   const targets = useMemo(() => {
@@ -146,7 +197,7 @@ export default function DashboardContainer({
 
   const reminderToasts = useMemo<Toast[]>(
     () =>
-      notifications.map((notification) => ({
+      notifications.slice(0, MAX_REMINDER_TOASTS).map((notification) => ({
         id: `${REMINDER_TOAST_PREFIX}${notification.id}`,
         message: `Pengingat: ${notification.statusLabel} - ${notification.title} (${notification.description})`,
         type: "info",
@@ -173,6 +224,7 @@ export default function DashboardContainer({
   const handleMonthChange = (monthIdx: number) => {
     setAutoFocusToday(false);
     setSelectedMonth(monthIdx);
+    setWeekSelection(null);
     closeActivitySidebar();
   };
 
@@ -180,6 +232,7 @@ export default function DashboardContainer({
     setSelectedYear(year);
     setAutoFocusToday(false);
     setIsYearMenuOpen(false);
+    setWeekSelection(null);
     closeActivitySidebar();
   };
 
@@ -343,6 +396,16 @@ export default function DashboardContainer({
       } as React.CSSProperties & Record<string, string>)
     : undefined;
 
+  const weeks = useMemo(() => getWeeksInMonth(selectedMonth, selectedYear), [selectedMonth, selectedYear]);
+  const defaultWeekIndex = useMemo(
+    () => getDefaultWeekIndex(weeks, selectedMonth, selectedYear, autoFocusToday),
+    [weeks, selectedMonth, selectedYear, autoFocusToday]
+  );
+  const selectedWeekIndex = weekSelection?.month === selectedMonth && weekSelection.year === selectedYear ? Math.min(weekSelection.week, weeks.length - 1) : defaultWeekIndex;
+  const handleWeekChange = (weekIdx: number) => {
+    setWeekSelection({ month: selectedMonth, year: selectedYear, week: weekIdx });
+  };
+
   return (
     <div
       className={`dashboard-layout-new ${wallpaperUrl ? "has-wallpaper" : ""} ${isSidebarOpen ? "sidebar-expanded" : ""}`}
@@ -358,6 +421,7 @@ export default function DashboardContainer({
             <div className="segmented-control">
               <button
                 className={`segmented-tab ${activeTab === "agenda" ? "active" : ""}`}
+                aria-pressed={activeTab === "agenda"}
                 onClick={() => handleTabChange("agenda")}
               >
                 <svg className="tab-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -367,6 +431,7 @@ export default function DashboardContainer({
               </button>
               <button
                 className={`segmented-tab ${activeTab === "laporan" ? "active" : ""}`}
+                aria-pressed={activeTab === "laporan"}
                 onClick={() => handleTabChange("laporan")}
               >
                 <svg className="tab-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -378,7 +443,7 @@ export default function DashboardContainer({
           </div>
 
           <div className="dashboard-tab-actions">
-            <div className="chart-filter-select-wrapper">
+            <div className="chart-filter-select-wrapper" ref={yearFilterRef}>
               <button
                 type="button"
                 className="report-dropdown-selector"
@@ -429,7 +494,7 @@ export default function DashboardContainer({
           </div>
         </div>
 
-        <MonthTabs selectedMonth={selectedMonth} onMonthChange={handleMonthChange} />
+        <MonthTabs selectedMonth={selectedMonth} onMonthChange={handleMonthChange} selectedYear={selectedYear} />
 
         {activeTab === "agenda" ? (
           <DashboardWidgetBoundary label="Kalender mingguan">
@@ -442,10 +507,12 @@ export default function DashboardContainer({
               onSelectTimeSlot={handleSelectTimeSlot}
               onToggleComplete={handleToggleComplete}
               autoFocusToday={autoFocusToday}
+              selectedWeekIndex={selectedWeekIndex}
+              onSelectWeek={handleWeekChange}
             />
           </DashboardWidgetBoundary>
         ) : (
-          <LaporanAktivitas targets={targets} activities={activities} selectedMonth={selectedMonth} selectedYear={selectedYear} />
+          <LaporanAktivitas targets={targets} activities={activities} selectedMonth={selectedMonth} selectedYear={selectedYear} selectedWeekIndex={selectedWeekIndex} onSelectWeek={handleWeekChange} />
         )}
       </main>
 
@@ -453,8 +520,8 @@ export default function DashboardContainer({
         <div
           className={`sidebar-backdrop ${isSidebarClosing || isTargetsSidebarClosing ? "closing" : "opening"}`}
           onClick={() => {
-            if (isSidebarOpen && !isSidebarClosing) closeActivitySidebar();
-            if (isTargetsSidebarOpen && !isTargetsSidebarClosing) closeTargetsSidebar();
+            if (isSidebarOpen && !isSidebarClosing) attemptCloseActivitySidebar();
+            if (isTargetsSidebarOpen && !isTargetsSidebarClosing) attemptCloseTargetsSidebar();
           }}
         />
       )}
@@ -467,7 +534,8 @@ export default function DashboardContainer({
           onSave={handleSaveActivity}
           onDelete={handleDeleteActivity}
           isPending={isPending}
-          onClose={closeActivitySidebar}
+          onClose={attemptCloseActivitySidebar}
+          onDirtyChange={setIsActivityFormDirty}
           className={isSidebarClosing ? "closing" : "opening"}
         />
       )}
@@ -477,7 +545,8 @@ export default function DashboardContainer({
           initialTargets={targetsData}
           onSave={handleSaveTargets}
           isPending={isPending}
-          onClose={closeTargetsSidebar}
+          onClose={attemptCloseTargetsSidebar}
+          onDirtyChange={setIsTargetsFormDirty}
           className={isTargetsSidebarClosing ? "closing" : "opening"}
         />
       )}
@@ -502,7 +571,7 @@ export default function DashboardContainer({
               setSelectedTime(DEFAULT_DASHBOARD_START_TIME);
               openActivitySidebar();
             }}
-            aria-label="Add Activity"
+            aria-label="Tambah Aktivitas"
           >
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path d="M12 5V19M5 12H19" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>

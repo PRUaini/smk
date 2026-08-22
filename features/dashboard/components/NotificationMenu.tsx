@@ -154,7 +154,7 @@ function NotificationBellButton({
     <button
       type="button"
       className={`notification-fab-btn ${isMarkingRead ? "marking-read" : ""}`}
-      aria-label="Buka notifikasi"
+      aria-label={count > 0 ? `Buka notifikasi (${count} baru)` : "Buka notifikasi"}
       aria-haspopup="menu"
       aria-expanded={isOpen}
       onClick={onClick}

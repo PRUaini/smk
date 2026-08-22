@@ -267,7 +267,7 @@ describe("DashboardContainer", () => {
       />
     );
 
-    fireEvent.click(screen.getByRole("button", { name: "Buka notifikasi" }));
+    fireEvent.click(screen.getByRole("button", { name: /Buka notifikasi/ }));
     fireEvent.click(screen.getByRole("menuitem", { name: /Chat Calon Nasabah/ }));
 
     expect(screen.getByRole("heading", { name: "Edit Aktivitas" })).toBeInTheDocument();
@@ -302,12 +302,12 @@ describe("DashboardContainer", () => {
       />
     );
 
-    fireEvent.click(screen.getByRole("button", { name: "Close notification" }));
+    fireEvent.click(screen.getByRole("button", { name: "Tutup notifikasi" }));
 
     expect(screen.queryByText(/Pengingat: Terlambat - Chat Calon Nasabah/)).not.toBeInTheDocument();
     expect(screen.queryByText("1")).not.toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole("button", { name: "Buka notifikasi" }));
+    fireEvent.click(screen.getByRole("button", { name: /Buka notifikasi/ }));
     expect(screen.getByText("Tidak ada notifikasi")).toBeInTheDocument();
   });
 
@@ -325,7 +325,7 @@ describe("DashboardContainer", () => {
     expect(screen.getByText("1")).toBeInTheDocument();
     expect(screen.getByText(/Pengingat: Terlambat - Chat Calon Nasabah/)).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole("button", { name: "Buka notifikasi" }));
+    fireEvent.click(screen.getByRole("button", { name: /Buka notifikasi/ }));
     fireEvent.click(screen.getByRole("button", { name: "Tandai Semua" }));
 
     expect(screen.getByRole("menu", { name: "Notifikasi aktivitas" })).toHaveClass("marking-read");

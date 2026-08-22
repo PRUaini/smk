@@ -19,6 +19,31 @@ export function getWeeksInMonth(selectedMonth: number, selectedYear = new Date()
   return weeks;
 }
 
+export function getDefaultWeekIndex(
+  weeks: Date[],
+  selectedMonth: number,
+  selectedYear: number,
+  autoFocusToday?: boolean
+) {
+  if (autoFocusToday) {
+    const today = new Date();
+    if (selectedYear === today.getFullYear() && selectedMonth === today.getMonth()) {
+      today.setHours(0, 0, 0, 0);
+      for (let i = 0; i < weeks.length; i++) {
+        const start = new Date(weeks[i]);
+        start.setHours(0, 0, 0, 0);
+        const end = new Date(start);
+        end.setDate(end.getDate() + 6);
+        end.setHours(23, 59, 59, 999);
+        if (today >= start && today <= end) {
+          return i;
+        }
+      }
+    }
+  }
+  return 0;
+}
+
 export function getWeekDates(startDate: Date) {
   const dates = [];
   for (let i = 0; i < DAYS_OF_WEEK.length; i++) {

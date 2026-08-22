@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, useTransition } from "react";
+import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { removeWallpaperAction, uploadWallpaperAction } from "../actions";
 import type { ToastType } from "../utils/useToast";
 
@@ -21,6 +21,17 @@ export default function WallpaperPicker({
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isPending, startTransition] = useTransition();
   const inputRef = useRef<HTMLInputElement>(null);
+
+  const selectedFilePreviewUrl = useMemo(
+    () => (selectedFile ? URL.createObjectURL(selectedFile) : null),
+    [selectedFile]
+  );
+
+  useEffect(() => {
+    return () => {
+      if (selectedFilePreviewUrl) URL.revokeObjectURL(selectedFilePreviewUrl);
+    };
+  }, [selectedFilePreviewUrl]);
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSelectedFile(event.target.files?.[0] ?? null);
@@ -75,6 +86,13 @@ export default function WallpaperPicker({
   return (
     <div className="wallpaper-picker">
       <label className="wallpaper-picker-trigger">
+        {currentWallpaperUrl && (
+          <img
+            src={currentWallpaperUrl}
+            alt=""
+            className="wallpaper-current-thumb"
+          />
+        )}
         <input
           ref={inputRef}
           type="file"
@@ -88,6 +106,14 @@ export default function WallpaperPicker({
 
       {selectedFile && (
         <span className="wallpaper-selected-file">{selectedFile.name}</span>
+      )}
+
+      {selectedFilePreviewUrl && (
+        <img
+          src={selectedFilePreviewUrl}
+          alt="Pratinjau wallpaper baru"
+          className="wallpaper-preview-img"
+        />
       )}
 
       <button
