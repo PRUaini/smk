@@ -29,7 +29,6 @@ export default function LaporanAktivitas({ targets, activities, selectedMonth, s
   const [reportPeriod, setReportPeriod] = useState<ReportPeriod>("yearly");
   const [internalWeekSelection, setInternalWeekSelection] = useState({ month: selectedMonth, year: selectedYear, week: 0 });
   const isWeekControlled = selectedWeekIndex !== undefined && onSelectWeek !== undefined;
-  const selectedWeek = weekSelection.month === selectedMonth && weekSelection.year === selectedYear ? weekSelection.week : 0;
 
   const weeks = useMemo(() => getWeeksInMonth(selectedMonth, selectedYear), [selectedMonth, selectedYear]);
   const fallbackWeek = internalWeekSelection.month === selectedMonth && internalWeekSelection.year === selectedYear ? internalWeekSelection.week : 0;
